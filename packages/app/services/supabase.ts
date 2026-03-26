@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These will be set via environment variables / EAS secrets
-const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+// Supabase project: vcachzgxpjqylcekawzw
+// Get the anon key from: Supabase Dashboard > Settings > API > anon/public (JWT format)
+const SUPABASE_URL = 'https://vcachzgxpjqylcekawzw.supabase.co';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -26,7 +27,6 @@ export async function createGameRoom(hostId: string, maxPlayers: number, botCoun
 }
 
 export async function joinGameRoom(code: string, playerId: string) {
-  // Find the game
   const { data: game, error: findError } = await supabase
     .from('games')
     .select('*')
@@ -36,7 +36,6 @@ export async function joinGameRoom(code: string, playerId: string) {
 
   if (findError || !game) throw new Error('Salle introuvable ou partie deja lancee');
 
-  // Count current players
   const { count } = await supabase
     .from('game_players')
     .select('*', { count: 'exact', head: true })
@@ -44,7 +43,6 @@ export async function joinGameRoom(code: string, playerId: string) {
 
   if ((count ?? 0) >= game.max_players) throw new Error('Salle pleine');
 
-  // Join
   const { error: joinError } = await supabase
     .from('game_players')
     .insert({

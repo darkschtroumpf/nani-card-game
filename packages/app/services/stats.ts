@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem, setItem, removeItem } from './storage';
 
-const STATS_KEY = '@nani_stats';
+const STATS_KEY = 'nani_stats';
 
 export interface PlayerStats {
   gamesPlayed: number;
@@ -34,7 +34,7 @@ function defaultStats(): PlayerStats {
 
 export async function loadStats(): Promise<PlayerStats> {
   try {
-    const raw = await AsyncStorage.getItem(STATS_KEY);
+    const raw = await getItem(STATS_KEY);
     if (raw) return { ...defaultStats(), ...JSON.parse(raw) };
   } catch {}
   return defaultStats();
@@ -52,7 +52,7 @@ export async function saveStats(stats: PlayerStats): Promise<void> {
   }
   stats.favoriteUniverse = fav;
 
-  await AsyncStorage.setItem(STATS_KEY, JSON.stringify(stats));
+  await setItem(STATS_KEY, JSON.stringify(stats));
 }
 
 export async function recordGameEnd(
@@ -89,5 +89,5 @@ export async function recordDuel(
 }
 
 export async function resetStats(): Promise<void> {
-  await AsyncStorage.removeItem(STATS_KEY);
+  await removeItem(STATS_KEY);
 }
