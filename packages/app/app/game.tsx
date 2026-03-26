@@ -113,6 +113,14 @@ function GameUI({ ctrl, isOnline }: { ctrl: GameController; isOnline: boolean })
 
   const { view } = ctrl;
 
+  // Record stats on game over — MUST be before any conditional return
+  useEffect(() => {
+    if (view?.gameOver && view.winner) {
+      const won = view.winner === view.myPlayer.id;
+      recordGameEnd(won, view.myPlayer.identity.type);
+    }
+  }, [view?.gameOver]);
+
   // Loading
   if (!view) {
     return (
@@ -185,14 +193,6 @@ function GameUI({ ctrl, isOnline }: { ctrl: GameController; isOnline: boolean })
       </SafeAreaView>
     );
   }
-
-  // Record stats on game over
-  useEffect(() => {
-    if (view?.gameOver && view.winner) {
-      const won = view.winner === view.myPlayer.id;
-      recordGameEnd(won, view.myPlayer.identity.type);
-    }
-  }, [view?.gameOver]);
 
   // Card press handler
   const onCardPress = (index: number) => {
