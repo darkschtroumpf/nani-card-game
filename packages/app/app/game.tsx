@@ -11,16 +11,23 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
 import Card from '../components/Card';
-import PlayerHUD from '../components/PlayerHUD';
-import DuelArena from '../components/DuelArena';
+import OpponentCard from '../components/OpponentCard';
+import DuelSteps from '../components/DuelSteps';
 import DominanceChart from '../components/DominanceChart';
 import UniversePicker from '../components/UniversePicker';
 import GameLog from '../components/GameLog';
-import { useGameController } from '../hooks/useGameController';
-import type { Universe, Card as CardType } from '../../engine/src/types';
+import IdentityReveal from '../components/IdentityReveal';
+import type { Universe } from '../../engine/src/types';
 import type { BotDifficulty } from '../../engine/src/ai/bot';
+import { useGameController } from '../hooks/useGameController';
 
-type ActionMode = 'idle' | 'attack_select_card' | 'attack_select_universe' | 'attack_select_target' | 'train_select' | 'spy_select' | 'defending';
+type ActionMode =
+  | 'idle'
+  | 'attack_pick_card'
+  | 'attack_pick_universe'
+  | 'attack_pick_target'
+  | 'train_pick'
+  | 'spy_pick';
 
 export default function GameScreen() {
   const router = useRouter();
@@ -31,19 +38,22 @@ export default function GameScreen() {
     difficulty: string;
   }>();
 
-  const controller = useGameController();
+  const ctrl = useGameController();
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
   const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
   const [showChart, setShowChart] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  // Start game on mount
   useEffect(() => {
+    if (initialized) return;
+    setInitialized(true);
+
     const botCount = parseInt(params.botCount ?? '3', 10);
     const playerCount = botCount + 1;
     const botNames = ['Goku-bot', 'Sailor-bot', 'Eva-bot', 'Kirito-bot', 'Light-bot'];
 
-    controller.startGame({
+    ctrl.startGame({
       playerCount,
       botCount,
       playerNames: [params.playerName ?? 'Joueur', ...botNames.slice(0, botCount)],
@@ -51,7 +61,9 @@ export default function GameScreen() {
     });
   }, []);
 
-  const { view } = controller;
+  const { view } = ctrl;
+
+  // Loading
   if (!view) {
     return (
       <SafeAreaView style={styles.container}>
@@ -60,160 +72,196 @@ export default function GameScreen() {
     );
   }
 
-  // Game over
-  if (view.gameOver) {
-    const winnerName =
-      view.winner === view.myPlayer.id
-        ? view.myPlayer.name
-        : view.otherPlayers.find((p) => p.id === view.winner)?.name ?? 'Inconnu';
-    const isWinner = view.winner === view.myPlayer.id;
+  // Identity reveal overlay
+  if (ctrl.showIdentity) {
+    const rivalTarget = view.myPlayer.identity.type === 'rival'
+      ? view.otherPlayers[view.otherPlayers.length - 1]?.name
+      : undefined;
+    const mentorTarget = view.myPlayer.identity.type === 'mentor'
+      ? view.otherPlayers[0]?.name
+      : undefined;
 
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.gameOverContainer}>
+        <IdentityReveal
+          identityType={view.myPlayer.identity.type}
+          targetPlayerName={rivalTarget}
+          protectedPlayerName={mentorTarget}
+          onContinue={ctrl.dismissIdentity}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Game over
+  if (view.gameOver) {
+    const winnerIsMe = view.winner === view.myPlayer.id;
+    const winnerName = winnerIsMe
+      ? view.myPlayer.name
+      : view.otherPlayers.find(p => p.id === view.winner)?.name ?? '???';
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.gameOverBox}>
+          <Text style={styles.gameOverEmoji}>{winnerIsMe ? '🏆' : '💀'}</Text>
           <Text style={styles.gameOverTitle}>
-            {isWinner ? 'VICTOIRE !' : 'DEFAITE'}
+            {winnerIsMe ? 'VICTOIRE !' : 'DEFAITE'}
           </Text>
-          <Text style={styles.gameOverName}>{winnerName} gagne !</Text>
+          <Text style={styles.gameOverWinner}>{winnerName} gagne !</Text>
           <Text style={styles.gameOverIdentity}>
             Ton identite : {view.myPlayer.identity.type}
           </Text>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => router.replace('/')}
-          >
-            <Text style={styles.actionButtonText}>Retour au menu</Text>
+          <TouchableOpacity style={styles.primaryBtn} onPress={() => router.replace('/')}>
+            <Text style={styles.primaryBtnText}>Retour au menu</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const currentPlayerId = view.myPlayer.id === 'player-0'
-    ? `player-${view.currentPlayerIndex}`
-    : undefined;
-  const isMyTurn = controller.isMyTurn;
-  const isDefending = controller.waitingForDefense;
+  // Spied card overlay
+  if (ctrl.spiedCard) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.spyOverlay}>
+          <Text style={styles.spyTitle}>Carte espionnee :</Text>
+          <Card card={ctrl.spiedCard} />
+          <TouchableOpacity style={styles.primaryBtn} onPress={ctrl.dismissSpy}>
+            <Text style={styles.primaryBtnText}>OK</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-  // Handle card selection for attack
+  // Card press handler
   const onCardPress = (index: number) => {
-    if (actionMode === 'attack_select_card') {
+    if (actionMode === 'attack_pick_card') {
       setSelectedCardIndex(index);
-      setActionMode('attack_select_universe');
-    } else if (actionMode === 'train_select') {
-      controller.playTrain(index);
+      setActionMode('attack_pick_universe');
+    } else if (actionMode === 'train_pick') {
+      ctrl.playTrain(index);
       setActionMode('idle');
-    } else if (actionMode === 'defending' || isDefending) {
-      controller.playDefend(index);
-      setActionMode('idle');
+    } else if (ctrl.isDefending) {
+      ctrl.playDefend(index);
     }
   };
 
-  const onUniverseSelect = (universe: Universe) => {
-    setSelectedUniverse(universe);
-    setActionMode('attack_select_target');
+  const onUniverseSelect = (u: Universe) => {
+    setSelectedUniverse(u);
+    setActionMode('attack_pick_target');
   };
 
-  const onTargetSelect = (targetId: string) => {
-    if (selectedCardIndex !== null && selectedUniverse) {
-      controller.playAttack(selectedCardIndex, selectedUniverse, targetId);
+  const onTargetPress = (targetId: string) => {
+    if (actionMode === 'attack_pick_target' && selectedCardIndex !== null && selectedUniverse) {
+      ctrl.playAttack(selectedCardIndex, selectedUniverse, targetId);
       setActionMode('idle');
       setSelectedCardIndex(null);
       setSelectedUniverse(null);
+    } else if (actionMode === 'spy_pick') {
+      ctrl.playSpy(targetId);
+      setActionMode('idle');
     }
   };
 
-  const onSpyTarget = (targetId: string) => {
-    controller.playSpy(targetId);
+  const cancelAction = () => {
     setActionMode('idle');
+    setSelectedCardIndex(null);
+    setSelectedUniverse(null);
   };
+
+  // Status message
+  const getStatusMessage = (): string => {
+    if (ctrl.duelState) {
+      switch (ctrl.duelState.step) {
+        case 'defending_intro': return 'Tu es attaque ! Choisis une carte.';
+        default: return '';
+      }
+    }
+    if (ctrl.isDefending) return 'Tu es attaque ! Choisis une carte.';
+    if (!ctrl.isMyTurn) return 'En attente...';
+    switch (actionMode) {
+      case 'idle': return 'Ton tour ! Que veux-tu faire ?';
+      case 'attack_pick_card': return 'Choisis une carte a jouer.';
+      case 'attack_pick_universe': return 'Declare un univers (tu peux bluffer !)';
+      case 'attack_pick_target': return 'Choisis ta cible.';
+      case 'train_pick': return 'Choisis une carte a defausser.';
+      case 'spy_pick': return 'Choisis un joueur a espionner.';
+    }
+  };
+
+  const showTargetSelection = actionMode === 'attack_pick_target' || actionMode === 'spy_pick';
+  const isInDuel = ctrl.duelState !== null;
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Top: Other players */}
-      <ScrollView horizontal style={styles.opponentsRow} showsHorizontalScrollIndicator={false}>
+      {/* Turn bar */}
+      <View style={styles.turnBar}>
+        <Text style={styles.turnText}>
+          Tour {view.turnNumber} — {ctrl.isMyTurn ? 'Ton tour !' : 'En attente...'}
+        </Text>
+        <Text style={styles.deckText}>Pioche: {view.deckCount}</Text>
+      </View>
+
+      {/* Opponents */}
+      <ScrollView
+        horizontal
+        style={styles.opponentsScroll}
+        contentContainerStyle={styles.opponentsContent}
+        showsHorizontalScrollIndicator={false}
+      >
         {view.otherPlayers.map((p) => (
-          <TouchableOpacity
+          <OpponentCard
             key={p.id}
-            onPress={() => {
-              if (actionMode === 'attack_select_target') onTargetSelect(p.id);
-              else if (actionMode === 'spy_select') onSpyTarget(p.id);
-            }}
-            disabled={
-              p.eliminated ||
-              (actionMode !== 'attack_select_target' && actionMode !== 'spy_select')
-            }
-          >
-            <PlayerHUD
-              name={p.name}
-              plotArmor={p.plotArmor}
-              shields={p.shields}
-              cardCount={p.cardCount}
-              isCurrentPlayer={view.currentPlayerIndex === parseInt(p.id.split('-')[1])}
-              eliminated={p.eliminated}
-              identityRevealed={p.identityRevealed}
-              identityType={p.identityType}
-            />
-          </TouchableOpacity>
+            name={p.name}
+            plotArmor={p.plotArmor}
+            cardCount={p.cardCount}
+            shields={p.shields}
+            isCurrentTurn={view.currentPlayerIndex === parseInt(p.id.split('-')[1])}
+            eliminated={p.eliminated}
+            identityRevealed={p.identityRevealed}
+            identityType={p.identityType}
+            selectable={showTargetSelection && !p.eliminated}
+            onPress={() => onTargetPress(p.id)}
+          />
         ))}
       </ScrollView>
 
-      {/* Middle: Game area */}
-      <View style={styles.middle}>
+      {/* Main area */}
+      <View style={styles.mainArea}>
+        {/* Duel step-by-step display */}
+        {isInDuel && ctrl.duelState && ctrl.duelState.step !== 'defending_intro' && (
+          <DuelSteps
+            step={ctrl.duelState.step}
+            attackerName={ctrl.duelState.attackerName}
+            defenderName={ctrl.duelState.defenderName}
+            isPlayerAttacking={ctrl.duelState.isPlayerAttacking}
+            playerCard={ctrl.duelState.playerCard}
+            opponentCard={ctrl.duelState.opponentCard}
+            declaredUniverse={ctrl.duelState.declaredUniverse}
+            botReaction={ctrl.duelState.botReaction}
+            botReactionType={ctrl.duelState.botReactionType}
+            result={ctrl.duelState.result}
+            onContinue={ctrl.advanceDuel}
+            continueLabel={ctrl.duelState.step === 'result' ? 'OK' : 'Continuer'}
+          />
+        )}
+
         {/* Arc notification */}
-        {view.currentArc && (
+        {!isInDuel && view.currentArc && (
           <View style={styles.arcBanner}>
             <Text style={styles.arcName}>{view.currentArc.name}</Text>
             <Text style={styles.arcDesc}>{view.currentArc.description}</Text>
           </View>
         )}
 
-        {/* Duel display */}
-        {controller.duelPhase !== 'none' && view.pendingDuel && (
-          <DuelArena
-            attackerName={
-              view.pendingDuel.attackerId === view.myPlayer.id
-                ? view.myPlayer.name
-                : view.otherPlayers.find((p) => p.id === view.pendingDuel!.attackerId)?.name ?? '?'
-            }
-            defenderName={
-              view.pendingDuel.defenderId === view.myPlayer.id
-                ? view.myPlayer.name
-                : view.otherPlayers.find((p) => p.id === view.pendingDuel!.defenderId)?.name ?? '?'
-            }
-            declaredUniverse={view.pendingDuel.declaredUniverse}
-            result={controller.duelResult}
-            phase={
-              controller.duelPhase === 'declared'
-                ? 'declared'
-                : controller.duelPhase === 'responding'
-                  ? 'responding'
-                  : 'revealed'
-            }
-          />
+        {/* Status message */}
+        {!isInDuel && (
+          <Text style={styles.statusText}>{getStatusMessage()}</Text>
         )}
 
-        {/* Status message */}
-        <Text style={styles.statusText}>
-          {isDefending
-            ? 'Tu es attaque ! Choisis une carte pour te defendre.'
-            : isMyTurn && actionMode === 'idle'
-              ? 'Ton tour ! Choisis une action.'
-              : actionMode === 'attack_select_card'
-                ? 'Choisis une carte a jouer.'
-                : actionMode === 'attack_select_universe'
-                  ? 'Declare un univers (bluff possible !)'
-                  : actionMode === 'attack_select_target'
-                    ? 'Choisis ta cible.'
-                    : actionMode === 'train_select'
-                      ? 'Choisis une carte a defausser.'
-                      : actionMode === 'spy_select'
-                        ? 'Choisis un joueur a espionner.'
-                        : 'En attente...'}
-        </Text>
-
-        {/* Universe picker for attack declaration */}
-        {actionMode === 'attack_select_universe' && (
+        {/* Universe picker */}
+        {actionMode === 'attack_pick_universe' && (
           <UniversePicker
             selected={selectedUniverse}
             onSelect={onUniverseSelect}
@@ -221,84 +269,84 @@ export default function GameScreen() {
           />
         )}
 
-        {/* Spied card display */}
-        {controller.spiedCard && (
-          <View style={styles.spiedContainer}>
-            <Text style={styles.spiedText}>Carte espionnee :</Text>
-            <Card card={controller.spiedCard} />
-            <TouchableOpacity onPress={controller.dismissDuel}>
-              <Text style={styles.dismissText}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Game log */}
-        <GameLog entries={view.log} />
-      </View>
-
-      {/* Bottom: My hand + actions */}
-      <View style={styles.bottom}>
-        {/* Identity reminder */}
-        <View style={styles.identityBar}>
-          <Text style={styles.identityText}>
-            {view.myPlayer.identity.type} | PA: {view.myPlayer.plotArmor}
-            {view.myPlayer.shields > 0 ? ` | B: ${view.myPlayer.shields}` : ''}
-          </Text>
-          <TouchableOpacity onPress={() => setShowChart(!showChart)}>
-            <Text style={styles.chartToggle}>?</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Hand */}
-        <ScrollView horizontal style={styles.handRow} contentContainerStyle={styles.handContent}>
-          {view.myPlayer.hand.map((card, i) => (
-            <Card
-              key={card.id}
-              card={card}
-              selected={selectedCardIndex === i}
-              onPress={() => onCardPress(i)}
-            />
-          ))}
-        </ScrollView>
-
         {/* Action buttons */}
-        {(isMyTurn && actionMode === 'idle') && (
-          <View style={styles.actionRow}>
+        {ctrl.isMyTurn && actionMode === 'idle' && !isInDuel && (
+          <View style={styles.actionButtons}>
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.primary }]}
-              onPress={() => setActionMode('attack_select_card')}
+              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
+              onPress={() => setActionMode('attack_pick_card')}
             >
-              <Text style={styles.actionButtonText}>Attaquer</Text>
+              <Text style={styles.actionBtnLabel}>Attaquer</Text>
+              <Text style={styles.actionBtnDesc}>Choisis une carte et une cible</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.secondary }]}
-              onPress={() => setActionMode('train_select')}
-            >
-              <Text style={styles.actionButtonText}>S'entrainer</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.seinen }]}
-              onPress={() => setActionMode('spy_select')}
-            >
-              <Text style={styles.actionButtonText}>Espionner</Text>
-            </TouchableOpacity>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.actionBtnHalf, { backgroundColor: colors.secondary }]}
+                onPress={() => setActionMode('train_pick')}
+              >
+                <Text style={styles.actionBtnLabel}>S'entrainer</Text>
+                <Text style={styles.actionBtnDesc}>-1 carte, +2</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionBtnHalf, { backgroundColor: colors.seinen }]}
+                onPress={() => setActionMode('spy_pick')}
+              >
+                <Text style={styles.actionBtnLabel}>Espionner</Text>
+                <Text style={styles.actionBtnDesc}>Voir 1 carte</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
-        {/* Cancel button */}
-        {actionMode !== 'idle' && !isDefending && (
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => {
-              setActionMode('idle');
-              setSelectedCardIndex(null);
-              setSelectedUniverse(null);
-            }}
-          >
+        {/* Cancel */}
+        {actionMode !== 'idle' && !isInDuel && (
+          <TouchableOpacity style={styles.cancelBtn} onPress={cancelAction}>
             <Text style={styles.cancelText}>Annuler</Text>
           </TouchableOpacity>
         )}
+
+        {/* Game log */}
+        {!isInDuel && <GameLog entries={view.log} />}
       </View>
+
+      {/* Identity bar */}
+      <View style={styles.identityBar}>
+        <Text style={styles.identityText}>
+          {view.myPlayer.identity.type} | PA: {view.myPlayer.plotArmor}
+          {view.myPlayer.shields > 0 ? ` | B: ${view.myPlayer.shields}` : ''}
+        </Text>
+        <TouchableOpacity onPress={() => setShowChart(true)}>
+          <Text style={styles.helpButton}>?</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Player hand */}
+      <ScrollView
+        horizontal
+        style={styles.handScroll}
+        contentContainerStyle={styles.handContent}
+        showsHorizontalScrollIndicator={false}
+      >
+        {view.myPlayer.hand.map((card, i) => (
+          <Card
+            key={card.id}
+            card={card}
+            selected={selectedCardIndex === i}
+            onPress={() => onCardPress(i)}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Defending: show instruction */}
+      {(ctrl.isDefending || ctrl.duelState?.step === 'defending_intro') && (
+        <View style={styles.defendBanner}>
+          <Text style={styles.defendText}>
+            Choisis une carte pour te defendre !
+          </Text>
+        </View>
+      )}
 
       {/* Dominance chart modal */}
       <Modal visible={showChart} transparent animationType="fade">
@@ -309,6 +357,9 @@ export default function GameScreen() {
         >
           <View style={styles.modalContent}>
             <DominanceChart />
+            <TouchableOpacity style={styles.primaryBtn} onPress={() => setShowChart(false)}>
+              <Text style={styles.primaryBtnText}>Fermer</Text>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -327,21 +378,50 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 100,
   },
-  opponentsRow: {
+
+  // Turn bar
+  turnBar: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    maxHeight: 80,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.bgLight,
+    borderRadius: 10,
+    marginHorizontal: 12,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  middle: {
+  turnText: {
+    color: colors.accent,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  deckText: {
+    color: colors.textDim,
+    fontSize: 12,
+  },
+
+  // Opponents
+  opponentsScroll: {
+    maxHeight: 100,
+    marginTop: 8,
+  },
+  opponentsContent: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+
+  // Main area
+  mainArea: {
     flex: 1,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     gap: 8,
   },
   arcBanner: {
     backgroundColor: colors.secondary,
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 10,
+    padding: 12,
     alignItems: 'center',
   },
   arcName: {
@@ -352,100 +432,137 @@ const styles = StyleSheet.create({
   arcDesc: {
     color: colors.text,
     fontSize: fonts.sizes.sm,
+    marginTop: 2,
   },
   statusText: {
-    color: colors.accent,
-    fontSize: fonts.sizes.md,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  spiedContainer: {
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.bgLight,
-    padding: 16,
-    borderRadius: 8,
-  },
-  spiedText: {
     color: colors.text,
-    fontSize: fonts.sizes.md,
-  },
-  dismissText: {
-    color: colors.accent,
     fontSize: fonts.sizes.lg,
-    fontWeight: 'bold',
-  },
-  bottom: {
-    paddingHorizontal: 8,
-    paddingBottom: 8,
-  },
-  identityBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    marginBottom: 6,
-  },
-  identityText: {
-    color: colors.textDim,
-    fontSize: fonts.sizes.sm,
-  },
-  chartToggle: {
-    color: colors.accent,
-    fontSize: fonts.sizes.xl,
-    fontWeight: 'bold',
-    width: 32,
-    height: 32,
     textAlign: 'center',
-    lineHeight: 32,
-    borderRadius: 16,
-    backgroundColor: colors.bgLight,
+    fontWeight: 'bold',
+    paddingVertical: 4,
   },
-  handRow: {
-    maxHeight: 110,
+
+  // Action buttons
+  actionButtons: {
+    gap: 10,
   },
-  handContent: {
+  actionBtn: {
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    paddingHorizontal: 4,
+  },
+  actionBtnHalf: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
+    gap: 10,
   },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  actionButtonText: {
+  actionBtnLabel: {
     color: colors.text,
-    fontSize: fonts.sizes.md,
+    fontSize: 16,
     fontWeight: 'bold',
   },
-  cancelButton: {
-    marginTop: 8,
+  actionBtnDesc: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 11,
+    marginTop: 2,
+  },
+  cancelBtn: {
     paddingVertical: 10,
     alignItems: 'center',
   },
   cancelText: {
     color: colors.danger,
     fontSize: fonts.sizes.md,
+    fontWeight: '600',
   },
-  gameOverContainer: {
+
+  // Identity bar
+  identityBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 6,
+  },
+  identityText: {
+    color: colors.textDim,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  helpButton: {
+    color: colors.accent,
+    fontSize: 20,
+    fontWeight: 'bold',
+    width: 30,
+    height: 30,
+    textAlign: 'center',
+    lineHeight: 30,
+    backgroundColor: colors.bgLight,
+    borderRadius: 15,
+    overflow: 'hidden',
+  },
+
+  // Hand
+  handScroll: {
+    maxHeight: 110,
+    marginBottom: 8,
+  },
+  handContent: {
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  // Defend banner
+  defendBanner: {
+    backgroundColor: colors.danger,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  defendText: {
+    color: colors.text,
+    fontSize: fonts.sizes.md,
+    fontWeight: 'bold',
+  },
+
+  // Spy overlay
+  spyOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 20,
+  },
+  spyTitle: {
+    color: colors.text,
+    fontSize: fonts.sizes.xl,
+    fontWeight: 'bold',
+  },
+
+  // Game over
+  gameOverBox: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
     padding: 20,
-    gap: 16,
+  },
+  gameOverEmoji: {
+    fontSize: 64,
   },
   gameOverTitle: {
     fontSize: 48,
     fontWeight: 'bold',
     color: colors.accent,
   },
-  gameOverName: {
+  gameOverWinner: {
     fontSize: fonts.sizes.xl,
     color: colors.text,
   },
@@ -453,14 +570,31 @@ const styles = StyleSheet.create({
     fontSize: fonts.sizes.md,
     color: colors.textDim,
   },
+
+  // Shared
+  primaryBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  primaryBtnText: {
+    color: colors.text,
+    fontSize: fonts.sizes.lg,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
   },
   modalContent: {
     width: '85%',
     maxWidth: 350,
+    gap: 12,
+    alignItems: 'center',
   },
 });
