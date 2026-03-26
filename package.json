@@ -1,0 +1,8 @@
+{
+  "name": "nani-card-game",
+  "private": true,
+  "workspaces": [
+    "packages/engine",
+    "packages/app"
+  ]
+}
