@@ -2,6 +2,7 @@
   "expo": {
     "name": "NANI?!",
     "slug": "nani-card-game",
+    "owner": "darkschtroumpf",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -34,8 +35,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
-      }
+        "projectId": "543b1bc3-4683-46ba-a964-bbff8818c383"
+      },
+      "router": {}
     }
   }
 }
