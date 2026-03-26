@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
+import { ensureAuth, createGameRoom, joinGameRoom } from '../services/supabase';
+import { setNickname } from '../services/player';
 
 type BotDifficulty = 'easy' | 'medium' | 'hard';
 
@@ -13,6 +15,7 @@ export default function LobbyScreen() {
   const [botCount, setBotCount] = useState(3);
   const [difficulty, setDifficulty] = useState<BotDifficulty>('medium');
   const [roomCode, setRoomCode] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const startSoloGame = () => {
     const name = playerName.trim() || 'Joueur';
@@ -21,14 +24,40 @@ export default function LobbyScreen() {
     );
   };
 
-  const joinOnlineGame = () => {
-    // TODO: Supabase integration
-    router.push(`/game?mode=online&roomCode=${roomCode}&playerName=${playerName.trim() || 'Joueur'}`);
+  const joinOnlineGame = async () => {
+    if (roomCode.length < 4) return;
+    setLoading(true);
+    try {
+      await ensureAuth();
+      const nickname = playerName.trim() || 'Joueur';
+      await setNickname(nickname);
+      const game = await joinGameRoom(roomCode, nickname);
+      router.push(
+        `/room?gameId=${game.id}&code=${game.code}&isHost=false&difficulty=${difficulty}`,
+      );
+    } catch (e: any) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const createOnlineGame = () => {
-    // TODO: Supabase integration
-    router.push(`/game?mode=online&host=true&playerName=${playerName.trim() || 'Joueur'}&botCount=${botCount}`);
+  const createOnlineGame = async () => {
+    setLoading(true);
+    try {
+      await ensureAuth();
+      const nickname = playerName.trim() || 'Joueur';
+      await setNickname(nickname);
+      const maxPlayers = botCount + 4; // up to 4 humans + bots
+      const game = await createGameRoom(maxPlayers, botCount, difficulty, nickname);
+      router.push(
+        `/room?gameId=${game.id}&code=${game.code}&isHost=true&botCount=${botCount}&difficulty=${difficulty}`,
+      );
+    } catch (e: any) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -93,6 +122,58 @@ export default function LobbyScreen() {
       {mode === 'online' && (
         <>
           <View style={styles.field}>
+            <Text style={styles.label}>Nombre de bots : {botCount}</Text>
+            <View style={styles.row}>
+              {[0, 1, 2, 3].map((n) => (
+                <TouchableOpacity
+                  key={n}
+                  style={[styles.chip, botCount === n && styles.chipActive]}
+                  onPress={() => setBotCount(n)}
+                >
+                  <Text style={[styles.chipText, botCount === n && styles.chipTextActive]}>
+                    {n}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Difficulte des bots</Text>
+            <View style={styles.row}>
+              {(['easy', 'medium', 'hard'] as BotDifficulty[]).map((d) => (
+                <TouchableOpacity
+                  key={d}
+                  style={[styles.chip, difficulty === d && styles.chipActive]}
+                  onPress={() => setDifficulty(d)}
+                >
+                  <Text style={[styles.chipText, difficulty === d && styles.chipTextActive]}>
+                    {d === 'easy' ? 'Facile' : d === 'medium' ? 'Moyen' : 'Difficile'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={createOnlineGame}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.text} />
+            ) : (
+              <Text style={styles.startButtonText}>Creer une partie</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.separator}>
+            <View style={styles.line} />
+            <Text style={styles.separatorText}>ou</Text>
+            <View style={styles.line} />
+          </View>
+
+          <View style={styles.field}>
             <Text style={styles.label}>Rejoindre une partie</Text>
             <TextInput
               style={styles.input}
@@ -106,21 +187,15 @@ export default function LobbyScreen() {
             <TouchableOpacity
               style={[styles.startButton, styles.buttonSecondary]}
               onPress={joinOnlineGame}
-              disabled={roomCode.length < 4}
+              disabled={roomCode.length < 4 || loading}
             >
-              <Text style={styles.startButtonText}>Rejoindre</Text>
+              {loading ? (
+                <ActivityIndicator color={colors.text} />
+              ) : (
+                <Text style={styles.startButtonText}>Rejoindre</Text>
+              )}
             </TouchableOpacity>
           </View>
-
-          <View style={styles.separator}>
-            <View style={styles.line} />
-            <Text style={styles.separatorText}>ou</Text>
-            <View style={styles.line} />
-          </View>
-
-          <TouchableOpacity style={styles.startButton} onPress={createOnlineGame}>
-            <Text style={styles.startButtonText}>Creer une partie</Text>
-          </TouchableOpacity>
         </>
       )}
     </SafeAreaView>

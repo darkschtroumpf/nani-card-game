@@ -1,17 +1,25 @@
-// Simple key-value storage using a global Map + JSON
-// Persists within the app session. For true persistence across restarts,
-// we'll add proper storage later. This avoids native dependency issues.
-
-const store = new Map<string, string>();
+import * as SecureStore from 'expo-secure-store';
 
 export async function getItem(key: string): Promise<string | null> {
-  return store.get(key) ?? null;
+  try {
+    return await SecureStore.getItemAsync(key);
+  } catch {
+    return null;
+  }
 }
 
 export async function setItem(key: string, value: string): Promise<void> {
-  store.set(key, value);
+  try {
+    await SecureStore.setItemAsync(key, value);
+  } catch {
+    // Silently fail on platforms that don't support SecureStore (web)
+  }
 }
 
 export async function removeItem(key: string): Promise<void> {
-  store.delete(key);
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch {
+    // Silently fail
+  }
 }

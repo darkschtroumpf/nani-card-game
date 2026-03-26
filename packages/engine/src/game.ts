@@ -30,8 +30,11 @@ export function createGame(config: GameConfig): GameState {
 
   const players: Player[] = [];
   for (let i = 0; i < config.playerCount; i++) {
+    const isBot = config.botFlags
+      ? config.botFlags[i]
+      : i >= config.playerCount - config.botCount;
     players.push({
-      id: `player-${i}`,
+      id: config.playerIds?.[i] ?? `player-${i}`,
       name: config.playerNames[i] ?? `Joueur ${i + 1}`,
       hand: hands[i],
       plotArmor: STARTING_PLOT_ARMOR,
@@ -39,7 +42,7 @@ export function createGame(config: GameConfig): GameState {
       identity: identities[i],
       identityRevealed: false,
       eliminated: false,
-      isBot: i >= config.playerCount - config.botCount,
+      isBot,
       hasBluffed: false,
       damagedPlayerIds: new Set<string>(),
       eliminatedPlayerIds: [],

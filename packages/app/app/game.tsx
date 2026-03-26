@@ -23,32 +23,15 @@ import IdentityReveal from '../components/IdentityReveal';
 import type { Universe } from '../../engine/src/types';
 import type { BotDifficulty } from '../../engine/src/ai/bot';
 import { useGameController } from '../hooks/useGameController';
+import { useOnlineHostController } from '../hooks/useOnlineHostController';
+import { useOnlineGuestController } from '../hooks/useOnlineGuestController';
+import type { GameController } from '../hooks/useGameController';
 
-type ActionMode =
-  | 'idle'
-  | 'attack_pick_card'
-  | 'attack_pick_universe'
-  | 'attack_pick_target'
-  | 'train_pick'
-  | 'spy_pick';
+// --- Mode-specific wrappers (each calls exactly one hook) ---
 
-export default function GameScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{
-    mode: string;
-    playerName: string;
-    botCount: string;
-    difficulty: string;
-  }>();
-
+function SoloGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
   const ctrl = useGameController();
-  const [actionMode, setActionMode] = useState<ActionMode>('idle');
-  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
-  const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
-  const [showChart, setShowChart] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [showTutorial, setShowTutorial] = useState(true);
 
   useEffect(() => {
     if (initialized) return;
@@ -66,13 +49,77 @@ export default function GameScreen() {
     });
   }, []);
 
+  return <>{children(ctrl)}</>;
+}
+
+function OnlineHostGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
+  const ctrl = useOnlineHostController({
+    gameId: params.gameId ?? '',
+    botCount: parseInt(params.botCount ?? '0', 10),
+    difficulty: (params.difficulty as BotDifficulty) ?? 'medium',
+  });
+  return <>{children(ctrl)}</>;
+}
+
+function OnlineGuestGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
+  const ctrl = useOnlineGuestController({
+    gameId: params.gameId ?? '',
+  });
+  return <>{children(ctrl)}</>;
+}
+
+// --- Main screen ---
+
+export default function GameScreen() {
+  const params = useLocalSearchParams<{
+    mode: string;
+    playerName: string;
+    botCount: string;
+    difficulty: string;
+    gameId: string;
+    isHost: string;
+  }>();
+
+  const isOnline = params.mode === 'online';
+  const isHost = params.isHost === 'true';
+
+  const Wrapper = isOnline
+    ? (isHost ? OnlineHostGame : OnlineGuestGame)
+    : SoloGame;
+
+  return (
+    <Wrapper params={params}>
+      {(ctrl) => <GameUI ctrl={ctrl} isOnline={isOnline} />}
+    </Wrapper>
+  );
+}
+
+type ActionMode =
+  | 'idle'
+  | 'attack_pick_card'
+  | 'attack_pick_universe'
+  | 'attack_pick_target'
+  | 'train_pick'
+  | 'spy_pick';
+
+function GameUI({ ctrl, isOnline }: { ctrl: GameController; isOnline: boolean }) {
+  const router = useRouter();
+  const [actionMode, setActionMode] = useState<ActionMode>('idle');
+  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
+  const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
+  const [showChart, setShowChart] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(!isOnline);
+
   const { view } = ctrl;
 
   // Loading
   if (!view) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>Chargement...</Text>
+        <Text style={styles.loadingText}>
+          {isOnline ? 'Connexion...' : 'Chargement...'}
+        </Text>
       </SafeAreaView>
     );
   }
@@ -198,7 +245,7 @@ export default function GameScreen() {
       }
     }
     if (ctrl.isDefending) return 'Tu es attaque ! Choisis une carte.';
-    if (!ctrl.isMyTurn) return 'En attente...';
+    if (!ctrl.isMyTurn) return isOnline ? 'En attente des autres joueurs...' : 'En attente...';
     switch (actionMode) {
       case 'idle': return 'Ton tour ! Que veux-tu faire ?';
       case 'attack_pick_card': return 'Choisis une carte a jouer.';
@@ -236,7 +283,7 @@ export default function GameScreen() {
             plotArmor={p.plotArmor}
             cardCount={p.cardCount}
             shields={p.shields}
-            isCurrentTurn={view.currentPlayerIndex === parseInt(p.id.split('-')[1])}
+            isCurrentTurn={view.currentPlayerIndex === parseInt(p.id.split('-')[1]) || false}
             eliminated={p.eliminated}
             identityRevealed={p.identityRevealed}
             identityType={p.identityType}

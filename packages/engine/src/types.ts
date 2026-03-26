@@ -187,6 +187,8 @@ export interface GameConfig {
   playerCount: number;
   botCount: number;
   playerNames: string[];
+  playerIds?: string[];       // optional custom IDs (for online play with Supabase UUIDs)
+  botFlags?: boolean[];       // optional per-player bot flag (for online mixed human/bot)
 }
 
 // --- Filtered state (what a player can see) ---

@@ -1,8 +1,14 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '../theme';
+import { ensureAuth } from '../services/supabase';
 
 export default function RootLayout() {
+  useEffect(() => {
+    ensureAuth().catch(() => {});
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
@@ -16,6 +22,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="lobby" options={{ title: 'Lobby' }} />
+        <Stack.Screen name="room" options={{ title: 'Salle d\'attente' }} />
         <Stack.Screen
           name="game"
           options={{ headerShown: false, gestureEnabled: false }}
