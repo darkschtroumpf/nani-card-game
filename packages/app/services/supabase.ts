@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // Supabase project: vcachzgxpjqylcekawzw
 // Get the anon key from: Supabase Dashboard > Settings > API > anon/public (JWT format)
 const SUPABASE_URL = 'https://vcachzgxpjqylcekawzw.supabase.co';
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjYWNoemd4cGpxeWxjZWthd3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzM3ODQsImV4cCI6MjA5MDEwOTc4NH0.6MmzPoVUPjvWANtFxb57UnSpjY4rLvLrHQfaDpmb94I';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
