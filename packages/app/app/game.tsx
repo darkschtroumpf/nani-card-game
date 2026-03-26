@@ -1,273 +1,230 @@
 import { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts } from '../theme';
-import AnimatedCard from '../components/AnimatedCard';
-import OpponentCard from '../components/OpponentCard';
-import DuelSteps from '../components/DuelSteps';
-import Tutorial, { TOTAL_TUTORIAL_STEPS } from '../components/Tutorial';
-import { tapFeedback, playCardFeedback, impactFeedback, warningFeedback } from '../services/feedback';
-import { recordGameEnd } from '../services/stats';
-import DominanceChart from '../components/DominanceChart';
-import UniversePicker from '../components/UniversePicker';
+import { colors, fonts, universeColor } from '../theme';
+import { useDojoController } from '../hooks/useDojoController';
+import type { DojoGameController, DojoGameConfig } from '../hooks/useDojoController';
+import type { Archetype, Universe, TurnPhase } from '../../engine/src/dojo/types';
+import { UNIVERSES } from '../../engine/src/dojo/types';
+import PhaseIndicator from '../components/PhaseIndicator';
+import OpponentHUD from '../components/OpponentHUD';
+import DojoMarket from '../components/DojoMarket';
+import FieldView from '../components/FieldView';
+import DojoCard from '../components/DojoCard';
+import ResourceBar from '../components/ResourceBar';
 import GameLog from '../components/GameLog';
-import IdentityReveal from '../components/IdentityReveal';
-import type { Universe } from '../../engine/src/types';
-import type { BotDifficulty } from '../../engine/src/ai/bot';
-import { useGameController } from '../hooks/useGameController';
-import { useOnlineHostController } from '../hooks/useOnlineHostController';
-import { useOnlineGuestController } from '../hooks/useOnlineGuestController';
-import type { GameController } from '../hooks/useGameController';
+import CombatScene from '../components/CombatScene';
+import type { CombatStep } from '../components/CombatScene';
+import { tapFeedback, impactFeedback, warningFeedback } from '../services/feedback';
 
-// --- Mode-specific wrappers (each calls exactly one hook) ---
+// ============================================================
+// Wrapper — solo only for now
+// ============================================================
 
-function SoloGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
-  const ctrl = useGameController();
+function DojoSoloGame({ params, children }: { params: any; children: (ctrl: DojoGameController) => React.ReactNode }) {
+  const ctrl = useDojoController();
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (initialized) return;
     setInitialized(true);
-
-    const botCount = parseInt(params.botCount ?? '3', 10);
-    const playerCount = botCount + 1;
-    const botNames = ['Goku-bot', 'Sailor-bot', 'Eva-bot', 'Kirito-bot', 'Light-bot'];
-
     ctrl.startGame({
-      playerCount,
-      botCount,
-      playerNames: [params.playerName ?? 'Joueur', ...botNames.slice(0, botCount)],
-      difficulty: (params.difficulty as BotDifficulty) ?? 'medium',
+      playerName: params.playerName ?? 'Joueur',
+      playerArchetype: (params.archetype as Archetype) ?? 'shonen_blitz',
+      botCount: parseInt(params.botCount ?? '4', 10),
     });
   }, []);
 
   return <>{children(ctrl)}</>;
 }
 
-function OnlineHostGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
-  const ctrl = useOnlineHostController({
-    gameId: params.gameId ?? '',
-    botCount: parseInt(params.botCount ?? '0', 10),
-    difficulty: (params.difficulty as BotDifficulty) ?? 'medium',
-  });
-  return <>{children(ctrl)}</>;
-}
-
-function OnlineGuestGame({ params, children }: { params: any; children: (ctrl: GameController) => React.ReactNode }) {
-  const ctrl = useOnlineGuestController({
-    gameId: params.gameId ?? '',
-  });
-  return <>{children(ctrl)}</>;
-}
-
-// --- Main screen ---
-
 export default function GameScreen() {
   const params = useLocalSearchParams<{
-    mode: string;
-    playerName: string;
-    botCount: string;
-    difficulty: string;
-    gameId: string;
-    isHost: string;
+    mode: string; playerName: string; botCount: string;
+    archetype: string; gameId: string; isHost: string;
   }>();
 
-  const isOnline = params.mode === 'online';
-  const isHost = params.isHost === 'true';
-
-  const Wrapper = isOnline
-    ? (isHost ? OnlineHostGame : OnlineGuestGame)
-    : SoloGame;
-
   return (
-    <Wrapper params={params}>
-      {(ctrl) => <GameUI ctrl={ctrl} isOnline={isOnline} />}
-    </Wrapper>
+    <DojoSoloGame params={params}>
+      {(ctrl) => <DojoGameUI ctrl={ctrl} />}
+    </DojoSoloGame>
   );
 }
 
+// ============================================================
+// Action Mode State Machine
+// ============================================================
+
 type ActionMode =
   | 'idle'
-  | 'attack_pick_card'
-  | 'attack_pick_universe'
-  | 'attack_pick_target'
-  | 'train_pick'
-  | 'spy_pick';
+  | 'deploy_pick_card'
+  | 'deploy_pick_slot'
+  | 'deploy_concealed_choice'
+  | 'trap_pick_card'
+  | 'trap_pick_slot'
+  | 'equip_pick_card'
+  | 'equip_pick_slot'
+  | 'combat_pick_attacker'
+  | 'combat_pick_target_player'
+  | 'combat_pick_target_slot'
+  | 'combat_declare_universe';
 
-function GameUI({ ctrl, isOnline }: { ctrl: GameController; isOnline: boolean }) {
+// ============================================================
+// Main Game UI
+// ============================================================
+
+function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const router = useRouter();
+  const { view, turnPhase, combatStep, combatEvents, isMyTurn } = ctrl;
+
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
-  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
-  const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
-  const [showChart, setShowChart] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [showTutorial, setShowTutorial] = useState(!isOnline);
-
-  const { view } = ctrl;
-
-  // Record stats on game over — MUST be before any conditional return
-  useEffect(() => {
-    if (view?.gameOver && view.winner) {
-      const won = view.winner === view.myPlayer.id;
-      recordGameEnd(won, view.myPlayer.identity.type);
-    }
-  }, [view?.gameOver]);
+  const [selectedHandIndex, setSelectedHandIndex] = useState<number | null>(null);
+  const [selectedFieldSlot, setSelectedFieldSlot] = useState<number | null>(null);
+  const [selectedTargetPlayer, setSelectedTargetPlayer] = useState<string | null>(null);
+  const [selectedTargetSlot, setSelectedTargetSlot] = useState<number | null>(null);
 
   // Loading
   if (!view) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>
-          {isOnline ? 'Connexion...' : 'Chargement...'}
-        </Text>
+        <Text style={styles.loadingText}>Chargement...</Text>
       </SafeAreaView>
     );
   }
 
-  // Identity reveal overlay
-  if (ctrl.showIdentity) {
-    const rivalTarget = view.myPlayer.identity.type === 'rival'
-      ? view.otherPlayers[view.otherPlayers.length - 1]?.name
-      : undefined;
-    const mentorTarget = view.myPlayer.identity.type === 'mentor'
-      ? view.otherPlayers[0]?.name
-      : undefined;
+  const me = view.me;
+  const isGameOver = me.lp <= 0 || (view as any).me === undefined;
+  const gameState = ctrl.view;
 
-    return (
-      <SafeAreaView style={styles.container}>
-        <IdentityReveal
-          identityType={view.myPlayer.identity.type}
-          targetPlayerName={rivalTarget}
-          protectedPlayerName={mentorTarget}
-          onContinue={ctrl.dismissIdentity}
-        />
-      </SafeAreaView>
-    );
+  // Game Over
+  if (view.turnPhase === undefined && ctrl.gameStarted) {
+    // Fallback game over detection
   }
 
-  // Game over
-  if (view.gameOver) {
-    const winnerIsMe = view.winner === view.myPlayer.id;
-    const winnerName = winnerIsMe
-      ? view.myPlayer.name
-      : view.otherPlayers.find(p => p.id === view.winner)?.name ?? '???';
+  // --- Handlers ---
 
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.gameOverBox}>
-          <Text style={styles.gameOverEmoji}>{winnerIsMe ? '🏆' : '💀'}</Text>
-          <Text style={styles.gameOverTitle}>
-            {winnerIsMe ? 'VICTOIRE !' : 'DEFAITE'}
-          </Text>
-          <Text style={styles.gameOverWinner}>{winnerName} gagne !</Text>
-          <Text style={styles.gameOverIdentity}>
-            Ton identite : {view.myPlayer.identity.type}
-          </Text>
-          <TouchableOpacity style={styles.primaryBtn} onPress={() => router.replace('/')}>
-            <Text style={styles.primaryBtnText}>Retour au menu</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const resetAction = () => {
+    setActionMode('idle');
+    setSelectedHandIndex(null);
+    setSelectedFieldSlot(null);
+    setSelectedTargetPlayer(null);
+    setSelectedTargetSlot(null);
+  };
 
-  // Spied card overlay
-  if (ctrl.spiedCard) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.spyOverlay}>
-          <Text style={styles.spyTitle}>Carte espionnee :</Text>
-          <AnimatedCard card={ctrl.spiedCard} flipIn delay={300} />
-          <TouchableOpacity style={styles.primaryBtn} onPress={ctrl.dismissSpy}>
-            <Text style={styles.primaryBtnText}>OK</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Card press handler
-  const onCardPress = (index: number) => {
+  const onHandCardPress = (index: number) => {
     tapFeedback();
-    if (actionMode === 'attack_pick_card') {
-      setSelectedCardIndex(index);
-      setActionMode('attack_pick_universe');
-    } else if (actionMode === 'train_pick') {
-      playCardFeedback();
-      ctrl.playTrain(index);
-      setActionMode('idle');
-    } else if (ctrl.isDefending) {
-      playCardFeedback();
-      ctrl.playDefend(index);
+    const card = me.hand[index];
+
+    if (actionMode === 'deploy_pick_card' && card.card.type === 'fighter') {
+      setSelectedHandIndex(index);
+      setActionMode('deploy_pick_slot');
+    } else if (actionMode === 'trap_pick_card') {
+      setSelectedHandIndex(index);
+      setActionMode('trap_pick_slot');
+    } else if (actionMode === 'equip_pick_card' && card.card.type === 'equipment') {
+      setSelectedHandIndex(index);
+      setActionMode('equip_pick_slot');
+    }
+  };
+
+  const onMyFieldSlotPress = (slot: number) => {
+    tapFeedback();
+    if (actionMode === 'deploy_pick_slot' && selectedHandIndex !== null) {
+      setSelectedFieldSlot(slot);
+      setActionMode('deploy_concealed_choice');
+    } else if (actionMode === 'equip_pick_slot' && selectedHandIndex !== null) {
+      ctrl.doEquip(selectedHandIndex, slot, false);
+      resetAction();
+    } else if (actionMode === 'combat_pick_attacker' && me.field[slot].fighter) {
+      setSelectedFieldSlot(slot);
+      setActionMode('combat_pick_target_player');
+    }
+  };
+
+  const onTrapSlotPress = (slot: number) => {
+    if (actionMode === 'trap_pick_slot' && selectedHandIndex !== null) {
+      ctrl.doSetTrap(selectedHandIndex, slot);
+      resetAction();
+    }
+  };
+
+  const onDeployConcealedChoice = (concealed: boolean) => {
+    if (selectedHandIndex !== null && selectedFieldSlot !== null) {
+      impactFeedback();
+      ctrl.doDeployFighter(selectedHandIndex, selectedFieldSlot, concealed);
+      resetAction();
+    }
+  };
+
+  const onOpponentPress = (oppId: string) => {
+    if (actionMode === 'combat_pick_target_player') {
+      setSelectedTargetPlayer(oppId);
+      const opp = view.opponents.find(o => o.id === oppId);
+      const hasFighters = opp?.field.some(s => s.hasFighter);
+      if (!hasFighters) {
+        // Direct attack — go to universe declaration
+        setSelectedTargetSlot(null);
+        setActionMode('combat_declare_universe');
+      } else {
+        setActionMode('combat_pick_target_slot');
+      }
+    }
+  };
+
+  const onOpponentSlotPress = (slot: number) => {
+    if (actionMode === 'combat_pick_target_slot') {
+      setSelectedTargetSlot(slot);
+      setActionMode('combat_declare_universe');
     }
   };
 
   const onUniverseSelect = (u: Universe) => {
-    tapFeedback();
-    setSelectedUniverse(u);
-    setActionMode('attack_pick_target');
-  };
-
-  const onTargetPress = (targetId: string) => {
-    if (actionMode === 'attack_pick_target' && selectedCardIndex !== null && selectedUniverse) {
+    if (actionMode === 'combat_declare_universe' && selectedFieldSlot !== null && selectedTargetPlayer) {
       impactFeedback();
-      ctrl.playAttack(selectedCardIndex, selectedUniverse, targetId);
-      setActionMode('idle');
-      setSelectedCardIndex(null);
-      setSelectedUniverse(null);
-    } else if (actionMode === 'spy_pick') {
-      tapFeedback();
-      ctrl.playSpy(targetId);
-      setActionMode('idle');
+      ctrl.selectAttack(selectedFieldSlot, selectedTargetPlayer, selectedTargetSlot, u);
+      resetAction();
     }
   };
 
-  const cancelAction = () => {
-    setActionMode('idle');
-    setSelectedCardIndex(null);
-    setSelectedUniverse(null);
+  // --- Status message ---
+  const getStatus = (): string => {
+    if (!isMyTurn && !combatStep) return 'En attente...';
+    switch (turnPhase) {
+      case 'dojo': return 'Phase Dojo — Achete, medite ou passe';
+      case 'deploy':
+        switch (actionMode) {
+          case 'deploy_pick_card': return 'Choisis un fighter dans ta main';
+          case 'deploy_pick_slot': return 'Choisis un emplacement sur le terrain';
+          case 'deploy_concealed_choice': return 'Face visible ou cachee?';
+          case 'trap_pick_card': return 'Choisis une carte a poser comme piege';
+          case 'trap_pick_slot': return 'Choisis un emplacement piege';
+          case 'equip_pick_card': return 'Choisis un equipement';
+          case 'equip_pick_slot': return 'Choisis un fighter a equiper';
+          default: return 'Phase Deploy — Deploie tes cartes';
+        }
+      case 'combat_select':
+        switch (actionMode) {
+          case 'combat_pick_attacker': return 'Choisis ton attaquant';
+          case 'combat_pick_target_player': return 'Choisis ta cible';
+          case 'combat_pick_target_slot': return 'Choisis le fighter adverse';
+          case 'combat_declare_universe': return 'Declare un univers (tu peux bluffer!)';
+          default: return 'Phase Combat — Attaque ou passe';
+        }
+      default: return '';
+    }
   };
 
-  // Status message
-  const getStatusMessage = (): string => {
-    if (ctrl.duelState) {
-      switch (ctrl.duelState.step) {
-        case 'defending_intro': return 'Tu es attaque ! Choisis une carte.';
-        default: return '';
-      }
-    }
-    if (ctrl.isDefending) return 'Tu es attaque ! Choisis une carte.';
-    if (!ctrl.isMyTurn) return isOnline ? 'En attente des autres joueurs...' : 'En attente...';
-    switch (actionMode) {
-      case 'idle': return 'Ton tour ! Que veux-tu faire ?';
-      case 'attack_pick_card': return 'Choisis une carte a jouer.';
-      case 'attack_pick_universe': return 'Declare un univers (tu peux bluffer !)';
-      case 'attack_pick_target': return 'Choisis ta cible.';
-      case 'train_pick': return 'Choisis une carte a defausser.';
-      case 'spy_pick': return 'Choisis un joueur a espionner.';
-    }
-  };
-
-  const showTargetSelection = actionMode === 'attack_pick_target' || actionMode === 'spy_pick';
-  const isInDuel = ctrl.duelState !== null;
+  // --- Render ---
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Turn bar */}
-      <View style={styles.turnBar}>
-        <Text style={styles.turnText}>
-          Tour {view.turnNumber} — {ctrl.isMyTurn ? 'Ton tour !' : 'En attente...'}
-        </Text>
-        <Text style={styles.deckText}>Pioche: {view.deckCount}</Text>
-      </View>
+      {/* Phase indicator */}
+      {turnPhase && (
+        <PhaseIndicator phase={turnPhase} turnNumber={view.turnNumber} />
+      )}
 
       {/* Opponents */}
       <ScrollView
@@ -276,406 +233,315 @@ function GameUI({ ctrl, isOnline }: { ctrl: GameController; isOnline: boolean })
         contentContainerStyle={styles.opponentsContent}
         showsHorizontalScrollIndicator={false}
       >
-        {view.otherPlayers.map((p) => (
-          <OpponentCard
-            key={p.id}
-            name={p.name}
-            plotArmor={p.plotArmor}
-            cardCount={p.cardCount}
-            shields={p.shields}
-            isCurrentTurn={view.currentPlayerIndex === parseInt(p.id.split('-')[1]) || false}
-            eliminated={p.eliminated}
-            identityRevealed={p.identityRevealed}
-            identityType={p.identityType}
-            selectable={showTargetSelection && !p.eliminated}
-            onPress={() => onTargetPress(p.id)}
+        {view.opponents.map((opp) => (
+          <OpponentHUD
+            key={opp.id}
+            opponent={opp}
+            isCurrentTurn={view.currentPlayerIndex === parseInt(opp.id.replace('p', ''))}
+            isTargetable={actionMode === 'combat_pick_target_player' && opp.lp > 0}
+            onPress={() => onOpponentPress(opp.id)}
           />
         ))}
       </ScrollView>
 
+      {/* Opponent target field (when selecting target slot) */}
+      {actionMode === 'combat_pick_target_slot' && selectedTargetPlayer && (
+        <View style={styles.targetField}>
+          <Text style={styles.targetLabel}>Choisis le fighter a attaquer :</Text>
+          <View style={styles.targetSlots}>
+            {view.opponents.find(o => o.id === selectedTargetPlayer)?.field.map((slot, i) => (
+              <TouchableOpacity
+                key={i}
+                style={[styles.targetSlot, slot.hasFighter && styles.targetSlotActive]}
+                onPress={() => slot.hasFighter && onOpponentSlotPress(i)}
+                disabled={!slot.hasFighter}
+              >
+                {slot.hasFighter ? (
+                  <DojoCard card={slot.fighter ?? undefined} concealed={slot.concealed} small />
+                ) : (
+                  <Text style={styles.targetSlotEmpty}>Vide</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+
       {/* Main area */}
       <View style={styles.mainArea}>
-        {/* Duel step-by-step display */}
-        {isInDuel && ctrl.duelState && ctrl.duelState.step !== 'defending_intro' && (
-          <DuelSteps
-            step={ctrl.duelState.step}
-            attackerName={ctrl.duelState.attackerName}
-            defenderName={ctrl.duelState.defenderName}
-            isPlayerAttacking={ctrl.duelState.isPlayerAttacking}
-            playerCard={ctrl.duelState.playerCard}
-            opponentCard={ctrl.duelState.opponentCard}
-            declaredUniverse={ctrl.duelState.declaredUniverse}
-            botReaction={ctrl.duelState.botReaction}
-            botReactionType={ctrl.duelState.botReactionType}
-            result={ctrl.duelState.result}
-            onContinue={ctrl.advanceDuel}
-            continueLabel={ctrl.duelState.step === 'result' ? 'OK' : 'Continuer'}
+        {/* Status */}
+        {!combatStep && (
+          <Text style={styles.statusText}>{getStatus()}</Text>
+        )}
+
+        {/* DOJO PHASE */}
+        {turnPhase === 'dojo' && isMyTurn && !combatStep && (
+          <DojoMarket
+            dojoCards={view.dojo.cards}
+            onBuy={(i) => { tapFeedback(); ctrl.dojoBuy(i); }}
+            onMeditate={() => { tapFeedback(); ctrl.dojoMeditate(); }}
+            onSkip={() => { tapFeedback(); ctrl.dojoSkip(); }}
+            playerKi={me.ki}
+            disabled={false}
           />
         )}
 
-        {/* Arc notification */}
-        {!isInDuel && view.currentArc && (
-          <View style={styles.arcBanner}>
-            <Text style={styles.arcName}>{view.currentArc.name}</Text>
-            <Text style={styles.arcDesc}>{view.currentArc.description}</Text>
+        {/* DEPLOY PHASE */}
+        {turnPhase === 'deploy' && isMyTurn && !combatStep && (
+          <>
+            {/* My field */}
+            <FieldView
+              field={me.field}
+              traps={me.traps}
+              targetableSlots={
+                actionMode === 'deploy_pick_slot'
+                  ? me.field.map((s, i) => !s.fighter ? i : -1).filter(i => i >= 0)
+                  : actionMode === 'equip_pick_slot'
+                  ? me.field.map((s, i) => s.fighter && !s.fighter.attachedEquipment ? i : -1).filter(i => i >= 0)
+                  : undefined
+              }
+              onSlotPress={onMyFieldSlotPress}
+            />
+
+            {/* Concealed choice */}
+            {actionMode === 'deploy_concealed_choice' && (
+              <View style={styles.concealedChoice}>
+                <TouchableOpacity style={styles.concealBtn} onPress={() => onDeployConcealedChoice(false)}>
+                  <Text style={styles.concealBtnText}>Face visible</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.concealBtn, styles.concealBtnHidden]} onPress={() => onDeployConcealedChoice(true)}>
+                  <Text style={styles.concealBtnText}>Face cachee (-1 Ki)</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Deploy action buttons */}
+            {actionMode === 'idle' && (
+              <View style={styles.deployActions}>
+                <TouchableOpacity style={styles.deployBtn} onPress={() => setActionMode('deploy_pick_card')}>
+                  <Text style={styles.deployBtnText}>Deployer Fighter</Text>
+                </TouchableOpacity>
+                <View style={styles.deployRow}>
+                  <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('trap_pick_card')}>
+                    <Text style={styles.deployBtnText}>Piege</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('equip_pick_card')}>
+                    <Text style={styles.deployBtnText}>Equiper</Text>
+                  </TouchableOpacity>
+                </View>
+                {me.hand.some(c => c.card.type === 'signature') && (
+                  <TouchableOpacity
+                    style={[styles.deployBtn, { backgroundColor: colors.accent }]}
+                    onPress={() => {
+                      const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
+                      if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
+                    }}
+                  >
+                    <Text style={[styles.deployBtnText, { color: colors.bg }]}>Signature!</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.endDeploy()}>
+                  <Text style={styles.endPhaseText}>Fin du deploiement</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* COMBAT SELECT PHASE */}
+        {turnPhase === 'combat_select' && isMyTurn && !combatStep && (
+          <>
+            {actionMode === 'idle' && (
+              <View style={styles.deployActions}>
+                <TouchableOpacity
+                  style={[styles.deployBtn, { backgroundColor: colors.primary }]}
+                  onPress={() => setActionMode('combat_pick_attacker')}
+                >
+                  <Text style={styles.deployBtnText}>Attaquer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.skipCombat()}>
+                  <Text style={styles.endPhaseText}>Passer le combat</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* My field for attacker selection */}
+            {actionMode === 'combat_pick_attacker' && (
+              <FieldView
+                field={me.field}
+                traps={me.traps}
+                targetableSlots={me.field.map((s, i) => s.fighter ? i : -1).filter(i => i >= 0)}
+                onSlotPress={onMyFieldSlotPress}
+              />
+            )}
+
+            {/* Universe declaration */}
+            {actionMode === 'combat_declare_universe' && (
+              <View style={styles.universeGrid}>
+                <Text style={styles.universeTitle}>Declare un univers:</Text>
+                {UNIVERSES.map((u) => (
+                  <TouchableOpacity
+                    key={u}
+                    style={[styles.universeBtn, { backgroundColor: universeColor(u as any) }]}
+                    onPress={() => onUniverseSelect(u)}
+                  >
+                    <Text style={styles.universeBtnText}>{u.toUpperCase()}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* WAITING / OTHER PHASES */}
+        {!isMyTurn && !combatStep && turnPhase !== 'combat_response' && (
+          <View style={styles.waitingArea}>
+            <FieldView field={me.field} traps={me.traps} />
           </View>
         )}
 
-        {/* Status message */}
-        {!isInDuel && (
-          <Text style={styles.statusText}>{getStatusMessage()}</Text>
-        )}
-
-        {/* Universe picker */}
-        {actionMode === 'attack_pick_universe' && (
-          <UniversePicker
-            selected={selectedUniverse}
-            onSelect={onUniverseSelect}
-            label="Declare ton univers"
-          />
-        )}
-
-        {/* Action buttons */}
-        {ctrl.isMyTurn && actionMode === 'idle' && !isInDuel && (
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-              onPress={() => setActionMode('attack_pick_card')}
-            >
-              <Text style={styles.actionBtnLabel}>Attaquer</Text>
-              <Text style={styles.actionBtnDesc}>Choisis une carte et une cible</Text>
-            </TouchableOpacity>
-
-            <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.actionBtnHalf, { backgroundColor: colors.secondary }]}
-                onPress={() => setActionMode('train_pick')}
-              >
-                <Text style={styles.actionBtnLabel}>S'entrainer</Text>
-                <Text style={styles.actionBtnDesc}>-1 carte, +2</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.actionBtnHalf, { backgroundColor: colors.seinen }]}
-                onPress={() => setActionMode('spy_pick')}
-              >
-                <Text style={styles.actionBtnLabel}>Espionner</Text>
-                <Text style={styles.actionBtnDesc}>Voir 1 carte</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* Cancel */}
-        {actionMode !== 'idle' && !isInDuel && (
-          <TouchableOpacity style={styles.cancelBtn} onPress={cancelAction}>
+        {/* Cancel button */}
+        {actionMode !== 'idle' && !combatStep && (
+          <TouchableOpacity style={styles.cancelBtn} onPress={resetAction}>
             <Text style={styles.cancelText}>Annuler</Text>
           </TouchableOpacity>
         )}
 
         {/* Game log */}
-        {!isInDuel && <GameLog entries={view.log} />}
+        {!combatStep && <GameLog entries={view.log} />}
       </View>
 
-      {/* Identity bar */}
-      <View style={styles.identityBar}>
-        <Text style={styles.identityText}>
-          {view.myPlayer.identity.type} | PA: {view.myPlayer.plotArmor}
-          {view.myPlayer.shields > 0 ? ` | B: ${view.myPlayer.shields}` : ''}
-        </Text>
-        <TouchableOpacity onPress={() => setShowChart(true)}>
-          <Text style={styles.helpButton}>?</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Resource bar */}
+      <ResourceBar
+        lp={me.lp}
+        ki={me.ki}
+        maxKi={me.maxKi}
+        focus={me.focus}
+      />
 
-      {/* Player hand */}
+      {/* Hand */}
       <ScrollView
         horizontal
         style={styles.handScroll}
         contentContainerStyle={styles.handContent}
         showsHorizontalScrollIndicator={false}
       >
-        {view.myPlayer.hand.map((card, i) => (
-          <AnimatedCard
-            key={card.id}
-            card={card}
-            selected={selectedCardIndex === i}
-            onPress={() => onCardPress(i)}
-          />
-        ))}
+        {me.hand.map((card, i) => {
+          const selectable =
+            (actionMode === 'deploy_pick_card' && card.card.type === 'fighter') ||
+            (actionMode === 'trap_pick_card') ||
+            (actionMode === 'equip_pick_card' && card.card.type === 'equipment');
+          return (
+            <DojoCard
+              key={card.instanceId}
+              instance={card}
+              selected={selectedHandIndex === i}
+              onPress={selectable ? () => onHandCardPress(i) : undefined}
+              disabled={!selectable && actionMode !== 'idle'}
+            />
+          );
+        })}
       </ScrollView>
 
-      {/* Defending: show instruction */}
-      {(ctrl.isDefending || ctrl.duelState?.step === 'defending_intro') && (
-        <View style={styles.defendBanner}>
-          <Text style={styles.defendText}>
-            Choisis une carte pour te defendre !
-          </Text>
-        </View>
-      )}
-
-      {/* Tutorial overlay */}
-      {showTutorial && tutorialStep < TOTAL_TUTORIAL_STEPS && (
-        <Tutorial
-          step={tutorialStep}
-          onNext={() => {
-            if (tutorialStep >= TOTAL_TUTORIAL_STEPS - 1) {
-              setShowTutorial(false);
-            } else {
-              setTutorialStep(tutorialStep + 1);
-            }
-          }}
-          onSkip={() => setShowTutorial(false)}
+      {/* Combat overlay */}
+      {combatStep && (
+        <CombatScene
+          step={combatStep}
+          attackerName={
+            view.opponents.find(o => o.id === view.combat?.attackerId)?.name ??
+            (view.combat?.attackerId === me.id ? me.name : '???')
+          }
+          defenderName={
+            view.opponents.find(o => o.id === view.combat?.defenderId)?.name ??
+            (view.combat?.defenderId === me.id ? me.name : '???')
+          }
+          declaredUniverse={view.combat?.declaredUniverse ?? 'shonen'}
+          attackerConcealed={
+            view.opponents.find(o => o.id === view.combat?.attackerId)
+              ?.field[view.combat?.attackerSlot ?? 0]?.concealed ?? false
+          }
+          naniCalled={view.combat?.naniCalled ?? false}
+          events={combatEvents}
+          isDefender={view.combat?.defenderId === me.id}
+          canCallNani={true}
+          onContinue={ctrl.advanceCombat}
+          onNaniCall={() => { warningFeedback(); ctrl.doCallNani(); }}
+          onPassDefense={() => ctrl.passDefense()}
         />
       )}
 
-      {/* Dominance chart modal */}
-      <Modal visible={showChart} transparent animationType="fade">
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          onPress={() => setShowChart(false)}
-          activeOpacity={1}
-        >
-          <View style={styles.modalContent}>
-            <DominanceChart />
-            <TouchableOpacity style={styles.primaryBtn} onPress={() => setShowChart(false)}>
-              <Text style={styles.primaryBtnText}>Fermer</Text>
+      {/* Game over overlay */}
+      {me.lp <= 0 && ctrl.gameStarted && (
+        <View style={styles.gameOverOverlay}>
+          <View style={styles.gameOverBox}>
+            <Text style={styles.gameOverEmoji}>💀</Text>
+            <Text style={styles.gameOverTitle}>DEFAITE</Text>
+            <TouchableOpacity style={styles.menuBtn} onPress={() => router.replace('/')}>
+              <Text style={styles.menuBtnText}>Menu</Text>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </Modal>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
+// ============================================================
+// Styles
+// ============================================================
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  loadingText: {
-    color: colors.text,
-    fontSize: fonts.sizes.xl,
-    textAlign: 'center',
-    marginTop: 100,
-  },
+  container: { flex: 1, backgroundColor: colors.bg },
+  loadingText: { color: colors.text, fontSize: fonts.sizes.xl, textAlign: 'center', marginTop: 100 },
 
-  // Turn bar
-  turnBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.bgLight,
-    borderRadius: 10,
-    marginHorizontal: 12,
-    marginTop: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  turnText: {
-    color: colors.accent,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  deckText: {
-    color: colors.textDim,
-    fontSize: 12,
-  },
+  opponentsScroll: { maxHeight: 90, marginTop: 4 },
+  opponentsContent: { paddingHorizontal: 8, gap: 6 },
 
-  // Opponents
-  opponentsScroll: {
-    maxHeight: 100,
-    marginTop: 8,
-  },
-  opponentsContent: {
-    paddingHorizontal: 12,
-    gap: 8,
-  },
+  mainArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 4, gap: 6 },
+  statusText: { color: colors.text, fontSize: fonts.sizes.md, textAlign: 'center', fontWeight: 'bold', paddingVertical: 2 },
 
-  // Main area
-  mainArea: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  arcBanner: {
-    backgroundColor: colors.secondary,
-    borderRadius: 10,
-    padding: 12,
-    alignItems: 'center',
-  },
-  arcName: {
-    color: colors.accent,
-    fontSize: fonts.sizes.lg,
-    fontWeight: 'bold',
-  },
-  arcDesc: {
-    color: colors.text,
-    fontSize: fonts.sizes.sm,
-    marginTop: 2,
-  },
-  statusText: {
-    color: colors.text,
-    fontSize: fonts.sizes.lg,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    paddingVertical: 4,
-  },
+  // Deploy
+  deployActions: { gap: 8 },
+  deployBtn: { backgroundColor: colors.secondary, paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
+  deployBtnHalf: { flex: 1, backgroundColor: colors.bgCard, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
+  deployBtnText: { color: colors.text, fontSize: fonts.sizes.md, fontWeight: 'bold' },
+  deployRow: { flexDirection: 'row', gap: 8 },
+  endPhaseBtn: { paddingVertical: 10, alignItems: 'center' },
+  endPhaseText: { color: colors.textDim, fontSize: fonts.sizes.md },
 
-  // Action buttons
-  actionButtons: {
-    gap: 10,
-  },
-  actionBtn: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  actionBtnHalf: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionBtnLabel: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  actionBtnDesc: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  cancelBtn: {
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: colors.danger,
-    fontSize: fonts.sizes.md,
-    fontWeight: '600',
-  },
+  concealedChoice: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+  concealBtn: { backgroundColor: colors.success, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 10 },
+  concealBtnHidden: { backgroundColor: colors.bgCard },
+  concealBtnText: { color: colors.text, fontSize: fonts.sizes.md, fontWeight: 'bold' },
 
-  // Identity bar
-  identityBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 6,
-  },
-  identityText: {
-    color: colors.textDim,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  helpButton: {
-    color: colors.accent,
-    fontSize: 20,
-    fontWeight: 'bold',
-    width: 30,
-    height: 30,
-    textAlign: 'center',
-    lineHeight: 30,
-    backgroundColor: colors.bgLight,
-    borderRadius: 15,
-    overflow: 'hidden',
-  },
+  // Combat target
+  targetField: { alignItems: 'center', gap: 6 },
+  targetLabel: { color: colors.accent, fontSize: fonts.sizes.md, fontWeight: 'bold' },
+  targetSlots: { flexDirection: 'row', gap: 8 },
+  targetSlot: { borderRadius: 8, padding: 2 },
+  targetSlotActive: { borderWidth: 2, borderColor: colors.accent },
+  targetSlotEmpty: { color: colors.textDark, fontSize: fonts.sizes.sm },
+
+  // Universe picker
+  universeGrid: { alignItems: 'center', gap: 8 },
+  universeTitle: { color: colors.text, fontSize: fonts.sizes.lg, fontWeight: 'bold' },
+  universeBtn: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, width: '80%', alignItems: 'center' },
+  universeBtnText: { color: '#fff', fontSize: fonts.sizes.md, fontWeight: 'bold' },
+
+  waitingArea: { alignItems: 'center', paddingVertical: 8 },
+
+  cancelBtn: { paddingVertical: 8, alignItems: 'center' },
+  cancelText: { color: colors.danger, fontSize: fonts.sizes.md, fontWeight: '600' },
 
   // Hand
-  handScroll: {
-    maxHeight: 110,
-    marginBottom: 8,
-  },
-  handContent: {
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    gap: 4,
-  },
-
-  // Defend banner
-  defendBanner: {
-    backgroundColor: colors.danger,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  defendText: {
-    color: colors.text,
-    fontSize: fonts.sizes.md,
-    fontWeight: 'bold',
-  },
-
-  // Spy overlay
-  spyOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-  },
-  spyTitle: {
-    color: colors.text,
-    fontSize: fonts.sizes.xl,
-    fontWeight: 'bold',
-  },
+  handScroll: { maxHeight: 112, marginBottom: 6 },
+  handContent: { paddingHorizontal: 10, alignItems: 'center', gap: 4 },
 
   // Game over
-  gameOverBox: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-    padding: 20,
-  },
-  gameOverEmoji: {
-    fontSize: 64,
-  },
-  gameOverTitle: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: colors.accent,
-  },
-  gameOverWinner: {
-    fontSize: fonts.sizes.xl,
-    color: colors.text,
-  },
-  gameOverIdentity: {
-    fontSize: fonts.sizes.md,
-    color: colors.textDim,
-  },
-
-  // Shared
-  primaryBtn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  primaryBtnText: {
-    color: colors.text,
-    fontSize: fonts.sizes.lg,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.75)',
-  },
-  modalContent: {
-    width: '85%',
-    maxWidth: 350,
-    gap: 12,
-    alignItems: 'center',
-  },
+  gameOverOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center', zIndex: 200 },
+  gameOverBox: { alignItems: 'center', gap: 12 },
+  gameOverEmoji: { fontSize: 64 },
+  gameOverTitle: { fontSize: 48, fontWeight: 'bold', color: colors.primary },
+  menuBtn: { backgroundColor: colors.primary, paddingVertical: 14, paddingHorizontal: 40, borderRadius: 10 },
+  menuBtnText: { color: colors.text, fontSize: fonts.sizes.lg, fontWeight: 'bold' },
 });

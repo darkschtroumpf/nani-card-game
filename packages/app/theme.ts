@@ -22,6 +22,18 @@ export const colors = {
   warning: '#ff9800',
   shield: '#29b6f6',
   plotArmor: '#ffd700',
+
+  // Card types
+  fighter: '#2196f3',
+  technique: '#ab47bc',
+  trap: '#ef5350',
+  equipment: '#ffc107',
+  signature: '#ffd700',
+
+  // Resources
+  ki: '#42a5f5',
+  focus: '#ffab00',
+  lp: '#e94560',
 } as const;
 
 export const fonts = {

@@ -1,89 +1,88 @@
-import { ScrollView, Text, StyleSheet, View } from 'react-native';
+import { ScrollView, View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
-import DominanceChart from '../components/DominanceChart';
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </View>
+  );
+}
+
+function P({ children }: { children: string }) {
+  return <Text style={styles.text}>{children}</Text>;
+}
 
 export default function RulesScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Comment jouer</Text>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={styles.title}>NANI?! Dojo</Text>
+        <Text style={styles.subtitle}>Regles du jeu</Text>
 
-        <Section title="But du jeu">
-          Sois le dernier survivant ou accomplis ton objectif secret !
+        <Section title="Objectif">
+          <P>Reduis les LP de tes adversaires a 0, ou controle 3 univers differents sur ton terrain (Convergence Multiverse).</P>
         </Section>
 
-        <Section title="A ton tour">
-          {'1. Tu pioches 1 carte\n2. Tu choisis une action :\n   - Attaquer un joueur\n   - S\'entrainer (defausse 1, pioche 2)\n   - Espionner (voir 1 carte adverse)'}
+        <Section title="Ressources">
+          <P>LP (50) — Tes points de vie. A 0 tu es elimine.</P>
+          <P>Ki (2-7) — Energie pour jouer des cartes. +1 max par tour, se recharge chaque tour.</P>
+          <P>Focus (0+) — Ressource speciale pour les Signatures. Gagne +1 en gagnant un duel, +2 en meditant.</P>
         </Section>
 
-        <Section title="Le duel">
-          {"L'attaquant pose une carte face cachee et declare un univers (il peut mentir !).\nLe defenseur choisit sa carte en reaction.\nRevelation : l'univers dominant donne +3. Le plus haut total gagne."}
+        <Section title="Types de cartes">
+          <P>Fighter (cout 1-4 Ki) — ATK/HP. Deploie sur le terrain (max 3). Peut etre pose face cachee (-1 Ki).</P>
+          <P>Technique (cout 1-2 Ki) — Effet instantane. Jouable en reaction pendant un combat.</P>
+          <P>Piege (cout 1 Ki) — Pose face cachee. Se declenche quand tu es attaque. N'importe quelle carte peut etre posee comme faux piege!</P>
+          <P>Equipement (cout 1-2 Ki) — Buff permanent sur un fighter. Detruit avec le fighter.</P>
+          <P>Signature (cout Ki + Focus) — Ultra puissant, 1 par deck. Unique a chaque archetype.</P>
         </Section>
 
-        <Section title="Bonus de victoire">
-          {'Shonen : pioche 1 carte\nMagical : +1 Plot Armor\nMecha : +1 Bouclier (max 2)\nIsekai : vole la carte adverse\nSeinen : regarde identite ou 2 cartes'}
+        <Section title="Dominance">
+          <P>Shonen &gt; Magical &gt; Mecha &gt; Isekai &gt; Seinen &gt; Shonen</P>
+          <P>Bonus dominance: +3 ATK quand ton univers domine celui de l'adversaire.</P>
         </Section>
 
-        <View style={styles.chartWrapper}>
-          <DominanceChart />
-        </View>
-
-        <Section title="Cartes speciales">
-          {"Le 1 (Outsider) : perd contre tout SAUF le 7 qu'il bat. Si le 1 gagne, l'adversaire revele son identite.\n\nLe 7 (Ultra) : carte la plus forte. Double le bonus d'univers. Mais vulnerable au 1 !"}
+        <Section title="Tour de jeu">
+          <P>1. Ki — +1 max Ki, recharge, pioche 1 carte.</P>
+          <P>2. Dojo — Achete une carte au marche, medite (+2 Focus), ou passe.</P>
+          <P>3. Deploy — Deploie fighters, pose pieges, equipe, active ta Signature.</P>
+          <P>4. Combat — Attaque un adversaire (1 attaque max).</P>
+          <P>5. Fin — Defausse a 7 cartes, check victoire.</P>
         </Section>
 
-        <Section title="Identites secretes">
-          {"Protagoniste : etre le dernier survivant\nRival : eliminer le joueur qui te precede\nMentor : proteger un joueur choisi (ou le venger)\nTraitre : eliminer 2+ joueurs et survivre\nComic Relief : gagner sans jamais bluffer\nAntagoniste : infliger des degats a tous"}
+        <Section title="Combat">
+          <P>Choisis un attaquant et une cible. Declare un univers (tu peux mentir si ton fighter est cache!).</P>
+          <P>Le defenseur peut jouer une technique ou appeler NANI?!</P>
+          <P>NANI?! — Si l'attaquant bluffait: son fighter est detruit! Sinon: le defenseur perd 3 LP.</P>
+          <P>Les deux fighters infligent leurs degats simultanement. Les degats en exces vont aux LP.</P>
         </Section>
 
-        <Section title="Arcs Narratifs">
-          {"Toutes les 3 tours, un evenement change les regles temporairement : Tournament Arc (attaque obligatoire), Beach Episode (pas d'attaque), Plot Twist (mains redistribuees), etc."}
+        <Section title="Le Dojo (marche)">
+          <P>3 cartes visibles en permanence. Tout le monde voit ce que tu achetes (mais pas ton Deck Sensei secret!).</P>
+          <P>C'est le coeur du deckbuilding: adapte ta strategie en cours de partie.</P>
+        </Section>
+
+        <Section title="5 couches de bluff">
+          <P>1. Ton Deck Sensei est secret — personne ne connait ta base.</P>
+          <P>2. Fighters caches — deployes face cachee pour la surprise.</P>
+          <P>3. Declaration d'univers — tu peux mentir!</P>
+          <P>4. Faux pieges — pose n'importe quelle carte comme piege.</P>
+          <P>5. Le Dojo — ce que tu achetes ne revele pas tout.</P>
         </Section>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Section({ title, children }: { title: string; children: string }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Text style={styles.sectionText}>{children}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  content: {
-    padding: 20,
-    gap: 16,
-  },
-  title: {
-    fontSize: fonts.sizes.xxl,
-    fontWeight: 'bold',
-    color: colors.primary,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  section: {
-    gap: 6,
-  },
-  sectionTitle: {
-    fontSize: fonts.sizes.lg,
-    fontWeight: 'bold',
-    color: colors.accent,
-  },
-  sectionText: {
-    fontSize: fonts.sizes.md,
-    color: colors.textDim,
-    lineHeight: 22,
-  },
-  chartWrapper: {
-    marginVertical: 4,
-  },
+  container: { flex: 1, backgroundColor: colors.bg },
+  scroll: { padding: 20, paddingBottom: 40 },
+  title: { fontSize: fonts.sizes.title, fontWeight: 'bold', color: colors.primary, textAlign: 'center' },
+  subtitle: { fontSize: fonts.sizes.lg, color: colors.textDim, textAlign: 'center', marginBottom: 20 },
+  section: { marginBottom: 20 },
+  sectionTitle: { fontSize: fonts.sizes.lg, fontWeight: 'bold', color: colors.accent, marginBottom: 8 },
+  text: { color: colors.text, fontSize: fonts.sizes.md, lineHeight: 22, marginBottom: 4 },
 });
