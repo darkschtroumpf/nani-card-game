@@ -20,7 +20,9 @@ export default function RootLayout() {
           name="game"
           options={{ headerShown: false, gestureEnabled: false }}
         />
-        <Stack.Screen name="result" options={{ title: 'Résultat', headerBackVisible: false }} />
+        <Stack.Screen name="rules" options={{ title: 'Regles' }} />
+        <Stack.Screen name="stats" options={{ title: 'Statistiques' }} />
+        <Stack.Screen name="result" options={{ title: 'Resultat', headerBackVisible: false }} />
       </Stack>
     </>
   );

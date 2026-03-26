@@ -30,16 +30,24 @@ export default function HomeScreen() {
           <Text style={styles.buttonDesc}>Joue avec des amis</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.buttonSecondary]}
-          onPress={() => router.push('/rules')}
-        >
-          <Text style={styles.buttonText}>Regles</Text>
-          <Text style={styles.buttonDesc}>Comment jouer</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomRow}>
+          <TouchableOpacity
+            style={[styles.buttonSmall, styles.buttonSecondary]}
+            onPress={() => router.push('/rules')}
+          >
+            <Text style={styles.buttonTextSmall}>Regles</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.buttonSmall, styles.buttonSecondary]}
+            onPress={() => router.push('/stats')}
+          >
+            <Text style={styles.buttonTextSmall}>Stats</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <Text style={styles.version}>v1.0.0</Text>
+      <Text style={styles.version}>v0.2.0</Text>
     </SafeAreaView>
   );
 }
@@ -81,6 +89,22 @@ const styles = StyleSheet.create({
   },
   buttonOnline: {
     backgroundColor: colors.secondary,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  buttonSmall: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonTextSmall: {
+    color: colors.text,
+    fontSize: fonts.sizes.lg,
+    fontWeight: 'bold',
   },
   buttonSecondary: {
     backgroundColor: 'transparent',

@@ -10,9 +10,12 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts } from '../theme';
-import Card from '../components/Card';
+import AnimatedCard from '../components/AnimatedCard';
 import OpponentCard from '../components/OpponentCard';
 import DuelSteps from '../components/DuelSteps';
+import Tutorial, { TOTAL_TUTORIAL_STEPS } from '../components/Tutorial';
+import { tapFeedback, playCardFeedback, impactFeedback, warningFeedback } from '../services/feedback';
+import { recordGameEnd } from '../services/stats';
 import DominanceChart from '../components/DominanceChart';
 import UniversePicker from '../components/UniversePicker';
 import GameLog from '../components/GameLog';
@@ -44,6 +47,8 @@ export default function GameScreen() {
   const [selectedUniverse, setSelectedUniverse] = useState<Universe | null>(null);
   const [showChart, setShowChart] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(true);
 
   useEffect(() => {
     if (initialized) return;
@@ -125,7 +130,7 @@ export default function GameScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.spyOverlay}>
           <Text style={styles.spyTitle}>Carte espionnee :</Text>
-          <Card card={ctrl.spiedCard} />
+          <AnimatedCard card={ctrl.spiedCard} flipIn delay={300} />
           <TouchableOpacity style={styles.primaryBtn} onPress={ctrl.dismissSpy}>
             <Text style={styles.primaryBtnText}>OK</Text>
           </TouchableOpacity>
@@ -134,31 +139,45 @@ export default function GameScreen() {
     );
   }
 
+  // Record stats on game over
+  useEffect(() => {
+    if (view?.gameOver && view.winner) {
+      const won = view.winner === view.myPlayer.id;
+      recordGameEnd(won, view.myPlayer.identity.type);
+    }
+  }, [view?.gameOver]);
+
   // Card press handler
   const onCardPress = (index: number) => {
+    tapFeedback();
     if (actionMode === 'attack_pick_card') {
       setSelectedCardIndex(index);
       setActionMode('attack_pick_universe');
     } else if (actionMode === 'train_pick') {
+      playCardFeedback();
       ctrl.playTrain(index);
       setActionMode('idle');
     } else if (ctrl.isDefending) {
+      playCardFeedback();
       ctrl.playDefend(index);
     }
   };
 
   const onUniverseSelect = (u: Universe) => {
+    tapFeedback();
     setSelectedUniverse(u);
     setActionMode('attack_pick_target');
   };
 
   const onTargetPress = (targetId: string) => {
     if (actionMode === 'attack_pick_target' && selectedCardIndex !== null && selectedUniverse) {
+      impactFeedback();
       ctrl.playAttack(selectedCardIndex, selectedUniverse, targetId);
       setActionMode('idle');
       setSelectedCardIndex(null);
       setSelectedUniverse(null);
     } else if (actionMode === 'spy_pick') {
+      tapFeedback();
       ctrl.playSpy(targetId);
       setActionMode('idle');
     }
@@ -330,7 +349,7 @@ export default function GameScreen() {
         showsHorizontalScrollIndicator={false}
       >
         {view.myPlayer.hand.map((card, i) => (
-          <Card
+          <AnimatedCard
             key={card.id}
             card={card}
             selected={selectedCardIndex === i}
@@ -346,6 +365,21 @@ export default function GameScreen() {
             Choisis une carte pour te defendre !
           </Text>
         </View>
+      )}
+
+      {/* Tutorial overlay */}
+      {showTutorial && tutorialStep < TOTAL_TUTORIAL_STEPS && (
+        <Tutorial
+          step={tutorialStep}
+          onNext={() => {
+            if (tutorialStep >= TOTAL_TUTORIAL_STEPS - 1) {
+              setShowTutorial(false);
+            } else {
+              setTutorialStep(tutorialStep + 1);
+            }
+          }}
+          onSkip={() => setShowTutorial(false)}
+        />
       )}
 
       {/* Dominance chart modal */}
