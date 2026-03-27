@@ -154,6 +154,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
     } else if (actionMode === 'equip_pick_card' && card.card.type === 'equipment') {
       setSelectedHandIndex(index);
       setActionMode('equip_pick_slot');
+    } else if (actionMode === 'equip_pick_card' && card.card.type !== 'equipment') {
+      // Wrong card type — ignore but give feedback
     }
   };
 
@@ -383,7 +385,18 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
               return (
                 <View style={styles.deployActions}>
                   {canDeployFighter && (
-                    <TouchableOpacity style={styles.deployBtn} onPress={() => setActionMode('deploy_pick_card')}>
+                    <TouchableOpacity style={styles.deployBtn} onPress={() => {
+                      const fighters = me.hand.map((c, i) => ({ c, i })).filter(x => x.c.card.type === 'fighter' && x.c.card.kiCost <= me.ki);
+                      const emptySlots = me.field.map((s, i) => ({ s, i })).filter(x => !x.s.fighter);
+                      if (fighters.length === 1 && emptySlots.length === 1) {
+                        // Auto-select card and slot, just ask concealed
+                        setSelectedHandIndex(fighters[0].i);
+                        setSelectedFieldSlot(emptySlots[0].i);
+                        setActionMode('deploy_concealed_choice');
+                      } else {
+                        setActionMode('deploy_pick_card');
+                      }
+                    }}>
                       <Text style={styles.deployBtnText}>Deployer Fighter</Text>
                     </TouchableOpacity>
                   )}
@@ -394,7 +407,17 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                       </TouchableOpacity>
                     )}
                     {canEquip && (
-                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('equip_pick_card')}>
+                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => {
+                        // Auto-equip if only one equipment and one valid fighter
+                        const equipCards = me.hand.map((c, i) => ({ c, i })).filter(x => x.c.card.type === 'equipment' && x.c.card.kiCost <= me.ki);
+                        const validSlots = me.field.map((s, i) => ({ s, i })).filter(x => x.s.fighter && !x.s.fighter.attachedEquipment);
+                        if (equipCards.length === 1 && validSlots.length === 1) {
+                          tapFeedback();
+                          ctrl.doEquip(equipCards[0].i, validSlots[0].i, false);
+                        } else {
+                          setActionMode('equip_pick_card');
+                        }
+                      }}>
                         <Text style={styles.deployBtnText}>Equiper</Text>
                       </TouchableOpacity>
                     )}
