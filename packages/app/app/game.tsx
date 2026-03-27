@@ -187,6 +187,7 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         resetAction();
       }
       return;
+    }
   };
 
   const onMyFieldSlotPress = (slot: number) => {
