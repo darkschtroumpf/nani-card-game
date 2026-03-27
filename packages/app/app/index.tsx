@@ -31,6 +31,14 @@ export default function HomeScreen() {
           <Text style={styles.buttonDesc}>Joue avec des amis</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: colors.bgCard }]}
+          onPress={() => router.push('/deckbuilder')}
+        >
+          <Text style={styles.buttonText}>Deck Builder</Text>
+          <Text style={styles.buttonDesc}>Explore les archetypes</Text>
+        </TouchableOpacity>
+
         <View style={styles.bottomRow}>
           <TouchableOpacity
             style={[styles.buttonSmall, styles.buttonSecondary]}

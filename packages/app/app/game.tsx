@@ -6,6 +6,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, fonts, universeColor } from '../theme';
 import { useDojoController } from '../hooks/useDojoController';
+import { useDojoOnlineHost } from '../hooks/useDojoOnlineHost';
+import { useDojoOnlineGuest } from '../hooks/useDojoOnlineGuest';
 import type { DojoGameController, DojoGameConfig } from '../hooks/useDojoController';
 import type { Archetype, Universe, TurnPhase } from '../../engine/src/dojo/types';
 import { UNIVERSES } from '../../engine/src/dojo/types';
@@ -18,10 +20,11 @@ import ResourceBar from '../components/ResourceBar';
 import GameLog from '../components/GameLog';
 import CombatScene from '../components/CombatScene';
 import type { CombatStep } from '../components/CombatScene';
-import { tapFeedback, impactFeedback, warningFeedback } from '../services/feedback';
+import { tapFeedback, impactFeedback, warningFeedback, playCardFeedback, successFeedback } from '../services/feedback';
+import DojoTutorial, { DOJO_TUTORIAL_STEPS } from '../components/DojoTutorial';
 
 // ============================================================
-// Wrapper — solo only for now
+// Wrappers — one hook per mode (Rules of Hooks safe)
 // ============================================================
 
 function DojoSoloGame({ params, children }: { params: any; children: (ctrl: DojoGameController) => React.ReactNode }) {
@@ -41,16 +44,37 @@ function DojoSoloGame({ params, children }: { params: any; children: (ctrl: Dojo
   return <>{children(ctrl)}</>;
 }
 
+function DojoOnlineHostGame({ params, children }: { params: any; children: (ctrl: DojoGameController) => React.ReactNode }) {
+  const ctrl = useDojoOnlineHost({
+    gameId: params.gameId ?? '',
+    botCount: parseInt(params.botCount ?? '2', 10),
+    playerArchetype: (params.archetype as Archetype) ?? 'shonen_blitz',
+  });
+  return <>{children(ctrl)}</>;
+}
+
+function DojoOnlineGuestGame({ params, children }: { params: any; children: (ctrl: DojoGameController) => React.ReactNode }) {
+  const ctrl = useDojoOnlineGuest({ gameId: params.gameId ?? '' });
+  return <>{children(ctrl)}</>;
+}
+
 export default function GameScreen() {
   const params = useLocalSearchParams<{
     mode: string; playerName: string; botCount: string;
     archetype: string; gameId: string; isHost: string;
   }>();
 
+  const isOnline = params.mode === 'online';
+  const isHost = params.isHost === 'true';
+
+  const Wrapper = isOnline
+    ? (isHost ? DojoOnlineHostGame : DojoOnlineGuestGame)
+    : DojoSoloGame;
+
   return (
-    <DojoSoloGame params={params}>
+    <Wrapper params={params}>
       {(ctrl) => <DojoGameUI ctrl={ctrl} />}
-    </DojoSoloGame>
+    </Wrapper>
   );
 }
 
@@ -81,6 +105,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const { view, turnPhase, combatStep, combatEvents, isMyTurn } = ctrl;
 
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(true);
   const [selectedHandIndex, setSelectedHandIndex] = useState<number | null>(null);
   const [selectedFieldSlot, setSelectedFieldSlot] = useState<number | null>(null);
   const [selectedTargetPlayer, setSelectedTargetPlayer] = useState<string | null>(null);
@@ -481,6 +507,18 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
             </TouchableOpacity>
           </View>
         </View>
+      )}
+
+      {/* Tutorial */}
+      {showTutorial && tutorialStep < DOJO_TUTORIAL_STEPS && (
+        <DojoTutorial
+          step={tutorialStep}
+          onNext={() => {
+            if (tutorialStep >= DOJO_TUTORIAL_STEPS - 1) setShowTutorial(false);
+            else setTutorialStep(tutorialStep + 1);
+          }}
+          onSkip={() => setShowTutorial(false)}
+        />
       )}
     </SafeAreaView>
   );

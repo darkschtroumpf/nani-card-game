@@ -23,6 +23,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="lobby" options={{ title: 'Lobby' }} />
         <Stack.Screen name="room" options={{ title: 'Salle d\'attente' }} />
+        <Stack.Screen name="deckbuilder" options={{ title: 'Deck Builder' }} />
         <Stack.Screen
           name="game"
           options={{ headerShown: false, gestureEnabled: false }}

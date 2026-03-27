@@ -15,6 +15,7 @@ import {
 } from '../../engine/src/dojo/bot';
 import type { BotMemory } from '../../engine/src/dojo/bot';
 import type { CombatStep } from '../components/CombatScene';
+import { tapFeedback, playCardFeedback, impactFeedback, warningFeedback, successFeedback, errorFeedback } from '../services/feedback';
 
 // ============================================================
 // Types
@@ -257,6 +258,7 @@ export function useDojoController(): DojoGameController {
     if (!s || s.turnPhase !== 'dojo') return;
     processDojoBuy(s, slotIndex);
     s.turnPhase = 'deploy';
+    playCardFeedback();
     syncView(s);
   }, [syncView]);
 
@@ -303,6 +305,7 @@ export function useDojoController(): DojoGameController {
     if (!s || s.turnPhase !== 'deploy') return;
     const evts = activateSignature(s, handIndex);
     addEvents(evts);
+    successFeedback();
     syncView(s);
   }, [syncView, addEvents]);
 
@@ -349,6 +352,7 @@ export function useDojoController(): DojoGameController {
     const s = stateRef.current;
     if (!s || !s.combat) return;
     callNani(s);
+    impactFeedback();
     setCombatStep('reveal');
     const evts = resolveCombat(s);
     setCombatEvents(evts);
