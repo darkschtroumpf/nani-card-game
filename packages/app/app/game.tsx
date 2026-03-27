@@ -146,17 +146,32 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
     const card = me.hand[index];
 
     if (actionMode === 'deploy_pick_card' && card.card.type === 'fighter') {
-      setSelectedHandIndex(index);
-      setActionMode('deploy_pick_slot');
+      // Auto-pick first empty slot (no slot choice needed)
+      const emptySlot = me.field.findIndex(s => !s.fighter);
+      if (emptySlot >= 0) {
+        setSelectedHandIndex(index);
+        setSelectedFieldSlot(emptySlot);
+        setActionMode('deploy_concealed_choice');
+      }
+      return;
     } else if (actionMode === 'trap_pick_card') {
-      setSelectedHandIndex(index);
-      setActionMode('trap_pick_slot');
+      // Auto-pick first empty trap slot
+      const emptyTrap = me.traps.findIndex(t => !t.card);
+      if (emptyTrap >= 0) {
+        tapFeedback();
+        ctrl.doSetTrap(index, emptyTrap);
+        resetAction();
+      }
+      return;
     } else if (actionMode === 'equip_pick_card' && card.card.type === 'equipment') {
-      setSelectedHandIndex(index);
-      setActionMode('equip_pick_slot');
-    } else if (actionMode === 'equip_pick_card' && card.card.type !== 'equipment') {
-      // Wrong card type — ignore but give feedback
-    }
+      // Auto-pick first fighter without equipment
+      const validSlot = me.field.findIndex(s => s.fighter && !s.fighter.attachedEquipment);
+      if (validSlot >= 0) {
+        tapFeedback();
+        ctrl.doEquip(index, validSlot, false);
+        resetAction();
+      }
+      return;
   };
 
   const onMyFieldSlotPress = (slot: number) => {
@@ -387,11 +402,11 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                   {canDeployFighter && (
                     <TouchableOpacity style={styles.deployBtn} onPress={() => {
                       const fighters = me.hand.map((c, i) => ({ c, i })).filter(x => x.c.card.type === 'fighter' && x.c.card.kiCost <= me.ki);
-                      const emptySlots = me.field.map((s, i) => ({ s, i })).filter(x => !x.s.fighter);
-                      if (fighters.length === 1 && emptySlots.length === 1) {
-                        // Auto-select card and slot, just ask concealed
+                      if (fighters.length === 1) {
+                        // Auto-select card + auto-pick first empty slot
+                        const emptySlot = me.field.findIndex(s => !s.fighter);
                         setSelectedHandIndex(fighters[0].i);
-                        setSelectedFieldSlot(emptySlots[0].i);
+                        setSelectedFieldSlot(emptySlot);
                         setActionMode('deploy_concealed_choice');
                       } else {
                         setActionMode('deploy_pick_card');

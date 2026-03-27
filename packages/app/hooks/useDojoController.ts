@@ -372,33 +372,37 @@ export function useDojoController(): DojoGameController {
     setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
   }, [syncView, addEvents, autoSkipDeployIfNeeded]);
 
+  const skipToEnd = useCallback((s: DojoGameState) => {
+    s.turnPhase = 'end';
+    processEndPhase(s);
+    syncView(s);
+    if (!s.gameOver) {
+      const next = s.players[s.currentPlayerIndex];
+      if (next?.id === myIdRef.current) {
+        if (s.turnPhase === 'ki') processKiPhase(s);
+        syncView(s);
+      } else {
+        processBotTurns(s);
+      }
+    }
+  }, [syncView, processBotTurns]);
+
   const endDeploy = useCallback(() => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
 
-    // Auto-skip combat if player has no fighters
     const me = s.players.find(p => p.id === myIdRef.current);
-    const hasFighters = me?.field.some(sl => sl.fighter);
-    if (!hasFighters) {
-      // Skip directly to end phase
-      s.turnPhase = 'end';
-      processEndPhase(s);
-      syncView(s);
-      if (!s.gameOver) {
-        const next = s.players[s.currentPlayerIndex];
-        if (next?.id === myIdRef.current) {
-          if (s.turnPhase === 'ki') processKiPhase(s);
-          syncView(s);
-        } else {
-          processBotTurns(s);
-        }
-      }
+    const hasReadyFighters = me?.field.some(sl => sl.fighter && !sl.fighter.summonedThisTurn);
+
+    if (!hasReadyFighters) {
+      // No fighters can attack — skip combat entirely
+      skipToEnd(s);
       return;
     }
 
     s.turnPhase = 'combat_select';
     syncView(s);
-  }, [syncView, processBotTurns]);
+  }, [syncView, skipToEnd]);
 
   // --- Combat Phase Actions ---
 
