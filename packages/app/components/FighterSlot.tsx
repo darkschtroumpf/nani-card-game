@@ -47,7 +47,7 @@ export default function FighterSlotComponent({ slot, isOpponent, isTargetable, o
           showKiCost={false}
         />
         {slot.equipment && (
-          <View style={styles.equipBadge}>
+          <View style={styles.equipBadge} pointerEvents="none">
             <Text style={styles.equipText}>🛡</Text>
           </View>
         )}
@@ -70,7 +70,7 @@ export default function FighterSlotComponent({ slot, isOpponent, isTargetable, o
         showKiCost={false}
       />
       {fighter.attachedEquipment && (
-        <View style={styles.equipBadge}>
+        <View style={styles.equipBadge} pointerEvents="none">
           <Text style={styles.equipText}>🛡+{fighter.attachedEquipment.card.atkBonus || fighter.attachedEquipment.card.hpBonus}</Text>
         </View>
       )}
