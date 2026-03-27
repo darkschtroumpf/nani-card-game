@@ -8,18 +8,32 @@ interface Props {
   traps: (TrapSlotType | boolean)[];
   isOpponent?: boolean;
   targetableSlots?: number[];
+  targetableTrapSlots?: number[];
   onSlotPress?: (slot: number) => void;
+  onTrapSlotPress?: (slot: number) => void;
   small?: boolean;
 }
 
-export default function FieldView({ field, traps, isOpponent, targetableSlots, onSlotPress, small }: Props) {
+export default function FieldView({
+  field, traps, isOpponent, targetableSlots, targetableTrapSlots,
+  onSlotPress, onTrapSlotPress, small,
+}: Props) {
   return (
     <View style={styles.container}>
       {/* Traps row */}
       <View style={styles.trapRow}>
         {traps.map((trap, i) => {
           const hasTrap = typeof trap === 'boolean' ? trap : trap.card !== null;
-          return <TrapSlot key={`trap-${i}`} hasTrap={hasTrap} small={small} />;
+          const isTargetable = targetableTrapSlots?.includes(i) ?? false;
+          return (
+            <TrapSlot
+              key={`trap-${i}`}
+              hasTrap={hasTrap}
+              small={small}
+              isTargetable={isTargetable}
+              onPress={isTargetable ? () => onTrapSlotPress?.(i) : undefined}
+            />
+          );
         })}
       </View>
 
@@ -43,11 +57,11 @@ export default function FieldView({ field, traps, isOpponent, targetableSlots, o
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   trapRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     justifyContent: 'center',
   },
   fighterRow: {

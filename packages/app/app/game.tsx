@@ -341,7 +341,13 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                   ? me.field.map((s, i) => s.fighter && !s.fighter.attachedEquipment ? i : -1).filter(i => i >= 0)
                   : undefined
               }
+              targetableTrapSlots={
+                actionMode === 'trap_pick_slot'
+                  ? me.traps.map((t, i) => !t.card ? i : -1).filter(i => i >= 0)
+                  : undefined
+              }
               onSlotPress={onMyFieldSlotPress}
+              onTrapSlotPress={onTrapSlotPress}
             />
 
             {/* Concealed choice */}
