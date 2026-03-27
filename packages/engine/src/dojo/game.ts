@@ -377,8 +377,10 @@ export function initiateCombat(
     if (hasAnyFighter) return false; // must target a fighter
   }
 
+  // Direct attacks: always use true universe (no bluff possible on LP)
+  const effectiveDeclared = defenderSlot === null ? atkFighter.card.universe : declaredUniverse;
   const actualUniverse = atkFighter.card.universe;
-  const isBluff = atkFighter.concealed && declaredUniverse !== actualUniverse;
+  const isBluff = atkFighter.concealed && defenderSlot !== null && effectiveDeclared !== actualUniverse;
   if (isBluff) attacker.bluffsAttempted++;
 
   attacker.turnsSinceLastAttack = 0; // reset attack timer
@@ -387,7 +389,7 @@ export function initiateCombat(
     defenderId: defender.id,
     attackerSlot,
     defenderSlot,
-    declaredUniverse,
+    declaredUniverse: effectiveDeclared,
     isBluff,
     defenderTechniqueUsed: null,
     attackerTechniqueUsed: null,
@@ -395,8 +397,13 @@ export function initiateCombat(
   };
 
   state.turnPhase = 'combat_declare';
-  addLog(state, attacker.id, 'attack',
-    `${attacker.name} attaque ${defender.name} et déclare ${declaredUniverse}!`);
+  if (defenderSlot === null) {
+    addLog(state, attacker.id, 'attack',
+      `${attacker.name} attaque directement ${defender.name}!`);
+  } else {
+    addLog(state, attacker.id, 'attack',
+      `${attacker.name} attaque ${defender.name} et déclare ${effectiveDeclared}!`);
+  }
   return true;
 }
 
@@ -424,7 +431,8 @@ export function callNani(state: DojoGameState): boolean {
 
   if (!atkFighter) return false;
   if (!atkFighter.concealed) return false; // can't call NANI on face-up
-  // NANI?! is free to call — the 2 LP penalty for wrong call is enough risk
+  if (state.combat.defenderSlot === null) return false; // can't call NANI on direct LP attack
+  // NANI?! is free to call — the 3 LP penalty for wrong call is enough risk
   defender.naniCalls++;
   state.combat.naniCalled = true;
 

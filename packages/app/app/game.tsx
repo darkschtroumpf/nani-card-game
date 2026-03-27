@@ -192,9 +192,14 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
       const opp = view.opponents.find(o => o.id === oppId);
       const hasFighters = opp?.field.some(s => s.hasFighter);
       if (!hasFighters) {
-        // Direct attack — go to universe declaration
-        setSelectedTargetSlot(null);
-        setActionMode('combat_declare_universe');
+        // Direct attack — skip universe declaration, auto-use true universe
+        if (selectedFieldSlot !== null) {
+          const myFighter = me.field[selectedFieldSlot]?.fighter;
+          const trueUniverse = myFighter?.card.universe ?? 'shonen';
+          impactFeedback();
+          ctrl.selectAttack(selectedFieldSlot, oppId, null, trueUniverse as Universe);
+          resetAction();
+        }
       } else {
         setActionMode('combat_pick_target_slot');
       }
@@ -405,14 +410,19 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         {/* COMBAT SELECT PHASE */}
         {turnPhase === 'combat_select' && isMyTurn && !combatStep && (
           <>
+            {/* Show field for context */}
+            <FieldView field={me.field} traps={me.traps} />
+
             {actionMode === 'idle' && (
               <View style={styles.deployActions}>
-                <TouchableOpacity
-                  style={[styles.deployBtn, { backgroundColor: colors.primary }]}
-                  onPress={() => setActionMode('combat_pick_attacker')}
-                >
-                  <Text style={styles.deployBtnText}>Attaquer</Text>
-                </TouchableOpacity>
+                {me.field.some(s => s.fighter) && (
+                  <TouchableOpacity
+                    style={[styles.deployBtn, { backgroundColor: colors.primary }]}
+                    onPress={() => setActionMode('combat_pick_attacker')}
+                  >
+                    <Text style={styles.deployBtnText}>Attaquer</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.skipCombat()}>
                   <Text style={styles.endPhaseText}>Passer le combat</Text>
                 </TouchableOpacity>

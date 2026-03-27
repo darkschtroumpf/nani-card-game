@@ -170,9 +170,15 @@ export default function CombatArena(props: Props) {
               </Animated.View>
             </View>
 
-            <View style={[styles.universeBadge, { backgroundColor: uColor }]}>
-              <Text style={styles.universeText}>{declaredUniverse.toUpperCase()}</Text>
-            </View>
+            {defenderFighter ? (
+              <View style={[styles.universeBadge, { backgroundColor: uColor }]}>
+                <Text style={styles.universeText}>{declaredUniverse.toUpperCase()}</Text>
+              </View>
+            ) : (
+              <View style={[styles.universeBadge, { backgroundColor: colors.danger }]}>
+                <Text style={styles.universeText}>ATTAQUE DIRECTE</Text>
+              </View>
+            )}
 
             <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
               <Text style={styles.continueBtnText}>Continuer</Text>

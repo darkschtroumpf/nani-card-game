@@ -375,9 +375,30 @@ export function useDojoController(): DojoGameController {
   const endDeploy = useCallback(() => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
+
+    // Auto-skip combat if player has no fighters
+    const me = s.players.find(p => p.id === myIdRef.current);
+    const hasFighters = me?.field.some(sl => sl.fighter);
+    if (!hasFighters) {
+      // Skip directly to end phase
+      s.turnPhase = 'end';
+      processEndPhase(s);
+      syncView(s);
+      if (!s.gameOver) {
+        const next = s.players[s.currentPlayerIndex];
+        if (next?.id === myIdRef.current) {
+          if (s.turnPhase === 'ki') processKiPhase(s);
+          syncView(s);
+        } else {
+          processBotTurns(s);
+        }
+      }
+      return;
+    }
+
     s.turnPhase = 'combat_select';
     syncView(s);
-  }, [syncView]);
+  }, [syncView, processBotTurns]);
 
   // --- Combat Phase Actions ---
 
@@ -445,12 +466,18 @@ export function useDojoController(): DojoGameController {
     if (!s) return;
 
     if (combatStep === 'declaration') {
-      // Check if human is defender
       const defender = s.players.find(p => p.id === s.combat?.defenderId);
-      if (defender?.id === myIdRef.current) {
+      const attacker = s.players.find(p => p.id === s.combat?.attackerId);
+      const atkFighter = attacker?.field[s.combat?.attackerSlot ?? 0]?.fighter;
+      const isDirectAttack = s.combat?.defenderSlot === null;
+      const attackerConcealed = atkFighter?.concealed ?? false;
+      const canNani = attackerConcealed && !isDirectAttack;
+
+      if (defender?.id === myIdRef.current && canNani) {
+        // Human is defender and NANI is possible — show NANI screen
         setCombatStep('nani_call');
       } else {
-        // Bot handles defense, go to reveal
+        // No NANI possible or bot defender — skip to resolve
         setCombatStep('reveal');
         const evts = resolveCombat(s);
         setCombatEvents(evts);
@@ -460,7 +487,6 @@ export function useDojoController(): DojoGameController {
     }
 
     if (combatStep === 'nani_call') {
-      // Player chose to let it pass
       setCombatStep('reveal');
       const evts = resolveCombat(s);
       setCombatEvents(evts);
