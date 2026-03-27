@@ -286,27 +286,33 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
       </ScrollView>
 
       {/* Opponent target field (when selecting target slot) */}
-      {actionMode === 'combat_pick_target_slot' && selectedTargetPlayer && (
-        <View style={styles.targetField}>
-          <Text style={styles.targetLabel}>Choisis le fighter a attaquer :</Text>
-          <View style={styles.targetSlots}>
-            {view.opponents.find(o => o.id === selectedTargetPlayer)?.field.map((slot, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.targetSlot, slot.hasFighter && styles.targetSlotActive]}
-                onPress={() => slot.hasFighter && onOpponentSlotPress(i)}
-                disabled={!slot.hasFighter}
-              >
-                {slot.hasFighter ? (
-                  <DojoCard card={slot.fighter ?? undefined} concealed={slot.concealed} small />
-                ) : (
-                  <Text style={styles.targetSlotEmpty}>Vide</Text>
-                )}
-              </TouchableOpacity>
-            ))}
+      {actionMode === 'combat_pick_target_slot' && selectedTargetPlayer && (() => {
+        const targetOpp = view.opponents.find(o => o.id === selectedTargetPlayer);
+        if (!targetOpp) return null;
+        return (
+          <View style={styles.targetField}>
+            <Text style={styles.targetLabel}>Terrain de {targetOpp.name} — choisis ta cible :</Text>
+            <View style={styles.targetSlots}>
+              {targetOpp.field.map((slot, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={[styles.targetSlot, slot.hasFighter && styles.targetSlotActive]}
+                  onPress={() => slot.hasFighter && onOpponentSlotPress(i)}
+                  disabled={!slot.hasFighter}
+                >
+                  {slot.hasFighter ? (
+                    <DojoCard card={slot.fighter ?? undefined} concealed={slot.concealed} />
+                  ) : (
+                    <View style={styles.targetSlotEmptyBox}>
+                      <Text style={styles.targetSlotEmpty}>Vide</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
+        );
+      })()}
 
       {/* Main area */}
       <View style={styles.mainArea}>
@@ -416,8 +422,10 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         {/* COMBAT SELECT PHASE */}
         {turnPhase === 'combat_select' && isMyTurn && !combatStep && (
           <>
-            {/* Show field for context */}
-            <FieldView field={me.field} traps={me.traps} />
+            {/* Show MY field only when not selecting opponent's target */}
+            {actionMode !== 'combat_pick_target_slot' && actionMode !== 'combat_declare_universe' && (
+              <FieldView field={me.field} traps={me.traps} />
+            )}
 
             {actionMode === 'idle' && (
               <View style={styles.deployActions}>
@@ -638,6 +646,7 @@ const styles = StyleSheet.create({
   targetSlot: { borderRadius: 8, padding: 2 },
   targetSlotActive: { borderWidth: 2, borderColor: colors.accent },
   targetSlotEmpty: { color: colors.textDark, fontSize: fonts.sizes.sm },
+  targetSlotEmptyBox: { width: 72, height: 104, borderRadius: 8, borderWidth: 1, borderColor: colors.textDark, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' },
 
   // Universe picker
   universeGrid: { alignItems: 'center', gap: 8 },
