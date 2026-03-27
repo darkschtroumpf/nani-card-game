@@ -68,11 +68,11 @@ export default function OpponentHUD({ opponent, isCurrentTurn, isTargetable, onP
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.bgLight,
-    borderRadius: 10,
-    padding: 8,
-    width: 140,
+    borderRadius: 12,
+    padding: 10,
+    width: 170,
     borderWidth: 2,
-    gap: 4,
+    gap: 6,
   },
   dead: {
     opacity: 0.4,
@@ -83,17 +83,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   emoji: {
-    fontSize: 14,
+    fontSize: 18,
   },
   name: {
     color: colors.text,
-    fontSize: fonts.sizes.sm,
+    fontSize: fonts.sizes.md,
     fontWeight: 'bold',
     flex: 1,
   },
   handCount: {
     color: colors.textDim,
-    fontSize: 10,
+    fontSize: fonts.sizes.sm,
   },
   boardRow: {
     flexDirection: 'row',
@@ -101,9 +101,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   miniSlot: {
-    width: 20,
-    height: 20,
-    borderRadius: 3,
+    width: 26,
+    height: 26,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: colors.textDark,
     justifyContent: 'center',
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   miniSlotText: {
     color: colors.text,
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   miniDivider: {

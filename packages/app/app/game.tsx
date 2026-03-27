@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -107,6 +107,7 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showTutorial, setShowTutorial] = useState(true);
+  const [showDominance, setShowDominance] = useState(false);
   const [selectedHandIndex, setSelectedHandIndex] = useState<number | null>(null);
   const [selectedFieldSlot, setSelectedFieldSlot] = useState<number | null>(null);
   const [selectedTargetPlayer, setSelectedTargetPlayer] = useState<string | null>(null);
@@ -247,10 +248,17 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Phase indicator */}
-      {turnPhase && (
-        <PhaseIndicator phase={turnPhase} turnNumber={view.turnNumber} />
-      )}
+      {/* Phase indicator + help button */}
+      <View style={styles.topBar}>
+        {turnPhase && (
+          <View style={{ flex: 1 }}>
+            <PhaseIndicator phase={turnPhase} turnNumber={view.turnNumber} />
+          </View>
+        )}
+        <TouchableOpacity style={styles.helpBtn} onPress={() => setShowDominance(true)}>
+          <Text style={styles.helpBtnText}>?</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Opponents */}
       <ScrollView
@@ -341,36 +349,54 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
               </View>
             )}
 
-            {/* Deploy action buttons */}
-            {actionMode === 'idle' && (
-              <View style={styles.deployActions}>
-                <TouchableOpacity style={styles.deployBtn} onPress={() => setActionMode('deploy_pick_card')}>
-                  <Text style={styles.deployBtnText}>Deployer Fighter</Text>
-                </TouchableOpacity>
-                <View style={styles.deployRow}>
-                  <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('trap_pick_card')}>
-                    <Text style={styles.deployBtnText}>Piege</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('equip_pick_card')}>
-                    <Text style={styles.deployBtnText}>Equiper</Text>
+            {/* Deploy action buttons — only show viable actions */}
+            {actionMode === 'idle' && (() => {
+              const hasFighterInHand = me.hand.some(c => c.card.type === 'fighter');
+              const hasEmptyFieldSlot = me.field.some(s => !s.fighter);
+              const canDeployFighter = hasFighterInHand && hasEmptyFieldSlot && me.ki >= 1;
+              const canSetTrap = me.hand.length > 0 && me.traps.some(t => !t.card) && me.ki >= 1;
+              const hasEquipInHand = me.hand.some(c => c.card.type === 'equipment');
+              const hasFighterToEquip = me.field.some(s => s.fighter && !s.fighter.attachedEquipment);
+              const canEquip = hasEquipInHand && hasFighterToEquip;
+              const sig = me.hand.find(c => c.card.type === 'signature');
+              const canSig = sig && me.ki >= sig.card.kiCost && me.focus >= (sig.card.focusCost ?? 0);
+
+              return (
+                <View style={styles.deployActions}>
+                  {canDeployFighter && (
+                    <TouchableOpacity style={styles.deployBtn} onPress={() => setActionMode('deploy_pick_card')}>
+                      <Text style={styles.deployBtnText}>Deployer Fighter</Text>
+                    </TouchableOpacity>
+                  )}
+                  <View style={styles.deployRow}>
+                    {canSetTrap && (
+                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('trap_pick_card')}>
+                        <Text style={styles.deployBtnText}>Piege</Text>
+                      </TouchableOpacity>
+                    )}
+                    {canEquip && (
+                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('equip_pick_card')}>
+                        <Text style={styles.deployBtnText}>Equiper</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {canSig && (
+                    <TouchableOpacity
+                      style={[styles.deployBtn, { backgroundColor: colors.accent }]}
+                      onPress={() => {
+                        const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
+                        if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
+                      }}
+                    >
+                      <Text style={[styles.deployBtnText, { color: colors.bg }]}>Signature!</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.endDeploy()}>
+                    <Text style={styles.endPhaseText}>Fin du deploiement</Text>
                   </TouchableOpacity>
                 </View>
-                {me.hand.some(c => c.card.type === 'signature') && (
-                  <TouchableOpacity
-                    style={[styles.deployBtn, { backgroundColor: colors.accent }]}
-                    onPress={() => {
-                      const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
-                      if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
-                    }}
-                  >
-                    <Text style={[styles.deployBtnText, { color: colors.bg }]}>Signature!</Text>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.endDeploy()}>
-                  <Text style={styles.endPhaseText}>Fin du deploiement</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+              );
+            })()}
           </>
         )}
 
@@ -509,6 +535,38 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         </View>
       )}
 
+      {/* Dominance modal */}
+      <Modal visible={showDominance} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowDominance(false)} activeOpacity={1}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Cycle de Dominance</Text>
+            <Text style={styles.modalSubtitle}>+3 ATK quand tu domines</Text>
+            <View style={styles.domRow}>
+              <Text style={[styles.domText, { color: colors.shonen }]}>Shonen</Text>
+              <Text style={styles.domArrow}>&gt;</Text>
+              <Text style={[styles.domText, { color: colors.magical }]}>Magical</Text>
+              <Text style={styles.domArrow}>&gt;</Text>
+              <Text style={[styles.domText, { color: colors.mecha }]}>Mecha</Text>
+            </View>
+            <View style={styles.domRow}>
+              <Text style={[styles.domText, { color: colors.mecha }]}>Mecha</Text>
+              <Text style={styles.domArrow}>&gt;</Text>
+              <Text style={[styles.domText, { color: colors.isekai }]}>Isekai</Text>
+              <Text style={styles.domArrow}>&gt;</Text>
+              <Text style={[styles.domText, { color: colors.seinen }]}>Seinen</Text>
+            </View>
+            <View style={styles.domRow}>
+              <Text style={[styles.domText, { color: colors.seinen }]}>Seinen</Text>
+              <Text style={styles.domArrow}>&gt;</Text>
+              <Text style={[styles.domText, { color: colors.shonen }]}>Shonen</Text>
+            </View>
+            <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setShowDominance(false)}>
+              <Text style={styles.modalCloseBtnText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Tutorial */}
       {showTutorial && tutorialStep < DOJO_TUTORIAL_STEPS && (
         <DojoTutorial
@@ -532,7 +590,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   loadingText: { color: colors.text, fontSize: fonts.sizes.xl, textAlign: 'center', marginTop: 100 },
 
-  opponentsScroll: { maxHeight: 90, marginTop: 4 },
+  opponentsScroll: { maxHeight: 110, marginTop: 4 },
   opponentsContent: { paddingHorizontal: 8, gap: 6 },
 
   mainArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 4, gap: 6 },
@@ -582,4 +640,20 @@ const styles = StyleSheet.create({
   gameOverTitle: { fontSize: 48, fontWeight: 'bold', color: colors.primary },
   menuBtn: { backgroundColor: colors.primary, paddingVertical: 14, paddingHorizontal: 40, borderRadius: 10 },
   menuBtnText: { color: colors.text, fontSize: fonts.sizes.lg, fontWeight: 'bold' },
+
+  // Top bar
+  topBar: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingRight: 8 },
+  helpBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.bgLight, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.accent },
+  helpBtnText: { color: colors.accent, fontSize: 18, fontWeight: 'bold' },
+
+  // Dominance modal
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.75)' },
+  modalContent: { width: '80%', maxWidth: 320, backgroundColor: colors.bgLight, borderRadius: 16, padding: 24, alignItems: 'center', gap: 12, borderWidth: 2, borderColor: colors.accent },
+  modalTitle: { color: colors.accent, fontSize: fonts.sizes.xl, fontWeight: 'bold' },
+  modalSubtitle: { color: colors.textDim, fontSize: fonts.sizes.md },
+  domRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  domText: { fontSize: fonts.sizes.lg, fontWeight: 'bold' },
+  domArrow: { color: colors.textDim, fontSize: fonts.sizes.lg },
+  modalCloseBtn: { backgroundColor: colors.primary, paddingVertical: 10, paddingHorizontal: 30, borderRadius: 8, marginTop: 8 },
+  modalCloseBtnText: { color: colors.text, fontSize: fonts.sizes.md, fontWeight: 'bold' },
 });

@@ -110,8 +110,11 @@ export function useDojoController(): DojoGameController {
         continue;
       }
 
-      // If it's human's turn, stop
+      // If it's human's turn, auto-process Ki phase then stop
       if (current.id === myIdRef.current) {
+        if (s.turnPhase === 'ki') {
+          processKiPhase(s);
+        }
         syncView(s);
         break;
       }
@@ -340,9 +343,15 @@ export function useDojoController(): DojoGameController {
     processEndPhase(s);
     syncView(s);
 
-    // Process bot turns
-    if (!s.gameOver && s.players[s.currentPlayerIndex]?.id !== myIdRef.current) {
-      processBotTurns(s);
+    if (!s.gameOver) {
+      const next = s.players[s.currentPlayerIndex];
+      if (next?.id === myIdRef.current) {
+        // Our turn again — process ki phase
+        if (s.turnPhase === 'ki') processKiPhase(s);
+        syncView(s);
+      } else {
+        processBotTurns(s);
+      }
     }
   }, [syncView, processBotTurns]);
 
@@ -413,9 +422,14 @@ export function useDojoController(): DojoGameController {
       processEndPhase(s);
       syncView(s);
 
-      // Continue bot turns
-      if (!s.gameOver && s.players[s.currentPlayerIndex]?.id !== myIdRef.current) {
-        processBotTurns(s);
+      if (!s.gameOver) {
+        const next = s.players[s.currentPlayerIndex];
+        if (next?.id === myIdRef.current) {
+          if (s.turnPhase === 'ki') processKiPhase(s);
+          syncView(s);
+        } else {
+          processBotTurns(s);
+        }
       }
       return;
     }
