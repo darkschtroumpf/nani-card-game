@@ -40,6 +40,7 @@ This creates permanent information asymmetry: opponents track your Dojo purchase
 - Have ATK and HP stats
 - Can be deployed **face-up** or **concealed** (face-down, costs 1 less Ki)
 - Max 3 on field simultaneously
+- **Summoning sickness**: a fighter deployed this turn cannot attack (can still defend)
 - Both fighters deal damage in combat (bidirectional)
 - Permanent HP reduction on damage taken
 

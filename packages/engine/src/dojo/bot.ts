@@ -273,7 +273,7 @@ export function botDecideCombat(view: DojoPlayerView, memory: BotMemory): BotDec
 
   const myFighters = me.field
     .map((s, i) => ({ fighter: s.fighter, slot: i }))
-    .filter(x => x.fighter !== null);
+    .filter(x => x.fighter !== null && !x.fighter.summonedThisTurn);
 
   if (myFighters.length === 0) {
     memory.frustratingMoments.push('Aucun fighter sur le terrain, impossible d\'attaquer');

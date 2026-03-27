@@ -15,7 +15,7 @@ let _nextId = 0;
 function nextInstanceId(): string { return `ci-${_nextId++}`; }
 
 function cardInstance(card: CardDef, fromDojo: boolean): CardInstance {
-  return { card, instanceId: nextInstanceId(), concealed: false, fromDojo };
+  return { card, instanceId: nextInstanceId(), concealed: false, fromDojo, summonedThisTurn: false };
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -188,6 +188,11 @@ export function processKiPhase(state: DojoGameState): void {
   player.ki = player.maxKi;
   player.turnsAlive++;
 
+  // Clear summoning sickness from previous turn's deploys
+  for (const slot of player.field) {
+    if (slot.fighter) slot.fighter.summonedThisTurn = false;
+  }
+
   const drawn = drawCard(player);
   if (drawn) {
     player.hand.push(drawn);
@@ -294,6 +299,7 @@ export function deployFighter(state: DojoGameState, handIndex: number, fieldSlot
 
   player.ki -= cost;
   card.concealed = concealed;
+  card.summonedThisTurn = true;  // summoning sickness: can't attack this turn
   player.field[fieldSlot].fighter = card;
   player.hand.splice(handIndex, 1);
   player.fightersPlayed++;
@@ -364,6 +370,7 @@ export function initiateCombat(
   const attacker = state.players[state.currentPlayerIndex];
   const atkFighter = attacker.field[attackerSlot]?.fighter;
   if (!atkFighter) return false;
+  if (atkFighter.summonedThisTurn) return false; // summoning sickness
 
   const defender = state.players.find(p => p.id === defenderId);
   if (!defender || defender.lp <= 0) return false;

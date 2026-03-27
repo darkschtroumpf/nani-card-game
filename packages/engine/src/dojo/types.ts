@@ -66,6 +66,7 @@ export interface CardInstance {
   concealed: boolean;    // face-down on field
   fromDojo: boolean;     // was this acquired from the Dojo? (public info)
   attachedEquipment?: CardInstance;
+  summonedThisTurn: boolean;  // can't attack the turn it was deployed (summoning sickness)
 }
 
 // --- Field ---

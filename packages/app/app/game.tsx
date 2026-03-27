@@ -415,7 +415,7 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
 
             {actionMode === 'idle' && (
               <View style={styles.deployActions}>
-                {me.field.some(s => s.fighter) && (
+                {me.field.some(s => s.fighter && !s.fighter.summonedThisTurn) && (
                   <TouchableOpacity
                     style={[styles.deployBtn, { backgroundColor: colors.primary }]}
                     onPress={() => setActionMode('combat_pick_attacker')}
@@ -429,12 +429,12 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
               </View>
             )}
 
-            {/* My field for attacker selection */}
+            {/* My field for attacker selection (exclude summoning sickness) */}
             {actionMode === 'combat_pick_attacker' && (
               <FieldView
                 field={me.field}
                 traps={me.traps}
-                targetableSlots={me.field.map((s, i) => s.fighter ? i : -1).filter(i => i >= 0)}
+                targetableSlots={me.field.map((s, i) => s.fighter && !s.fighter.summonedThisTurn ? i : -1).filter(i => i >= 0)}
                 onSlotPress={onMyFieldSlotPress}
               />
             )}
