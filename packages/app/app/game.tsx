@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   loadingText: { color: colors.text, fontSize: fonts.sizes.xl, textAlign: 'center', marginTop: 100 },
 
-  opponentsScroll: { maxHeight: 110, marginTop: 4 },
+  opponentsScroll: { maxHeight: 145, marginTop: 4 },
   opponentsContent: { paddingHorizontal: 8, gap: 6 },
 
   mainArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 4, gap: 6 },
