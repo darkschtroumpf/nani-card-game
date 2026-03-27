@@ -18,8 +18,8 @@ import FieldView from '../components/FieldView';
 import DojoCard from '../components/DojoCard';
 import ResourceBar from '../components/ResourceBar';
 import MessageFeed from '../components/MessageFeed';
-import CombatScene from '../components/CombatScene';
-import type { CombatStep } from '../components/CombatScene';
+import CombatArena from '../components/CombatArena';
+import type { CombatStep } from '../components/CombatArena';
 import { tapFeedback, impactFeedback, warningFeedback, playCardFeedback, successFeedback } from '../services/feedback';
 import DojoTutorial, { DOJO_TUTORIAL_STEPS } from '../components/DojoTutorial';
 
@@ -102,7 +102,7 @@ type ActionMode =
 
 function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const router = useRouter();
-  const { view, turnPhase, combatStep, combatEvents, isMyTurn } = ctrl;
+  const { view, turnPhase, combatStep, combatEvents, isMyTurn, botBubbles } = ctrl;
 
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -274,6 +274,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
             isCurrentTurn={view.currentPlayerIndex === parseInt(opp.id.replace('p', ''))}
             isTargetable={actionMode === 'combat_pick_target_player' && opp.lp > 0}
             onPress={() => onOpponentPress(opp.id)}
+            bubbleMessage={botBubbles[opp.id]?.message}
+            bubbleType={botBubbles[opp.id]?.type}
           />
         ))}
       </ScrollView>
@@ -445,10 +447,13 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           </>
         )}
 
-        {/* WAITING / OTHER PHASES */}
-        {!isMyTurn && !combatStep && turnPhase !== 'combat_response' && (
+        {/* ALWAYS show my field (unified board) */}
+        {!combatStep && turnPhase !== 'deploy' && turnPhase !== 'combat_select' && (
           <View style={styles.waitingArea}>
             <FieldView field={me.field} traps={me.traps} />
+            {!isMyTurn && (
+              <Text style={styles.waitingText}>En attente des adversaires...</Text>
+            )}
           </View>
         )}
 
@@ -495,9 +500,9 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         })}
       </ScrollView>
 
-      {/* Combat overlay */}
+      {/* Combat overlay — animated */}
       {combatStep && (
-        <CombatScene
+        <CombatArena
           step={combatStep}
           attackerName={
             view.opponents.find(o => o.id === view.combat?.attackerId)?.name ??
@@ -624,7 +629,8 @@ const styles = StyleSheet.create({
   universeBtn: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, width: '80%', alignItems: 'center' },
   universeBtnText: { color: '#fff', fontSize: fonts.sizes.md, fontWeight: 'bold' },
 
-  waitingArea: { alignItems: 'center', paddingVertical: 8 },
+  waitingArea: { alignItems: 'center', paddingVertical: 8, gap: 8 },
+  waitingText: { color: colors.textDim, fontSize: fonts.sizes.md, fontStyle: 'italic' },
 
   cancelBtn: { paddingVertical: 8, alignItems: 'center' },
   cancelText: { color: colors.danger, fontSize: fonts.sizes.md, fontWeight: '600' },

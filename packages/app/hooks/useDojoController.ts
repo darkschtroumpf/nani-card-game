@@ -61,6 +61,9 @@ export interface DojoGameController {
 
   // Combat UI
   advanceCombat: () => void;
+
+  // Bot visibility
+  botBubbles: Record<string, { message: string; type: 'action' | 'reaction' | 'nani' } | null>;
 }
 
 // ============================================================
@@ -77,6 +80,7 @@ export function useDojoController(): DojoGameController {
   const [combatEvents, setCombatEvents] = useState<string[]>([]);
   const [events, setEvents] = useState<string[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [botBubbles, setBotBubbles] = useState<Record<string, { message: string; type: 'action' | 'reaction' | 'nani' } | null>>({});
 
   const stateRef = useRef<DojoGameState | null>(null);
   const myIdRef = useRef<string>('p0');
@@ -95,6 +99,13 @@ export function useDojoController(): DojoGameController {
   }, []);
 
   const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+  const showBotBubble = useCallback((botId: string, message: string, type: 'action' | 'reaction' | 'nani' = 'action') => {
+    setBotBubbles(prev => ({ ...prev, [botId]: { message, type } }));
+    setTimeout(() => {
+      setBotBubbles(prev => ({ ...prev, [botId]: null }));
+    }, type === 'nani' ? 1500 : 1000);
+  }, []);
 
   // --- Bot Turn Processing ---
 
@@ -132,16 +143,22 @@ export function useDojoController(): DojoGameController {
 
       if (s.turnPhase === 'dojo') {
         const decision = botDecideDojoPhase(botView, memory);
-        if (decision.action === 'buy') processDojoBuy(s, decision.params.slotIndex);
-        else if (decision.action === 'meditate') processDojoMeditate(s);
+        if (decision.action === 'buy') {
+          processDojoBuy(s, decision.params.slotIndex);
+          showBotBubble(current.id, 'Interessant!');
+        } else if (decision.action === 'meditate') {
+          processDojoMeditate(s);
+          showBotBubble(current.id, 'Focus...');
+        }
         s.turnPhase = 'deploy';
         syncView(s);
-        await delay(300);
+        await delay(500);
       }
 
       if (s.turnPhase === 'deploy') {
         const freshView = getDojoPlayerView(s, current.id);
         const decisions = botDecideDeployPhase(freshView, memory);
+        if (decisions.length > 0) showBotBubble(current.id, 'En garde!');
         for (const d of decisions) {
           if (d.action === 'deploy_fighter') {
             const idx = Math.min(d.params.handIndex, current.hand.length - 1);
@@ -170,8 +187,9 @@ export function useDojoController(): DojoGameController {
           const success = initiateCombat(s, attackerSlot, defenderId, defenderSlot, declaredUniverse);
 
           if (success) {
+            showBotBubble(current.id, 'YAAAH!', 'action');
             syncView(s);
-            await delay(400);
+            await delay(600);
 
             // Check if defender is human
             const defender = s.players.find(p => p.id === s.combat?.defenderId);
@@ -192,8 +210,10 @@ export function useDojoController(): DojoGameController {
               const defMemory = memoriesRef.current[defIdx] ?? createBotMemory();
               const defDecision = botDecideDefense(defView, defMemory);
 
-              if (defDecision.action === 'call_nani') callNani(s);
-              else if (defDecision.action === 'play_technique') {
+              if (defDecision.action === 'call_nani') {
+                showBotBubble(defender.id, 'NANI?!', 'nani');
+                callNani(s);
+              } else if (defDecision.action === 'play_technique') {
                 const techIdx = defender.hand.findIndex(c =>
                   c.card.type === 'technique' &&
                   ['shield', 'negate', 'return_hand', 'heal'].includes(c.card.effectType ?? '')
@@ -503,5 +523,6 @@ export function useDojoController(): DojoGameController {
     doCallNani,
     passDefense,
     advanceCombat,
+    botBubbles,
   };
 }
