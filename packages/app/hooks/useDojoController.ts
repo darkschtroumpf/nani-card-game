@@ -263,7 +263,8 @@ export function useDojoController(): DojoGameController {
     s.turnPhase = 'deploy';
     playCardFeedback();
     syncView(s);
-  }, [syncView]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
 
   const dojoMeditate = useCallback(() => {
     const s = stateRef.current;
@@ -271,14 +272,48 @@ export function useDojoController(): DojoGameController {
     processDojoMeditate(s);
     s.turnPhase = 'deploy';
     syncView(s);
-  }, [syncView]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
 
   const dojoSkip = useCallback(() => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'dojo') return;
     s.turnPhase = 'deploy';
     syncView(s);
-  }, [syncView]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
+
+  // --- Deploy Phase: auto-skip when nothing is possible ---
+
+  const canDoAnythingInDeploy = useCallback((s: DojoGameState): boolean => {
+    const me = s.players.find(p => p.id === myIdRef.current);
+    if (!me || me.hand.length === 0) return false;
+
+    const hasEmptySlot = me.field.some(sl => !sl.fighter);
+    const hasFighterInHand = me.hand.some(c => c.card.type === 'fighter' && c.card.kiCost <= me.ki);
+    const canDeploy = hasEmptySlot && hasFighterInHand;
+
+    const hasEmptyTrap = me.traps.some(t => !t.card);
+    const canTrap = hasEmptyTrap && me.ki >= 1 && me.hand.length > 0;
+
+    const hasEquip = me.hand.some(c => c.card.type === 'equipment' && c.card.kiCost <= me.ki);
+    const hasFighterToEquip = me.field.some(sl => sl.fighter && !sl.fighter.attachedEquipment);
+    const canEquip = hasEquip && hasFighterToEquip;
+
+    const sig = me.hand.find(c => c.card.type === 'signature');
+    const canSig = sig && me.ki >= sig.card.kiCost && me.focus >= (sig.card.focusCost ?? 0);
+
+    return canDeploy || canTrap || canEquip || !!canSig;
+  }, []);
+
+  const autoSkipDeployIfNeeded = useCallback((s: DojoGameState) => {
+    if (s.turnPhase === 'deploy' && s.players[s.currentPlayerIndex]?.id === myIdRef.current) {
+      if (!canDoAnythingInDeploy(s)) {
+        s.turnPhase = 'combat_select';
+        syncView(s);
+      }
+    }
+  }, [canDoAnythingInDeploy, syncView]);
 
   // --- Deploy Phase Actions ---
 
@@ -287,21 +322,25 @@ export function useDojoController(): DojoGameController {
     if (!s || s.turnPhase !== 'deploy') return;
     deployFighter(s, handIndex, fieldSlot, concealed);
     syncView(s);
-  }, [syncView]);
+    // Auto-skip if nothing left
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
 
   const doSetTrap = useCallback((handIndex: number, trapSlot: number) => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
     setTrap(s, handIndex, trapSlot);
     syncView(s);
-  }, [syncView]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
 
   const doEquip = useCallback((handIndex: number, fieldSlot: number, concealed: boolean) => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
     equipCard(s, handIndex, fieldSlot, concealed);
     syncView(s);
-  }, [syncView]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, autoSkipDeployIfNeeded]);
 
   const doActivateSignature = useCallback((handIndex: number) => {
     const s = stateRef.current;
@@ -310,7 +349,8 @@ export function useDojoController(): DojoGameController {
     addEvents(evts);
     successFeedback();
     syncView(s);
-  }, [syncView, addEvents]);
+    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
+  }, [syncView, addEvents, autoSkipDeployIfNeeded]);
 
   const endDeploy = useCallback(() => {
     const s = stateRef.current;

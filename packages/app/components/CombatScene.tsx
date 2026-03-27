@@ -80,6 +80,7 @@ export default function CombatScene({
 
         {step === 'defense' && !isDefender && (
           <>
+            <Text style={styles.title}>Defense</Text>
             <Text style={styles.subtitle}>{defenderName} decide sa defense...</Text>
             <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
               <Text style={styles.continueBtnText}>Continuer</Text>
@@ -101,7 +102,12 @@ export default function CombatScene({
               </>
             ) : (
               <>
-                {naniCalled && <Text style={styles.naniShout}>NANI?!</Text>}
+                <Text style={styles.title}>NANI?!</Text>
+                {naniCalled ? (
+                  <Text style={styles.naniShout}>NANI?!</Text>
+                ) : (
+                  <Text style={styles.subtitle}>Pas d'appel NANI?! — le combat continue.</Text>
+                )}
                 <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
                   <Text style={styles.continueBtnText}>Continuer</Text>
                 </TouchableOpacity>
@@ -145,9 +151,11 @@ export default function CombatScene({
         {step === 'resolution' && (
           <>
             <Text style={styles.title}>Resolution</Text>
-            {events.map((e, i) => (
+            {events.length > 0 ? events.map((e, i) => (
               <Text key={i} style={styles.eventText}>{e}</Text>
-            ))}
+            )) : (
+              <Text style={styles.eventText}>Le combat se termine.</Text>
+            )}
             <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
               <Text style={styles.continueBtnText}>OK</Text>
             </TouchableOpacity>

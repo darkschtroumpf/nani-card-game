@@ -17,7 +17,7 @@ import DojoMarket from '../components/DojoMarket';
 import FieldView from '../components/FieldView';
 import DojoCard from '../components/DojoCard';
 import ResourceBar from '../components/ResourceBar';
-import GameLog from '../components/GameLog';
+import MessageFeed from '../components/MessageFeed';
 import CombatScene from '../components/CombatScene';
 import type { CombatStep } from '../components/CombatScene';
 import { tapFeedback, impactFeedback, warningFeedback, playCardFeedback, successFeedback } from '../services/feedback';
@@ -459,8 +459,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           </TouchableOpacity>
         )}
 
-        {/* Game log */}
-        {!combatStep && <GameLog entries={view.log} />}
+        {/* Recent messages (3 max) */}
+        {!combatStep && <MessageFeed entries={view.log} maxVisible={3} />}
       </View>
 
       {/* Resource bar */}
