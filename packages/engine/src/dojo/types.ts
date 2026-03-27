@@ -181,7 +181,7 @@ export interface LogEntry {
 export interface OpponentView {
   id: string;
   name: string;
-  archetype: Archetype;
+  archetype: Archetype | null;  // hidden from human players, visible to bots
   lp: number;
   ki: number;
   maxKi: number;

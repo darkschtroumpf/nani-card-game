@@ -161,6 +161,123 @@ export const SENSEI_DECKS: Record<Archetype, string[]> = {
   ],
 };
 
+// --- Sensei Draft: generate 15 cards weighted by archetype, player picks 10 ---
+
+const ARCHETYPE_UNIVERSE: Record<Archetype, Universe> = {
+  shonen_blitz: 'shonen',
+  magical_ward: 'magical',
+  mecha_fortress: 'mecha',
+  isekai_thief: 'isekai',
+  seinen_assassin: 'seinen',
+};
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export function generateDraftPool(archetype: Archetype): CardDef[] {
+  const mainUniverse = ARCHETYPE_UNIVERSE[archetype];
+  const sig = ALL_SIGNATURES.find(s => s.universe === mainUniverse)!;
+
+  // Pool: weighted selection
+  // 8 cards from main universe (fighters + techniques + traps + equipment)
+  const mainCards = [
+    ...ALL_FIGHTERS.filter(c => c.universe === mainUniverse),
+    ...ALL_TECHNIQUES.filter(c => c.universe === mainUniverse),
+    ...ALL_TRAPS.filter(c => c.universe === mainUniverse),
+    ...ALL_EQUIPMENT.filter(c => c.universe === mainUniverse),
+  ];
+
+  // 6 cards from other universes (splash options)
+  const otherCards = [
+    ...ALL_FIGHTERS.filter(c => c.universe !== mainUniverse),
+    ...ALL_TECHNIQUES.filter(c => c.universe !== mainUniverse),
+    ...ALL_TRAPS.filter(c => c.universe !== mainUniverse),
+    ...ALL_EQUIPMENT.filter(c => c.universe !== mainUniverse),
+  ];
+
+  const shuffledMain = shuffle(mainCards);
+  const shuffledOther = shuffle(otherCards);
+
+  // Always include: signature + 8 main + 6 splash = 15 cards
+  const pool: CardDef[] = [
+    sig,
+    ...shuffledMain.slice(0, 8),
+    ...shuffledOther.slice(0, 6),
+  ];
+
+  return shuffle(pool);
+}
+
+// Bot auto-draft: pick the 10 best cards from a pool of 15
+export function botAutoDraft(pool: CardDef[], archetype: Archetype): CardDef[] {
+  const mainUniverse = ARCHETYPE_UNIVERSE[archetype];
+
+  // Score each card
+  const scored = pool.map(card => {
+    let score = 0;
+
+    // Signature: always keep
+    if (card.type === 'signature') score += 100;
+
+    // Fighters are essential
+    if (card.type === 'fighter') score += 10 + (card.atk ?? 0) + (card.hp ?? 0);
+
+    // Main universe bonus
+    if (card.universe === mainUniverse) score += 5;
+
+    // Techniques are valuable
+    if (card.type === 'technique') score += 7;
+
+    // Traps
+    if (card.type === 'trap') score += 5;
+
+    // Equipment
+    if (card.type === 'equipment') score += 4 + (card.atkBonus ?? 0) + (card.hpBonus ?? 0);
+
+    // Ensure at least 4 fighters
+    return { card, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  // Pick top 10, ensuring at least 4 fighters
+  const picked: CardDef[] = [];
+  const remaining = [...scored];
+
+  // First pass: grab signature and top fighters
+  for (let i = remaining.length - 1; i >= 0; i--) {
+    if (remaining[i].card.type === 'signature') {
+      picked.push(remaining.splice(i, 1)[0].card);
+    }
+  }
+
+  // Ensure 4 fighters minimum
+  const fighters = remaining.filter(s => s.card.type === 'fighter').sort((a, b) => b.score - a.score);
+  let fighterCount = 0;
+  for (const f of fighters) {
+    if (fighterCount >= 4) break;
+    if (picked.length >= 10) break;
+    picked.push(f.card);
+    remaining.splice(remaining.indexOf(f), 1);
+    fighterCount++;
+  }
+
+  // Fill rest with highest scored
+  remaining.sort((a, b) => b.score - a.score);
+  for (const s of remaining) {
+    if (picked.length >= 10) break;
+    picked.push(s.card);
+  }
+
+  return picked.slice(0, 10);
+}
+
 // --- Shared Dojo Supply (cards available for purchase) ---
 
 export function createDojoSupply(): CardDef[] {

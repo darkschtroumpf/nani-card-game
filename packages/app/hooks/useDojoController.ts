@@ -13,6 +13,8 @@ import {
   botDecideDojoPhase, botDecideDeployPhase, botDecideCombat,
   botDecideDefense, createBotMemory,
 } from '../../engine/src/dojo/bot';
+import { generateDraftPool, botAutoDraft } from '../../engine/src/dojo/cards';
+import type { CardDef } from '../../engine/src/dojo/types';
 import type { BotMemory } from '../../engine/src/dojo/bot';
 import type { CombatStep } from '../components/CombatScene';
 import { tapFeedback, playCardFeedback, impactFeedback, warningFeedback, successFeedback, errorFeedback } from '../services/feedback';
@@ -64,6 +66,13 @@ export interface DojoGameController {
 
   // Bot visibility
   botBubbles: Record<string, { message: string; type: 'action' | 'reaction' | 'nani' } | null>;
+
+  // Draft
+  draftPool: CardDef[] | null;
+  draftSelected: number[];
+  isDrafting: boolean;
+  toggleDraftCard: (index: number) => void;
+  confirmDraft: () => void;
 }
 
 // ============================================================
@@ -81,6 +90,10 @@ export function useDojoController(): DojoGameController {
   const [events, setEvents] = useState<string[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [botBubbles, setBotBubbles] = useState<Record<string, { message: string; type: 'action' | 'reaction' | 'nani' } | null>>({});
+  const [draftPool, setDraftPool] = useState<CardDef[] | null>(null);
+  const [draftSelected, setDraftSelected] = useState<number[]>([]);
+  const [isDrafting, setIsDrafting] = useState(false);
+  const configRef = useRef<DojoGameConfig | null>(null);
 
   const stateRef = useRef<DojoGameState | null>(null);
   const myIdRef = useRef<string>('p0');
@@ -242,16 +255,43 @@ export function useDojoController(): DojoGameController {
     processingRef.current = false;
   }, [syncView, addEvents]);
 
-  // --- Start Game ---
+  // --- Start Game (with Draft) ---
 
   const startGame = useCallback((config: DojoGameConfig) => {
+    configRef.current = config;
+
+    // Generate draft pool for the human player
+    const pool = generateDraftPool(config.playerArchetype);
+    setDraftPool(pool);
+    setDraftSelected([]);
+    setIsDrafting(true);
+  }, []);
+
+  const toggleDraftCard = useCallback((index: number) => {
+    setDraftSelected(prev => {
+      if (prev.includes(index)) return prev.filter(i => i !== index);
+      if (prev.length >= 10) return prev; // max 10
+      return [...prev, index];
+    });
+  }, []);
+
+  const confirmDraft = useCallback(() => {
+    const config = configRef.current;
+    if (!config || !draftPool || draftSelected.length !== 10) return;
+
+    const playerDeck = draftSelected.map(i => draftPool[i]);
+
     const botArchetypes = config.botArchetypes ??
       DEFAULT_BOT_ARCHETYPES.slice(0, config.botCount);
     const botNames = ['Sakura', 'Rei', 'Subaru', 'Light'];
 
     const playerConfigs = [
-      { name: config.playerName, archetype: config.playerArchetype },
-      ...botArchetypes.map((a, i) => ({ name: botNames[i] || `Bot ${i + 1}`, archetype: a })),
+      { name: config.playerName, archetype: config.playerArchetype, draftedCards: playerDeck },
+      ...botArchetypes.map((a, i) => {
+        const botPool = generateDraftPool(a);
+        const botDeck = botAutoDraft(botPool, a);
+        return { name: botNames[i] || `Bot ${i + 1}`, archetype: a, draftedCards: botDeck };
+      }),
     ];
 
     memoriesRef.current = playerConfigs.map(() => createBotMemory());
@@ -262,17 +302,17 @@ export function useDojoController(): DojoGameController {
     setEvents([]);
     setCombatStep(null);
     setCombatEvents([]);
+    setDraftPool(null);
+    setIsDrafting(false);
     setGameStarted(true);
 
-    // Process opening ki phase for player
     processKiPhase(newState);
     syncView(newState);
 
-    // If first player is a bot (shouldn't happen since p0 is human), process
     if (newState.players[0].id !== myIdRef.current) {
       processBotTurns(newState);
     }
-  }, [syncView, processBotTurns]);
+  }, [draftPool, draftSelected, syncView, processBotTurns]);
 
   // --- Dojo Phase Actions ---
 
@@ -554,5 +594,10 @@ export function useDojoController(): DojoGameController {
     passDefense,
     advanceCombat,
     botBubbles,
+    draftPool,
+    draftSelected,
+    isDrafting,
+    toggleDraftCard,
+    confirmDraft,
   };
 }

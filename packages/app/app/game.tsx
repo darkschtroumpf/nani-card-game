@@ -22,6 +22,7 @@ import CombatArena from '../components/CombatArena';
 import type { CombatStep } from '../components/CombatArena';
 import { tapFeedback, impactFeedback, warningFeedback, playCardFeedback, successFeedback } from '../services/feedback';
 import DojoTutorial, { DOJO_TUTORIAL_STEPS } from '../components/DojoTutorial';
+import DraftScreen from '../components/DraftScreen';
 
 // ============================================================
 // Wrappers — one hook per mode (Rules of Hooks safe)
@@ -102,7 +103,7 @@ type ActionMode =
 
 function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const router = useRouter();
-  const { view, turnPhase, combatStep, combatEvents, isMyTurn, botBubbles } = ctrl;
+  const { view, turnPhase, combatStep, combatEvents, isMyTurn, botBubbles, isDrafting, draftPool, draftSelected } = ctrl;
 
   const [actionMode, setActionMode] = useState<ActionMode>('idle');
   const [tutorialStep, setTutorialStep] = useState(0);
@@ -112,6 +113,20 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const [selectedFieldSlot, setSelectedFieldSlot] = useState<number | null>(null);
   const [selectedTargetPlayer, setSelectedTargetPlayer] = useState<string | null>(null);
   const [selectedTargetSlot, setSelectedTargetSlot] = useState<number | null>(null);
+
+  // Draft screen
+  if (isDrafting && draftPool) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <DraftScreen
+          pool={draftPool}
+          selected={draftSelected}
+          onToggle={ctrl.toggleDraftCard}
+          onConfirm={ctrl.confirmDraft}
+        />
+      </SafeAreaView>
+    );
+  }
 
   // Loading
   if (!view) {

@@ -405,12 +405,8 @@ export function botDecideDefense(view: DojoPlayerView, memory: BotMemory): BotDe
 
     let naniProb = estimatedBluffRate;
 
-    // Info-based analysis: does their archetype match the declaration?
-    const archetypeUniverse: Record<Archetype, Universe> = {
-      shonen_blitz: 'shonen', magical_ward: 'magical', mecha_fortress: 'mecha',
-      isekai_thief: 'isekai', seinen_assassin: 'seinen',
-    };
-    if (archetypeUniverse[attacker.archetype] !== declaredU) naniProb += 0.08;
+    // Info-based analysis: archetype unknown with draft, skip this check
+    // (previously checked archetype match, but now archetype is hidden)
 
     // Check their Dojo purchases — did they ever buy this universe?
     const knownPicks = memory.opponentDojoPicks[combat.attackerId] ?? [];

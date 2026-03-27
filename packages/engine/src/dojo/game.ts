@@ -31,18 +31,16 @@ function shuffle<T>(arr: T[]): T[] {
 // Game Creation
 // ============================================================
 
-export function createDojoGame(playerConfigs: { name: string; archetype: Archetype }[]): DojoGameState {
+export function createDojoGame(playerConfigs: { name: string; archetype: Archetype; draftedCards?: CardDef[] }[]): DojoGameState {
   _nextId = 0;
 
   const dojoSupplyDefs = shuffle(createDojoSupply());
   const dojoSupply = dojoSupplyDefs.map(c => cardInstance(c, true));
 
   const players: DojoPlayer[] = playerConfigs.map((cfg, i) => {
-    const senseiCardIds = SENSEI_DECKS[cfg.archetype];
-    const senseiCards = senseiCardIds.map(id => {
-      const def = ALL_CARDS.find(c => c.id === id)!;
-      return cardInstance(def, false);
-    });
+    // Use drafted cards if provided, otherwise fall back to fixed deck
+    const deckDefs: CardDef[] = cfg.draftedCards ?? SENSEI_DECKS[cfg.archetype].map(id => ALL_CARDS.find(c => c.id === id)!);
+    const senseiCards = deckDefs.map(def => cardInstance(def, false));
     const shuffled = shuffle(senseiCards);
     const hand = shuffled.slice(0, 4);
     const drawPile = shuffled.slice(4);
@@ -119,7 +117,7 @@ export function getDojoPlayerView(state: DojoGameState, playerId: string): DojoP
     .map(p => ({
       id: p.id,
       name: p.name,
-      archetype: p.archetype,
+      archetype: null,  // hidden — deck composition is secret thanks to draft
       lp: p.lp,
       ki: p.ki,
       maxKi: p.maxKi,

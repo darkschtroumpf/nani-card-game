@@ -32,7 +32,7 @@ const ARCHETYPE_SHORT: Record<Archetype, string> = {
 
 export default function OpponentHUD({ opponent, isCurrentTurn, isTargetable, onPress, bubbleMessage, bubbleType }: Props) {
   const dead = opponent.lp <= 0;
-  const uColor = universeColor(opponent.archetype.split('_')[0] as any);
+  const uColor = opponent.archetype ? universeColor(opponent.archetype.split('_')[0] as any) : colors.textDim;
   const borderColor = isCurrentTurn ? colors.accent : isTargetable ? colors.warning : uColor + '40';
 
   // Pulse animation for current turn
@@ -63,10 +63,12 @@ export default function OpponentHUD({ opponent, isCurrentTurn, isTargetable, onP
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.emoji}>{ARCHETYPE_EMOJI[opponent.archetype]}</Text>
+          <Text style={styles.emoji}>{opponent.archetype ? ARCHETYPE_EMOJI[opponent.archetype] : '❓'}</Text>
           <View style={styles.nameCol}>
             <Text style={styles.name} numberOfLines={1}>{opponent.name}</Text>
-            <Text style={[styles.archLabel, { color: uColor }]}>{ARCHETYPE_SHORT[opponent.archetype]}</Text>
+            <Text style={[styles.archLabel, { color: uColor }]}>
+              {opponent.archetype ? ARCHETYPE_SHORT[opponent.archetype] : '???'}
+            </Text>
           </View>
           <Text style={styles.handCount}>🃏{opponent.handSize}</Text>
         </View>
