@@ -470,24 +470,24 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                     </TouchableOpacity>
                   </View>
 
-                  {/* Signature */}
-                  {sig && (
-                    <TouchableOpacity
-                      style={[styles.deployBtn, canSig ? { backgroundColor: colors.accent } : styles.deployBtnDisabled]}
-                      disabled={!canSig}
-                      onPress={() => {
-                        const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
-                        if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
-                      }}
-                    >
-                      <Text style={[styles.deployBtnText, canSig && { color: colors.bg }]}>Signature!</Text>
-                      {!canSig && <Text style={styles.deployBtnHint}>Ki ou Focus insuffisant</Text>}
+                  {/* Signature + End deploy in one row */}
+                  <View style={styles.deployRow}>
+                    {sig && (
+                      <TouchableOpacity
+                        style={[styles.deployBtnHalf, canSig ? { backgroundColor: colors.accent } : styles.deployBtnDisabled]}
+                        disabled={!canSig}
+                        onPress={() => {
+                          const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
+                          if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
+                        }}
+                      >
+                        <Text style={[styles.deployBtnText, canSig && { color: colors.bg }]}>Signature</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity style={[styles.deployBtnHalf, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.textDim }]} onPress={() => ctrl.endDeploy()}>
+                      <Text style={styles.endPhaseText}>Fin deploy</Text>
                     </TouchableOpacity>
-                  )}
-
-                  <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.endDeploy()}>
-                    <Text style={styles.endPhaseText}>Fin du deploiement</Text>
-                  </TouchableOpacity>
+                  </View>
                 </View>
               );
             })()}
@@ -497,8 +497,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         {/* COMBAT SELECT PHASE */}
         {turnPhase === 'combat_select' && isMyTurn && !combatStep && (
           <>
-            {/* Show MY field only when not selecting opponent's target */}
-            {actionMode !== 'combat_pick_target_slot' && actionMode !== 'combat_declare_universe' && (
+            {/* Show MY field only in idle mode (not during attacker/target selection) */}
+            {actionMode === 'idle' && (
               <FieldView field={me.field} traps={me.traps} />
             )}
 
@@ -697,19 +697,19 @@ const styles = StyleSheet.create({
   opponentsScroll: { maxHeight: 145, marginTop: 4 },
   opponentsContent: { paddingHorizontal: 8, gap: 6 },
 
-  mainArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 4, gap: 6 },
+  mainArea: { flex: 1, paddingHorizontal: 10, paddingVertical: 4, paddingBottom: 8, gap: 4 },
   statusText: { color: colors.text, fontSize: fonts.sizes.md, textAlign: 'center', fontWeight: 'bold', paddingVertical: 2 },
 
   // Deploy
   deployActions: { gap: 8 },
-  deployBtn: { backgroundColor: colors.secondary, paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
-  deployBtnHalf: { flex: 1, backgroundColor: colors.bgCard, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  deployBtnText: { color: colors.text, fontSize: fonts.sizes.md, fontWeight: 'bold' },
+  deployBtn: { backgroundColor: colors.secondary, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  deployBtnHalf: { flex: 1, backgroundColor: colors.bgCard, paddingVertical: 8, borderRadius: 8, alignItems: 'center' },
+  deployBtnText: { color: colors.text, fontSize: fonts.sizes.sm, fontWeight: 'bold' },
   deployBtnDisabled: { opacity: 0.35 },
-  deployBtnHint: { color: colors.textDim, fontSize: 9, marginTop: 2 },
-  deployRow: { flexDirection: 'row', gap: 8 },
-  endPhaseBtn: { paddingVertical: 10, alignItems: 'center' },
-  endPhaseText: { color: colors.textDim, fontSize: fonts.sizes.md },
+  deployBtnHint: { color: colors.textDim, fontSize: 8, marginTop: 1 },
+  deployRow: { flexDirection: 'row', gap: 6 },
+  endPhaseBtn: { paddingVertical: 6, alignItems: 'center' },
+  endPhaseText: { color: colors.textDim, fontSize: fonts.sizes.sm },
 
   concealedChoice: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
   concealBtn: { backgroundColor: colors.success, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 10 },

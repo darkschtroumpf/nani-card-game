@@ -147,11 +147,11 @@ export function useDojoController(): DojoGameController {
       const memory = memoriesRef.current[playerIdx] ?? createBotMemory();
       const botView = getDojoPlayerView(s, current.id);
 
-      // Process bot phases
+      // Process bot phases — slower delays so player can follow
       if (s.turnPhase === 'ki') {
         processKiPhase(s);
         syncView(s);
-        await delay(200);
+        await delay(400);
       }
 
       if (s.turnPhase === 'dojo') {
@@ -162,10 +162,12 @@ export function useDojoController(): DojoGameController {
         } else if (decision.action === 'meditate') {
           processDojoMeditate(s);
           showBotBubble(current.id, 'Focus...');
+        } else {
+          showBotBubble(current.id, '...');
         }
         s.turnPhase = 'deploy';
         syncView(s);
-        await delay(500);
+        await delay(800);
       }
 
       if (s.turnPhase === 'deploy') {
@@ -189,7 +191,7 @@ export function useDojoController(): DojoGameController {
         }
         s.turnPhase = 'combat_select';
         syncView(s);
-        await delay(300);
+        await delay(700);
       }
 
       if (s.turnPhase === 'combat_select') {
@@ -202,7 +204,7 @@ export function useDojoController(): DojoGameController {
           if (success) {
             showBotBubble(current.id, 'YAAAH!', 'action');
             syncView(s);
-            await delay(600);
+            await delay(1000);
 
             // Check if defender is human
             const defender = s.players.find(p => p.id === s.combat?.defenderId);
@@ -237,7 +239,7 @@ export function useDojoController(): DojoGameController {
               const combatEvts = resolveCombat(s);
               addEvents(combatEvts);
               syncView(s);
-              await delay(400);
+              await delay(900);
             }
           }
         }
