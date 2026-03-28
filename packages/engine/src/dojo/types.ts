@@ -146,6 +146,8 @@ export interface CombatState {
   defenderTechniqueUsed: CardInstance | null;
   attackerTechniqueUsed: CardInstance | null;
   naniCalled: boolean;
+  trapTriggered: boolean;   // whether defender chose to trigger trap
+  trapSkipped: boolean;     // whether defender chose to skip trap
 }
 
 export interface DojoGameState {

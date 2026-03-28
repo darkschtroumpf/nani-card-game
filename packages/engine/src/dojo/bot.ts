@@ -399,6 +399,11 @@ export function botChooseBlocker(view: DojoPlayerView, memory: BotMemory): numbe
   return bestSlot;
 }
 
+// Bot decides whether to trigger trap (always yes if real trap exists)
+export function botDecideTrap(view: DojoPlayerView): boolean {
+  return view.me.traps.some(t => typeof t !== 'boolean' && t.card && t.card.card.type === 'trap');
+}
+
 export function botDecideDefense(view: DojoPlayerView, memory: BotMemory): BotDecision {
   const me = view.me;
   const combat = view.combat!;

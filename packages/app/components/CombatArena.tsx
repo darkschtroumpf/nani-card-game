@@ -5,7 +5,7 @@ import { impactFeedback, warningFeedback, successFeedback, errorFeedback } from 
 import DojoCard from './DojoCard';
 import type { CardDef, Universe } from '../../engine/src/dojo/types';
 
-export type CombatStep = 'declaration' | 'choose_blocker' | 'defense' | 'nani_call' | 'reveal' | 'resolution';
+export type CombatStep = 'declaration' | 'choose_blocker' | 'trap_choice' | 'defense' | 'nani_call' | 'reveal' | 'resolution';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -27,6 +27,8 @@ interface Props {
   onNaniCall?: () => void;
   onPassDefense?: () => void;
   onChooseBlocker?: (slot: number) => void;
+  onTriggerTrap?: () => void;
+  onSkipTrap?: () => void;
 }
 
 export default function CombatArena(props: Props) {
@@ -35,6 +37,7 @@ export default function CombatArena(props: Props) {
     declaredUniverse, attackerConcealed, naniCalled, naniResult,
     events, isDefender, canCallNani, myFighters,
     onContinue, onNaniCall, onPassDefense, onChooseBlocker,
+    onTriggerTrap, onSkipTrap,
   } = props;
 
   // Animations
@@ -214,6 +217,31 @@ export default function CombatArena(props: Props) {
         {step === 'choose_blocker' && !isDefender && (
           <>
             <Text style={styles.subtitle}>{defenderName} choisit son defenseur...</Text>
+            <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
+              <Text style={styles.continueBtnText}>Continuer</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* TRAP CHOICE */}
+        {step === 'trap_choice' && isDefender && (
+          <>
+            <Text style={styles.title}>Piege!</Text>
+            <Text style={styles.subtitle}>Tu as un piege pose. L'activer?</Text>
+            <View style={styles.combatRow}>
+              <TouchableOpacity style={[styles.blockerBtn, { borderColor: colors.trap }]} onPress={onTriggerTrap}>
+                <Text style={[styles.blockerName, { color: colors.trap }]}>Activer!</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.blockerBtn} onPress={onSkipTrap}>
+                <Text style={styles.blockerName}>Garder</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {step === 'trap_choice' && !isDefender && (
+          <>
+            <Text style={styles.subtitle}>{defenderName} decide...</Text>
             <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
               <Text style={styles.continueBtnText}>Continuer</Text>
             </TouchableOpacity>

@@ -8,10 +8,11 @@ import {
   deployFighter, setTrap, equipCard, initiateCombat, defenderChooseBlocker,
   defenderPlayTechnique, callNani, resolveCombat,
   processEndPhase, getDojoPlayerView, activateSignature,
+  defenderHasTrap, defenderTriggerTrap, defenderSkipTrap,
 } from '../../engine/src/dojo/game';
 import {
   botDecideDojoPhase, botDecideDeployPhase, botDecideCombat,
-  botDecideDefense, botChooseBlocker, createBotMemory,
+  botDecideDefense, botChooseBlocker, botDecideTrap, createBotMemory,
 } from '../../engine/src/dojo/bot';
 import { generateDraftPool, botAutoDraft } from '../../engine/src/dojo/cards';
 import type { CardDef } from '../../engine/src/dojo/types';
@@ -59,6 +60,8 @@ export interface DojoGameController {
 
   // Defense
   chooseBlocker: (slot: number) => void;
+  triggerTrap: () => void;
+  skipTrap: () => void;
   doCallNani: () => void;
   passDefense: () => void;
 
@@ -232,6 +235,13 @@ export function useDojoController(): DojoGameController {
                 defenderChooseBlocker(s, blockerSlot);
                 showBotBubble(defender.id, 'Je bloque!', 'reaction');
                 syncView(s);
+                await delay(600);
+              }
+
+              // Bot decides trap
+              if (botDecideTrap(defView)) {
+                defenderTriggerTrap(s);
+                showBotBubble(defender.id, 'Piege!', 'reaction');
                 await delay(600);
               }
 
@@ -489,22 +499,54 @@ export function useDojoController(): DojoGameController {
 
   // --- Defense Actions ---
 
+  const proceedAfterBlocker = useCallback((s: DojoGameState) => {
+    // Check if defender has a trap to trigger
+    if (defenderHasTrap(s)) {
+      setCombatStep('trap_choice' as CombatStep);
+      syncView(s);
+      return;
+    }
+    // Check if NANI is possible
+    const atkFighter = s.players.find(p => p.id === s.combat!.attackerId)?.field[s.combat!.attackerSlot]?.fighter;
+    const isConcealed = atkFighter?.concealed ?? false;
+    if (isConcealed) {
+      setCombatStep('nani_call');
+      syncView(s);
+    } else {
+      setCombatStep('reveal');
+      const evts = resolveCombat(s);
+      setCombatEvents(evts);
+      syncView(s);
+    }
+  }, [syncView]);
+
   const chooseBlocker = useCallback((slot: number) => {
     const s = stateRef.current;
     if (!s || !s.combat) return;
     defenderChooseBlocker(s, slot);
     tapFeedback();
-    // After choosing blocker, move to NANI decision
-    const atkFighter = s.players.find(p => p.id === s.combat!.attackerId)?.field[s.combat!.attackerSlot]?.fighter;
-    const isConcealed = atkFighter?.concealed ?? false;
-    const isDirectAttack = s.combat!.defenderSlot === null;
-    if (isConcealed && !isDirectAttack) {
-      setCombatStep('nani_call');
-    } else {
-      setCombatStep('reveal');
-      const evts = resolveCombat(s);
-      setCombatEvents(evts);
-    }
+    proceedAfterBlocker(s);
+  }, [proceedAfterBlocker]);
+
+  const triggerTrap = useCallback(() => {
+    const s = stateRef.current;
+    if (!s || !s.combat) return;
+    defenderTriggerTrap(s);
+    impactFeedback();
+    // Continue to resolve
+    setCombatStep('reveal');
+    const evts = resolveCombat(s);
+    setCombatEvents(evts);
+    syncView(s);
+  }, [syncView]);
+
+  const skipTrap = useCallback(() => {
+    const s = stateRef.current;
+    if (!s || !s.combat) return;
+    defenderSkipTrap(s);
+    setCombatStep('reveal');
+    const evts = resolveCombat(s);
+    setCombatEvents(evts);
     syncView(s);
   }, [syncView]);
 
@@ -547,18 +589,7 @@ export function useDojoController(): DojoGameController {
           // Auto-choose the only fighter
           const slot = defender.field.findIndex(sl => sl.fighter);
           defenderChooseBlocker(s, slot);
-          // Then check NANI
-          const attacker = s.players.find(p => p.id === s.combat?.attackerId);
-          const atkFighter = attacker?.field[s.combat?.attackerSlot ?? 0]?.fighter;
-          const isConcealed = atkFighter?.concealed ?? false;
-          if (isConcealed) {
-            setCombatStep('nani_call');
-          } else {
-            setCombatStep('reveal');
-            const evts = resolveCombat(s);
-            setCombatEvents(evts);
-            syncView(s);
-          }
+          proceedAfterBlocker(s);
         } else {
           // No fighters — direct attack, go to resolve
           setCombatStep('reveal');
@@ -639,6 +670,8 @@ export function useDojoController(): DojoGameController {
     doCallNani,
     passDefense,
     chooseBlocker,
+    triggerTrap,
+    skipTrap,
     advanceCombat,
     botBubbles,
     draftPool,

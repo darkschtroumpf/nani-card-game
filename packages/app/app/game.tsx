@@ -665,6 +665,8 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           onNaniCall={() => { warningFeedback(); ctrl.doCallNani(); }}
           onPassDefense={() => ctrl.passDefense()}
           onChooseBlocker={(slot) => { tapFeedback(); ctrl.chooseBlocker(slot); }}
+          onTriggerTrap={() => ctrl.triggerTrap()}
+          onSkipTrap={() => ctrl.skipTrap()}
         />
       )}
 

@@ -397,6 +397,8 @@ export function initiateCombat(
     defenderTechniqueUsed: null,
     attackerTechniqueUsed: null,
     naniCalled: false,
+    trapTriggered: false,
+    trapSkipped: false,
   };
 
   state.turnPhase = 'combat_declare';
@@ -408,6 +410,22 @@ export function initiateCombat(
       `${attacker.name} attaque ${defender.name} et déclare ${effectiveDeclared}!`);
   }
   return true;
+}
+
+export function defenderHasTrap(state: DojoGameState): boolean {
+  if (!state.combat) return false;
+  const defender = state.players.find(p => p.id === state.combat!.defenderId)!;
+  return defender.traps.some(t => t.card && t.card.card.type === 'trap');
+}
+
+export function defenderTriggerTrap(state: DojoGameState): void {
+  if (!state.combat) return;
+  state.combat.trapTriggered = true;
+}
+
+export function defenderSkipTrap(state: DojoGameState): void {
+  if (!state.combat) return;
+  state.combat.trapSkipped = true;
 }
 
 export function defenderChooseBlocker(state: DojoGameState, blockerSlot: number): boolean {
@@ -502,16 +520,17 @@ export function resolveCombat(state: DojoGameState): string[] {
     attacker.bluffsSuccessful++;
   }
 
-  // Check for trap trigger
-  for (let i = 0; i < defender.traps.length; i++) {
-    const trap = defender.traps[i];
-    if (trap.card && trap.card.card.type === 'trap') {
-      events.push(`${defender.name} active le piège ${trap.card.card.name}!`);
-      applyTrapEffect(state, trap.card, attacker, defender, combat, events);
-      defender.discardPile.push(trap.card);
-      defender.traps[i] = { card: null, turnsSet: 0 };
-      // Only trigger first real trap
-      break;
+  // Check for trap trigger (only if defender chose to activate)
+  if (combat.trapTriggered) {
+    for (let i = 0; i < defender.traps.length; i++) {
+      const trap = defender.traps[i];
+      if (trap.card && trap.card.card.type === 'trap') {
+        events.push(`${defender.name} active le piège ${trap.card.card.name}!`);
+        applyTrapEffect(state, trap.card, attacker, defender, combat, events);
+        defender.discardPile.push(trap.card);
+        defender.traps[i] = { card: null, turnsSet: 0 };
+        break;
+      }
     }
   }
 

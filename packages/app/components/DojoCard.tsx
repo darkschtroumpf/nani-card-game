@@ -1,6 +1,6 @@
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, universeColor } from '../theme';
-import type { CardDef, CardInstance, Universe } from '../../engine/src/dojo/types';
+import { colors, fonts } from '../theme';
+import type { CardDef, CardInstance } from '../../engine/src/dojo/types';
 
 interface Props {
   card?: CardDef;
@@ -13,12 +13,38 @@ interface Props {
   disabled?: boolean;
 }
 
-const TYPE_ICONS: Record<string, string> = {
-  fighter: '⚔',
-  technique: '✦',
-  trap: '⚡',
-  equipment: '🛡',
-  signature: '★',
+// Colors by CARD TYPE (same color for all cards of a type)
+const TYPE_COLORS: Record<string, string> = {
+  fighter: '#2563eb',    // blue
+  technique: '#9333ea',  // purple
+  trap: '#dc2626',       // red
+  equipment: '#d97706',  // amber
+  signature: '#f59e0b',  // gold
+};
+
+const TYPE_BG: Record<string, string> = {
+  fighter: '#1e3a5f',
+  technique: '#2d1b4e',
+  trap: '#4a1010',
+  equipment: '#3d2800',
+  signature: '#3d2e00',
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  fighter: 'FIGHTER',
+  technique: 'TECHNIQUE',
+  trap: 'PIEGE',
+  equipment: 'EQUIP',
+  signature: 'SIGNATURE',
+};
+
+// Symbols by UNIVERSE (visual identity)
+const UNIVERSE_SYMBOLS: Record<string, string> = {
+  shonen: '🔥',
+  magical: '✨',
+  mecha: '⚙',
+  isekai: '🌀',
+  seinen: '🗡',
 };
 
 export default function DojoCard({
@@ -29,10 +55,10 @@ export default function DojoCard({
 
   if (!card && !isConcealed) return null;
 
-  const w = small ? 52 : 72;
-  const h = small ? 76 : 104;
+  const w = small ? 56 : 76;
+  const h = small ? 82 : 112;
 
-  // Concealed card that we DON'T own (opponent) — show "?"
+  // Concealed card (opponent) — show "?"
   if (isConcealed && !instance) {
     return (
       <TouchableOpacity
@@ -46,26 +72,31 @@ export default function DojoCard({
     );
   }
 
-  // Concealed card that we OWN — show card info with "hidden" overlay
-  if (isConcealed && instance && card) {
-    const uColor = universeColor(card.universe as any);
+  if (!card) return null;
+
+  const typeColor = TYPE_COLORS[card.type] ?? colors.textDim;
+  const typeBg = TYPE_BG[card.type] ?? colors.bgLight;
+  const uSymbol = UNIVERSE_SYMBOLS[card.universe] ?? '?';
+  const isOwned = !!instance;
+
+  // Concealed card (own) — show info with CACHE badge
+  if (isConcealed && isOwned) {
     return (
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled || !onPress}
-        style={[styles.card, { width: w, height: h, borderColor: uColor, opacity: 0.85 }, selected && styles.selected]}
+        style={[styles.card, { width: w, height: h, borderColor: typeColor, backgroundColor: typeBg, opacity: 0.8 }, selected && styles.selected]}
         activeOpacity={0.7}
       >
-        <View style={[styles.header, { backgroundColor: uColor }]}>
-          <Text style={styles.headerText}>{card.universe.toUpperCase().slice(0, 3)}</Text>
-          <Text style={styles.concealedBadge}>CACHE</Text>
+        <View style={[styles.header, { backgroundColor: typeColor }]}>
+          <Text style={styles.uSymbol}>{uSymbol}</Text>
+          <Text style={styles.cacheBadge}>CACHE</Text>
         </View>
         <View style={styles.body}>
-          <Text style={[styles.typeIcon, { fontSize: small ? 14 : 18 }]}>{TYPE_ICONS[card.type] ?? ''}</Text>
-          <Text style={[styles.name, { fontSize: small ? 7 : 9 }]} numberOfLines={2}>{card.name}</Text>
+          <Text style={[styles.name, { fontSize: small ? 8 : 10 }]} numberOfLines={2}>{card.name}</Text>
         </View>
         {card.type === 'fighter' && (
-          <View style={styles.footer}>
+          <View style={[styles.footer, { backgroundColor: typeColor + '40' }]}>
             <Text style={styles.statAtk}>{card.atk}</Text>
             <Text style={styles.statSep}>/</Text>
             <Text style={styles.statHp}>{card.hp}</Text>
@@ -75,61 +106,62 @@ export default function DojoCard({
     );
   }
 
-  if (!card) return null;
-
-  const uColor = universeColor(card.universe as any);
-  const typeIcon = TYPE_ICONS[card.type] ?? '';
-
   return (
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled || !onPress}
       style={[
         styles.card,
-        { width: w, height: h, borderColor: uColor },
+        { width: w, height: h, borderColor: typeColor, backgroundColor: typeBg },
         selected && styles.selected,
       ]}
       activeOpacity={0.7}
     >
-      {/* Header: universe + ki cost */}
-      <View style={[styles.header, { backgroundColor: uColor }]}>
-        <Text style={styles.headerText} numberOfLines={1}>
-          {card.universe.toUpperCase().slice(0, 3)}
-        </Text>
+      {/* Header: type color + universe symbol + ki cost */}
+      <View style={[styles.header, { backgroundColor: typeColor }]}>
+        <Text style={styles.uSymbol}>{uSymbol}</Text>
+        <Text style={styles.typeLabel}>{TYPE_LABELS[card.type] ?? ''}</Text>
         {showKiCost && (
-          <Text style={styles.kiCost}>{card.kiCost}</Text>
+          <View style={styles.kiBox}>
+            <Text style={styles.kiCost}>{card.kiCost}</Text>
+          </View>
         )}
       </View>
 
-      {/* Body */}
+      {/* Body: name */}
       <View style={styles.body}>
-        <Text style={[styles.typeIcon, { fontSize: small ? 14 : 18 }]}>{typeIcon}</Text>
-        <Text style={[styles.name, { fontSize: small ? 7 : 9 }]} numberOfLines={2}>
+        <Text style={[styles.name, { fontSize: small ? 8 : 10 }]} numberOfLines={2}>
           {card.name}
         </Text>
       </View>
 
       {/* Footer: stats */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: typeColor + '40' }]}>
         {card.type === 'fighter' && (
-          <>
-            <Text style={styles.statAtk}>{card.atk}</Text>
-            <Text style={styles.statSep}>/</Text>
-            <Text style={styles.statHp}>{card.hp}</Text>
-          </>
+          <View style={styles.statsRow}>
+            <Text style={styles.statAtk}>⚔{card.atk}</Text>
+            <Text style={styles.statHp}>♥{card.hp}</Text>
+          </View>
         )}
         {card.type === 'equipment' && (
           <Text style={styles.statBonus}>
-            {card.atkBonus ? `+${card.atkBonus}` : ''}{card.hpBonus ? ` +${card.hpBonus}♥` : ''}
+            {card.atkBonus ? `⚔+${card.atkBonus}` : ''}{card.hpBonus ? ` ♥+${card.hpBonus}` : ''}
           </Text>
         )}
         {card.type === 'technique' && (
-          <Text style={[styles.effectText, { fontSize: small ? 6 : 7 }]} numberOfLines={1}>
+          <Text style={[styles.effectText, { fontSize: small ? 7 : 8 }]} numberOfLines={2}>
+            {card.effect}
+          </Text>
+        )}
+        {card.type === 'trap' && (
+          <Text style={[styles.effectText, { fontSize: small ? 7 : 8 }]} numberOfLines={2}>
             {card.effect}
           </Text>
         )}
         {card.type === 'signature' && (
-          <Text style={styles.sigLabel}>SIG</Text>
+          <Text style={[styles.effectText, { fontSize: small ? 6 : 7, color: colors.accent }]} numberOfLines={2}>
+            {card.effect}
+          </Text>
         )}
       </View>
     </TouchableOpacity>
@@ -140,7 +172,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 8,
     borderWidth: 2,
-    backgroundColor: colors.bgLight,
     overflow: 'hidden',
   },
   concealed: {
@@ -154,13 +185,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
   },
-  concealedBadge: {
+  cacheBadge: {
     color: '#fff',
-    fontSize: 6,
+    fontSize: 7,
     fontWeight: 'bold',
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 3,
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
     paddingVertical: 1,
   },
   selected: {
@@ -174,53 +205,58 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 4,
     paddingVertical: 2,
+    gap: 3,
   },
-  headerText: {
-    color: '#fff',
-    fontSize: 8,
+  uSymbol: {
+    fontSize: 11,
+  },
+  typeLabel: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 7,
     fontWeight: 'bold',
+    flex: 1,
+  },
+  kiBox: {
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 7,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   kiCost: {
     color: '#fff',
     fontSize: 10,
     fontWeight: 'bold',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 6,
-    width: 14,
-    height: 14,
-    textAlign: 'center',
-    lineHeight: 14,
   },
   body: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 2,
-  },
-  typeIcon: {
-    marginBottom: 2,
+    paddingHorizontal: 3,
   },
   name: {
     color: colors.text,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   footer: {
-    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 3,
     paddingHorizontal: 4,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    gap: 2,
+    minHeight: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   statAtk: {
     color: colors.warning,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   statSep: {
@@ -229,7 +265,7 @@ const styles = StyleSheet.create({
   },
   statHp: {
     color: colors.success,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   statBonus: {
@@ -238,12 +274,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   effectText: {
-    color: colors.textDim,
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
-  },
-  sigLabel: {
-    color: colors.accent,
-    fontSize: 10,
-    fontWeight: 'bold',
+    lineHeight: 11,
   },
 });
