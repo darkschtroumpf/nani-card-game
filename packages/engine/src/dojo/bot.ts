@@ -320,40 +320,21 @@ export function botDecideCombat(view: DojoPlayerView, memory: BotMemory): BotDec
         continue;
       }
 
-      // Target specific fighters — prefer ones we can kill
-      for (let ds = 0; ds < opp.field.length; ds++) {
-        const defSlot = opp.field[ds];
-        if (!defSlot.hasFighter) continue;
-
-        let score = threat * 0.15; // threat-based targeting
+      // Mode B: attacker targets the PLAYER, not a specific fighter
+      // The defender will choose which fighter blocks
+      {
+        let score = threat * 0.2 + atkAtk;
         const { universe: declU, isBluff } = decideDeclaration(atk.fighter!, opp, memory);
-
-        if (defSlot.concealed) {
-          score += atkAtk * 0.5 - 2; // unknown, risky
-          memory.enjoyedMoments.push('Attaquer dans l\'inconnu — tension!');
-        } else if (defSlot.fighter) {
-          const defHp = defSlot.fighter.hp ?? 5;
-          const canKill = atkAtk >= defHp;
-          // Dominance check
-          let effAtk = atkAtk;
-          if (dominates(atkCard.universe, defSlot.fighter.universe)) effAtk += 3;
-          const canKillWithDom = effAtk >= defHp;
-
-          if (canKillWithDom) score += 8 + (effAtk - defHp); // kill + overflow
-          else score += effAtk - defHp; // partial damage
-
-          // Avoid trading down (don't sacrifice expensive fighter for cheap target)
-          if (defSlot.fighter.atk && (defSlot.fighter.atk >= (atk.fighter!.card.hp ?? 3))) {
-            score -= 3; // we'll lose our fighter too
-          }
-        }
-
         score -= trapPenalty;
         if (isBluff) score += 1;
 
+        // Pick the first fighter slot as a placeholder (defender will override)
+        const firstFighterSlot = opp.field.findIndex(s => s.hasFighter);
+
         if (!bestAttack || score > bestAttack.score) {
           bestAttack = {
-            attackerSlot: atk.slot, defenderId: opp.id, defenderSlot: ds,
+            attackerSlot: atk.slot, defenderId: opp.id,
+            defenderSlot: firstFighterSlot >= 0 ? firstFighterSlot : null,
             declaredUniverse: declU, bluff: isBluff, score,
           };
         }
@@ -385,6 +366,38 @@ export function botDecideCombat(view: DojoPlayerView, memory: BotMemory): BotDec
 // ============================================================
 // Defense — smart NANI calls with per-opponent tracking
 // ============================================================
+
+// Defender chooses which fighter blocks (Mode B)
+export function botChooseBlocker(view: DojoPlayerView, memory: BotMemory): number {
+  const me = view.me;
+  const combat = view.combat!;
+  const declaredU = combat.declaredUniverse;
+
+  const fighters = me.field
+    .map((s, i) => ({ fighter: s.fighter, slot: i }))
+    .filter(x => x.fighter !== null);
+
+  if (fighters.length <= 1) return fighters[0]?.slot ?? 0;
+
+  // Pick the fighter that best counters the declared universe
+  let bestSlot = fighters[0].slot;
+  let bestScore = -99;
+  for (const f of fighters) {
+    let score = 0;
+    const fU = f.fighter!.card.universe;
+    // Prefer fighter that dominates declared universe
+    if (dominates(fU, declaredU)) score += 6;
+    // Avoid fighter dominated by declared universe
+    if (dominates(declaredU, fU)) score -= 4;
+    // Prefer lower-value fighters as sacrificial blockers
+    score -= (f.fighter!.card.atk ?? 0) * 0.3;
+    // Prefer fighters with more HP (survive the hit)
+    score += (f.fighter!.card.hp ?? 0) * 0.5;
+
+    if (score > bestScore) { bestScore = score; bestSlot = f.slot; }
+  }
+  return bestSlot;
+}
 
 export function botDecideDefense(view: DojoPlayerView, memory: BotMemory): BotDecision {
   const me = view.me;

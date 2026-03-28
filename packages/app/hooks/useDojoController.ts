@@ -5,13 +5,13 @@ import type {
 } from '../../engine/src/dojo/types';
 import {
   createDojoGame, processKiPhase, processDojoBuy, processDojoMeditate,
-  deployFighter, setTrap, equipCard, initiateCombat,
+  deployFighter, setTrap, equipCard, initiateCombat, defenderChooseBlocker,
   defenderPlayTechnique, callNani, resolveCombat,
   processEndPhase, getDojoPlayerView, activateSignature,
 } from '../../engine/src/dojo/game';
 import {
   botDecideDojoPhase, botDecideDeployPhase, botDecideCombat,
-  botDecideDefense, createBotMemory,
+  botDecideDefense, botChooseBlocker, createBotMemory,
 } from '../../engine/src/dojo/bot';
 import { generateDraftPool, botAutoDraft } from '../../engine/src/dojo/cards';
 import type { CardDef } from '../../engine/src/dojo/types';
@@ -58,6 +58,7 @@ export interface DojoGameController {
   skipCombat: () => void;
 
   // Defense
+  chooseBlocker: (slot: number) => void;
   doCallNani: () => void;
   passDefense: () => void;
 
@@ -209,20 +210,31 @@ export function useDojoController(): DojoGameController {
             // Check if defender is human
             const defender = s.players.find(p => p.id === s.combat?.defenderId);
             if (defender?.id === myIdRef.current) {
-              // Human is defender — show combat UI and wait
+              // Human is defender — show combat UI and wait for blocker choice + defense
               s.turnPhase = 'combat_response';
               setCombatStep('declaration');
               setCombatEvents([]);
               syncView(s);
               processingRef.current = false;
-              return; // Stop processing, wait for human defense
+              return;
             }
 
-            // Bot defender
+            // Bot defender: choose blocker first (Mode B)
             if (defender && s.combat) {
               const defView = getDojoPlayerView(s, defender.id);
               const defIdx = s.players.indexOf(defender);
               const defMemory = memoriesRef.current[defIdx] ?? createBotMemory();
+
+              // Bot chooses which fighter blocks
+              const hasFighters = defender.field.some(sl => sl.fighter);
+              if (hasFighters) {
+                const blockerSlot = botChooseBlocker(defView, defMemory);
+                defenderChooseBlocker(s, blockerSlot);
+                showBotBubble(defender.id, 'Je bloque!', 'reaction');
+                syncView(s);
+                await delay(600);
+              }
+
               const defDecision = botDecideDefense(defView, defMemory);
 
               if (defDecision.action === 'call_nani') {
@@ -477,6 +489,25 @@ export function useDojoController(): DojoGameController {
 
   // --- Defense Actions ---
 
+  const chooseBlocker = useCallback((slot: number) => {
+    const s = stateRef.current;
+    if (!s || !s.combat) return;
+    defenderChooseBlocker(s, slot);
+    tapFeedback();
+    // After choosing blocker, move to NANI decision
+    const atkFighter = s.players.find(p => p.id === s.combat!.attackerId)?.field[s.combat!.attackerSlot]?.fighter;
+    const isConcealed = atkFighter?.concealed ?? false;
+    const isDirectAttack = s.combat!.defenderSlot === null;
+    if (isConcealed && !isDirectAttack) {
+      setCombatStep('nani_call');
+    } else {
+      setCombatStep('reveal');
+      const evts = resolveCombat(s);
+      setCombatEvents(evts);
+    }
+    syncView(s);
+  }, [syncView]);
+
   const doCallNani = useCallback(() => {
     const s = stateRef.current;
     if (!s || !s.combat) return;
@@ -506,17 +537,37 @@ export function useDojoController(): DojoGameController {
 
     if (combatStep === 'declaration') {
       const defender = s.players.find(p => p.id === s.combat?.defenderId);
-      const attacker = s.players.find(p => p.id === s.combat?.attackerId);
-      const atkFighter = attacker?.field[s.combat?.attackerSlot ?? 0]?.fighter;
-      const isDirectAttack = s.combat?.defenderSlot === null;
-      const attackerConcealed = atkFighter?.concealed ?? false;
-      const canNani = attackerConcealed && !isDirectAttack;
 
-      if (defender?.id === myIdRef.current && canNani) {
-        // Human is defender and NANI is possible — show NANI screen
-        setCombatStep('nani_call');
+      if (defender?.id === myIdRef.current) {
+        // Human is defender — does defender have fighters to choose from?
+        const defFighters = defender.field.filter(sl => sl.fighter);
+        if (defFighters.length > 1) {
+          setCombatStep('choose_blocker');
+        } else if (defFighters.length === 1) {
+          // Auto-choose the only fighter
+          const slot = defender.field.findIndex(sl => sl.fighter);
+          defenderChooseBlocker(s, slot);
+          // Then check NANI
+          const attacker = s.players.find(p => p.id === s.combat?.attackerId);
+          const atkFighter = attacker?.field[s.combat?.attackerSlot ?? 0]?.fighter;
+          const isConcealed = atkFighter?.concealed ?? false;
+          if (isConcealed) {
+            setCombatStep('nani_call');
+          } else {
+            setCombatStep('reveal');
+            const evts = resolveCombat(s);
+            setCombatEvents(evts);
+            syncView(s);
+          }
+        } else {
+          // No fighters — direct attack, go to resolve
+          setCombatStep('reveal');
+          const evts = resolveCombat(s);
+          setCombatEvents(evts);
+          syncView(s);
+        }
       } else {
-        // No NANI possible or bot defender — skip to resolve
+        // Bot defender — already handled in processBotTurns, skip to resolve
         setCombatStep('reveal');
         const evts = resolveCombat(s);
         setCombatEvents(evts);
@@ -587,6 +638,7 @@ export function useDojoController(): DojoGameController {
     skipCombat,
     doCallNani,
     passDefense,
+    chooseBlocker,
     advanceCombat,
     botBubbles,
     draftPool,

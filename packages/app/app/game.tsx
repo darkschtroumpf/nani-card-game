@@ -234,22 +234,19 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           resetAction();
         }
       } else {
-        // Auto-select if only one fighter on opponent's field
-        const fighterSlots = opp!.field.map((s, i) => ({ s, i })).filter(x => x.s.hasFighter);
-        if (fighterSlots.length === 1) {
-          setSelectedTargetSlot(fighterSlots[0].i);
-          // If our fighter is face-up, skip universe declaration too
-          const myFighter = selectedFieldSlot !== null ? me.field[selectedFieldSlot]?.fighter : null;
-          if (myFighter && !myFighter.concealed) {
-            impactFeedback();
-            ctrl.selectAttack(selectedFieldSlot!, oppId, fighterSlots[0].i, myFighter.card.universe as Universe);
-            resetAction();
-            return;
-          }
-          setActionMode('combat_declare_universe');
-        } else {
-          setActionMode('combat_pick_target_slot');
+        // Mode B: attacker doesn't choose which fighter blocks — defender does
+        // Use first fighter slot as placeholder (defender will override)
+        const firstSlot = opp!.field.findIndex(s => s.hasFighter);
+        setSelectedTargetSlot(firstSlot);
+        // If our fighter is face-up, skip universe declaration
+        const myFighter = selectedFieldSlot !== null ? me.field[selectedFieldSlot]?.fighter : null;
+        if (myFighter && !myFighter.concealed) {
+          impactFeedback();
+          ctrl.selectAttack(selectedFieldSlot!, oppId, firstSlot, myFighter.card.universe as Universe);
+          resetAction();
+          return;
         }
+        setActionMode('combat_declare_universe');
       }
     }
   };
@@ -661,9 +658,13 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           events={combatEvents}
           isDefender={view.combat?.defenderId === me.id}
           canCallNani={true}
+          myFighters={me.field
+            .map((s, i) => s.fighter ? { name: s.fighter.card.name, universe: s.fighter.card.universe, atk: s.fighter.card.atk ?? 0, hp: s.fighter.card.hp ?? 0, slot: i } : null)
+            .filter(Boolean) as any[]}
           onContinue={ctrl.advanceCombat}
           onNaniCall={() => { warningFeedback(); ctrl.doCallNani(); }}
           onPassDefense={() => ctrl.passDefense()}
+          onChooseBlocker={(slot) => { tapFeedback(); ctrl.chooseBlocker(slot); }}
         />
       )}
 

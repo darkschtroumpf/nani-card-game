@@ -5,7 +5,7 @@ import { impactFeedback, warningFeedback, successFeedback, errorFeedback } from 
 import DojoCard from './DojoCard';
 import type { CardDef, Universe } from '../../engine/src/dojo/types';
 
-export type CombatStep = 'declaration' | 'defense' | 'nani_call' | 'reveal' | 'resolution';
+export type CombatStep = 'declaration' | 'choose_blocker' | 'defense' | 'nani_call' | 'reveal' | 'resolution';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -22,16 +22,19 @@ interface Props {
   events: string[];
   isDefender: boolean;
   canCallNani: boolean;
+  myFighters?: { name: string; universe: string; atk: number; hp: number; slot: number }[];
   onContinue: () => void;
   onNaniCall?: () => void;
   onPassDefense?: () => void;
+  onChooseBlocker?: (slot: number) => void;
 }
 
 export default function CombatArena(props: Props) {
   const {
     step, attackerName, defenderName, attackerFighter, defenderFighter,
     declaredUniverse, attackerConcealed, naniCalled, naniResult,
-    events, isDefender, canCallNani, onContinue, onNaniCall, onPassDefense,
+    events, isDefender, canCallNani, myFighters,
+    onContinue, onNaniCall, onPassDefense, onChooseBlocker,
   } = props;
 
   // Animations
@@ -180,6 +183,37 @@ export default function CombatArena(props: Props) {
               </View>
             )}
 
+            <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
+              <Text style={styles.continueBtnText}>Continuer</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        {/* CHOOSE BLOCKER (Mode B: defender picks which fighter blocks) */}
+        {step === 'choose_blocker' && isDefender && (
+          <>
+            <Text style={styles.title}>Qui bloque?</Text>
+            <Text style={styles.subtitle}>{attackerName} t'attaque en declarant {declaredUniverse}!</Text>
+            <Text style={styles.subtitle}>Choisis ton defenseur :</Text>
+            <View style={styles.combatRow}>
+              {(myFighters ?? []).map((f) => (
+                <TouchableOpacity
+                  key={f.slot}
+                  style={styles.blockerBtn}
+                  onPress={() => onChooseBlocker?.(f.slot)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.blockerName, { color: universeColor(f.universe as any) }]}>{f.name}</Text>
+                  <Text style={styles.blockerStats}>{f.atk}/{f.hp}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+
+        {step === 'choose_blocker' && !isDefender && (
+          <>
+            <Text style={styles.subtitle}>{defenderName} choisit son defenseur...</Text>
             <TouchableOpacity style={styles.continueBtn} onPress={onContinue}>
               <Text style={styles.continueBtnText}>Continuer</Text>
             </TouchableOpacity>
@@ -481,5 +515,23 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: fonts.sizes.md,
     textAlign: 'center',
+  },
+  blockerBtn: {
+    backgroundColor: colors.bgLight,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.accent,
+    gap: 4,
+    minWidth: 80,
+  },
+  blockerName: {
+    fontSize: fonts.sizes.md,
+    fontWeight: 'bold',
+  },
+  blockerStats: {
+    color: colors.textDim,
+    fontSize: fonts.sizes.sm,
   },
 });

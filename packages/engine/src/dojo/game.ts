@@ -373,14 +373,12 @@ export function initiateCombat(
   const defender = state.players.find(p => p.id === defenderId);
   if (!defender || defender.lp <= 0) return false;
 
+  // Direct attack only if no fighters
+  const hasAnyFighter = defender.field.some(s => s.fighter !== null);
+  if (defenderSlot === null && hasAnyFighter) return false;
+
   // If defenderSlot specified, must have a fighter there
   if (defenderSlot !== null && !defender.field[defenderSlot]?.fighter) return false;
-
-  // Direct attack only if no fighters
-  if (defenderSlot === null) {
-    const hasAnyFighter = defender.field.some(s => s.fighter !== null);
-    if (hasAnyFighter) return false; // must target a fighter
-  }
 
   // Direct attacks: always use true universe (no bluff possible on LP)
   const effectiveDeclared = defenderSlot === null ? atkFighter.card.universe : declaredUniverse;
@@ -409,6 +407,16 @@ export function initiateCombat(
     addLog(state, attacker.id, 'attack',
       `${attacker.name} attaque ${defender.name} et déclare ${effectiveDeclared}!`);
   }
+  return true;
+}
+
+export function defenderChooseBlocker(state: DojoGameState, blockerSlot: number): boolean {
+  if (!state.combat) return false;
+  const defender = state.players.find(p => p.id === state.combat!.defenderId)!;
+  if (!defender.field[blockerSlot]?.fighter) return false;
+  state.combat.defenderSlot = blockerSlot;
+  addLog(state, defender.id, 'block',
+    `${defender.name} envoie ${defender.field[blockerSlot].fighter!.card.name} en defense!`);
   return true;
 }
 
