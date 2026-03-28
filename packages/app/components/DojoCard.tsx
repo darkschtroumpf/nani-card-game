@@ -32,7 +32,8 @@ export default function DojoCard({
   const w = small ? 52 : 72;
   const h = small ? 76 : 104;
 
-  if (isConcealed) {
+  // Concealed card that we DON'T own (opponent) — show "?"
+  if (isConcealed && !instance) {
     return (
       <TouchableOpacity
         onPress={onPress}
@@ -41,6 +42,35 @@ export default function DojoCard({
         activeOpacity={0.7}
       >
         <Text style={styles.concealedText}>?</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  // Concealed card that we OWN — show card info with "hidden" overlay
+  if (isConcealed && instance && card) {
+    const uColor = universeColor(card.universe as any);
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={disabled || !onPress}
+        style={[styles.card, { width: w, height: h, borderColor: uColor, opacity: 0.85 }, selected && styles.selected]}
+        activeOpacity={0.7}
+      >
+        <View style={[styles.header, { backgroundColor: uColor }]}>
+          <Text style={styles.headerText}>{card.universe.toUpperCase().slice(0, 3)}</Text>
+          <Text style={styles.concealedBadge}>CACHE</Text>
+        </View>
+        <View style={styles.body}>
+          <Text style={[styles.typeIcon, { fontSize: small ? 14 : 18 }]}>{TYPE_ICONS[card.type] ?? ''}</Text>
+          <Text style={[styles.name, { fontSize: small ? 7 : 9 }]} numberOfLines={2}>{card.name}</Text>
+        </View>
+        {card.type === 'fighter' && (
+          <View style={styles.footer}>
+            <Text style={styles.statAtk}>{card.atk}</Text>
+            <Text style={styles.statSep}>/</Text>
+            <Text style={styles.statHp}>{card.hp}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   }
@@ -123,6 +153,15 @@ const styles = StyleSheet.create({
     color: colors.textDim,
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  concealedBadge: {
+    color: '#fff',
+    fontSize: 6,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 3,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
   },
   selected: {
     borderColor: colors.accent,

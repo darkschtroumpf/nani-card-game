@@ -323,8 +323,8 @@ export function useDojoController(): DojoGameController {
     s.turnPhase = 'deploy';
     playCardFeedback();
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+    // No auto-skip: always let player see deploy phase
+  }, [syncView]);
 
   const dojoMeditate = useCallback(() => {
     const s = stateRef.current;
@@ -332,16 +332,14 @@ export function useDojoController(): DojoGameController {
     processDojoMeditate(s);
     s.turnPhase = 'deploy';
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+  }, [syncView]);
 
   const dojoSkip = useCallback(() => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'dojo') return;
     s.turnPhase = 'deploy';
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+  }, [syncView]);
 
   // --- Deploy Phase: auto-skip when nothing is possible ---
 
@@ -382,25 +380,21 @@ export function useDojoController(): DojoGameController {
     if (!s || s.turnPhase !== 'deploy') return;
     deployFighter(s, handIndex, fieldSlot, concealed);
     syncView(s);
-    // Auto-skip if nothing left
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+  }, [syncView]);
 
   const doSetTrap = useCallback((handIndex: number, trapSlot: number) => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
     setTrap(s, handIndex, trapSlot);
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+  }, [syncView]);
 
   const doEquip = useCallback((handIndex: number, fieldSlot: number, concealed: boolean) => {
     const s = stateRef.current;
     if (!s || s.turnPhase !== 'deploy') return;
     equipCard(s, handIndex, fieldSlot, concealed);
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, autoSkipDeployIfNeeded]);
+  }, [syncView]);
 
   const doActivateSignature = useCallback((handIndex: number) => {
     const s = stateRef.current;
@@ -409,8 +403,7 @@ export function useDojoController(): DojoGameController {
     addEvents(evts);
     successFeedback();
     syncView(s);
-    setTimeout(() => { if (stateRef.current) autoSkipDeployIfNeeded(stateRef.current); }, 100);
-  }, [syncView, addEvents, autoSkipDeployIfNeeded]);
+  }, [syncView, addEvents]);
 
   const skipToEnd = useCallback((s: DojoGameState) => {
     s.turnPhase = 'end';
