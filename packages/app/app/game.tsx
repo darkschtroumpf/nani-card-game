@@ -415,11 +415,13 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
 
               return (
                 <View style={styles.deployActions}>
-                  {canDeployFighter && (
-                    <TouchableOpacity style={styles.deployBtn} onPress={() => {
+                  {/* Deploy Fighter */}
+                  <TouchableOpacity
+                    style={[styles.deployBtn, !canDeployFighter && styles.deployBtnDisabled]}
+                    disabled={!canDeployFighter}
+                    onPress={() => {
                       const fighters = me.hand.map((c, i) => ({ c, i })).filter(x => x.c.card.type === 'fighter' && x.c.card.kiCost <= me.ki);
                       if (fighters.length === 1) {
-                        // Auto-select card + auto-pick first empty slot
                         const emptySlot = me.field.findIndex(s => !s.fighter);
                         setSelectedHandIndex(fighters[0].i);
                         setSelectedFieldSlot(emptySlot);
@@ -427,19 +429,32 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                       } else {
                         setActionMode('deploy_pick_card');
                       }
-                    }}>
-                      <Text style={styles.deployBtnText}>Deployer Fighter</Text>
-                    </TouchableOpacity>
-                  )}
-                  <View style={styles.deployRow}>
-                    {canSetTrap && (
-                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => setActionMode('trap_pick_card')}>
-                        <Text style={styles.deployBtnText}>Piege</Text>
-                      </TouchableOpacity>
+                    }}
+                  >
+                    <Text style={styles.deployBtnText}>Deployer Fighter</Text>
+                    {!canDeployFighter && (
+                      <Text style={styles.deployBtnHint}>
+                        {!hasFighterInHand ? 'Pas de fighter en main' : !hasEmptyFieldSlot ? 'Terrain plein' : 'Pas assez de Ki'}
+                      </Text>
                     )}
-                    {canEquip && (
-                      <TouchableOpacity style={styles.deployBtnHalf} onPress={() => {
-                        // Auto-equip if only one equipment and one valid fighter
+                  </TouchableOpacity>
+
+                  <View style={styles.deployRow}>
+                    {/* Trap */}
+                    <TouchableOpacity
+                      style={[styles.deployBtnHalf, !canSetTrap && styles.deployBtnDisabled]}
+                      disabled={!canSetTrap}
+                      onPress={() => setActionMode('trap_pick_card')}
+                    >
+                      <Text style={styles.deployBtnText}>Piege</Text>
+                      {!canSetTrap && <Text style={styles.deployBtnHint}>{me.ki < 1 ? 'Pas de Ki' : 'Slots pleins'}</Text>}
+                    </TouchableOpacity>
+
+                    {/* Equip */}
+                    <TouchableOpacity
+                      style={[styles.deployBtnHalf, !canEquip && styles.deployBtnDisabled]}
+                      disabled={!canEquip}
+                      onPress={() => {
                         const equipCards = me.hand.map((c, i) => ({ c, i })).filter(x => x.c.card.type === 'equipment' && x.c.card.kiCost <= me.ki);
                         const validSlots = me.field.map((s, i) => ({ s, i })).filter(x => x.s.fighter && !x.s.fighter.attachedEquipment);
                         if (equipCards.length === 1 && validSlots.length === 1) {
@@ -448,22 +463,28 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
                         } else {
                           setActionMode('equip_pick_card');
                         }
-                      }}>
-                        <Text style={styles.deployBtnText}>Equiper</Text>
-                      </TouchableOpacity>
-                    )}
+                      }}
+                    >
+                      <Text style={styles.deployBtnText}>Equiper</Text>
+                      {!canEquip && <Text style={styles.deployBtnHint}>{!hasEquipInHand ? 'Pas en main' : 'Pas de cible'}</Text>}
+                    </TouchableOpacity>
                   </View>
-                  {canSig && (
+
+                  {/* Signature */}
+                  {sig && (
                     <TouchableOpacity
-                      style={[styles.deployBtn, { backgroundColor: colors.accent }]}
+                      style={[styles.deployBtn, canSig ? { backgroundColor: colors.accent } : styles.deployBtnDisabled]}
+                      disabled={!canSig}
                       onPress={() => {
                         const sigIdx = me.hand.findIndex(c => c.card.type === 'signature');
                         if (sigIdx >= 0) { impactFeedback(); ctrl.doActivateSignature(sigIdx); }
                       }}
                     >
-                      <Text style={[styles.deployBtnText, { color: colors.bg }]}>Signature!</Text>
+                      <Text style={[styles.deployBtnText, canSig && { color: colors.bg }]}>Signature!</Text>
+                      {!canSig && <Text style={styles.deployBtnHint}>Ki ou Focus insuffisant</Text>}
                     </TouchableOpacity>
                   )}
+
                   <TouchableOpacity style={styles.endPhaseBtn} onPress={() => ctrl.endDeploy()}>
                     <Text style={styles.endPhaseText}>Fin du deploiement</Text>
                   </TouchableOpacity>
@@ -684,6 +705,8 @@ const styles = StyleSheet.create({
   deployBtn: { backgroundColor: colors.secondary, paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
   deployBtnHalf: { flex: 1, backgroundColor: colors.bgCard, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
   deployBtnText: { color: colors.text, fontSize: fonts.sizes.md, fontWeight: 'bold' },
+  deployBtnDisabled: { opacity: 0.35 },
+  deployBtnHint: { color: colors.textDim, fontSize: 9, marginTop: 2 },
   deployRow: { flexDirection: 'row', gap: 8 },
   endPhaseBtn: { paddingVertical: 10, alignItems: 'center' },
   endPhaseText: { color: colors.textDim, fontSize: fonts.sizes.md },
