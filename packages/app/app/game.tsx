@@ -238,6 +238,14 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
         const fighterSlots = opp!.field.map((s, i) => ({ s, i })).filter(x => x.s.hasFighter);
         if (fighterSlots.length === 1) {
           setSelectedTargetSlot(fighterSlots[0].i);
+          // If our fighter is face-up, skip universe declaration too
+          const myFighter = selectedFieldSlot !== null ? me.field[selectedFieldSlot]?.fighter : null;
+          if (myFighter && !myFighter.concealed) {
+            impactFeedback();
+            ctrl.selectAttack(selectedFieldSlot!, oppId, fighterSlots[0].i, myFighter.card.universe as Universe);
+            resetAction();
+            return;
+          }
           setActionMode('combat_declare_universe');
         } else {
           setActionMode('combat_pick_target_slot');
@@ -249,8 +257,33 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
   const onOpponentSlotPress = (slot: number) => {
     if (actionMode === 'combat_pick_target_slot') {
       setSelectedTargetSlot(slot);
+      // Check if our fighter is face-up — auto-declare true universe
+      if (selectedFieldSlot !== null) {
+        const myFighter = me.field[selectedFieldSlot]?.fighter;
+        if (myFighter && !myFighter.concealed) {
+          impactFeedback();
+          ctrl.selectAttack(selectedFieldSlot, selectedTargetPlayer!, slot, myFighter.card.universe as Universe);
+          resetAction();
+          return;
+        }
+      }
       setActionMode('combat_declare_universe');
     }
+  };
+
+  // Also auto-declare when coming from auto-select (single opponent fighter)
+  const proceedToAttackOrDeclare = (targetSlot: number | null) => {
+    if (selectedFieldSlot !== null && selectedTargetPlayer) {
+      const myFighter = me.field[selectedFieldSlot]?.fighter;
+      if (myFighter && !myFighter.concealed) {
+        // Face-up: auto-declare true universe
+        impactFeedback();
+        ctrl.selectAttack(selectedFieldSlot, selectedTargetPlayer, targetSlot, myFighter.card.universe as Universe);
+        resetAction();
+        return true;
+      }
+    }
+    return false;
   };
 
   const onUniverseSelect = (u: Universe) => {
@@ -594,11 +627,12 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
             (actionMode === 'deploy_pick_card' && card.card.type === 'fighter') ||
             (actionMode === 'trap_pick_card') ||
             (actionMode === 'equip_pick_card' && card.card.type === 'equipment');
+          const highlighted = selectable && actionMode !== 'idle';
           return (
             <DojoCard
               key={card.instanceId}
               instance={card}
-              selected={selectedHandIndex === i}
+              selected={selectedHandIndex === i || highlighted}
               onPress={selectable ? () => onHandCardPress(i) : undefined}
               disabled={!selectable && actionMode !== 'idle'}
             />
