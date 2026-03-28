@@ -234,7 +234,14 @@ function DojoGameUI({ ctrl }: { ctrl: DojoGameController }) {
           resetAction();
         }
       } else {
-        setActionMode('combat_pick_target_slot');
+        // Auto-select if only one fighter on opponent's field
+        const fighterSlots = opp!.field.map((s, i) => ({ s, i })).filter(x => x.s.hasFighter);
+        if (fighterSlots.length === 1) {
+          setSelectedTargetSlot(fighterSlots[0].i);
+          setActionMode('combat_declare_universe');
+        } else {
+          setActionMode('combat_pick_target_slot');
+        }
       }
     }
   };
