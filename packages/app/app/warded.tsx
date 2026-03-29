@@ -7,7 +7,7 @@ import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
 import type { LocationId, WardType } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS, WARD_PASSIVES } from '../../engine/src/warded/constants';
+import { WARD_TYPES, WARD_COSTS } from '../../engine/src/warded/constants';
 
 // FIX 4: Short effect descriptions for ward craft cards (French)
 const WARD_EFFECTS: Record<string, string> = {
@@ -31,8 +31,9 @@ function wardCostLabel(w: WardType): string {
 // FIX 5: Night phase steps
 const NIGHT_STEPS = ['Position', 'Vague', 'Activation', 'Degats'] as const;
 
-function getNightStepIndex(waveNumber: number, activationsRemaining: number): number {
+function getNightStepIndex(waveNumber: number, activationsRemaining: number, totalActivations: number): number {
   if (waveNumber === 0) return 0;
+  if (activationsRemaining === totalActivations) return 1; // wave just started, passives resolving
   if (activationsRemaining > 0) return 2;
   return 3;
 }
@@ -186,7 +187,8 @@ export default function WardedGameScreen() {
       {isNight && !selectedLoc && (
         <View style={styles.nightStepsBar}>
           {NIGHT_STEPS.map((step, i) => {
-            const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining);
+            const totalAct = state.locations.filter(l => !l.fallen && (l.wards[0].ward || l.wards[1].ward)).length;
+            const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const isActive = i === currentStep;
             const isDone = i < currentStep;
             return (
