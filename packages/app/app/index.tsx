@@ -54,7 +54,6 @@ export default function HomeScreen() {
             <Text style={styles.buttonTextSmall}>Stats</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
         <TouchableOpacity
           style={[styles.button, { backgroundColor: '#1a1a2e', borderWidth: 1, borderColor: '#ffd740' }]}
