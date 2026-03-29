@@ -97,7 +97,7 @@ function TutorialOverlay({ step, onNext, onSkip }: { step: number; onNext: () =>
       {step === 0 && (
         <TouchableOpacity style={tutStyles.overlayTouchable} activeOpacity={1} onPress={onNext}>
           <View style={tutStyles.card}>
-            <Text style={tutStyles.stepIndicator}>Étape {step + 1} / {TUTORIAL_STEPS.length}</Text>
+            <Text style={tutStyles.stepIndicator}>Étape {step <= 4 ? `${step + 1} / 5` : `${step - 4} / 2`}</Text>
             <Text style={tutStyles.text}>{data.text}</Text>
             <TouchableOpacity style={tutStyles.nextBtn} onPress={onNext}>
               <Text style={tutStyles.nextBtnText}>{data.buttonLabel}</Text>
@@ -107,7 +107,7 @@ function TutorialOverlay({ step, onNext, onSkip }: { step: number; onNext: () =>
       )}
       {step > 0 && (
         <View style={tutStyles.floatingCard} pointerEvents="auto">
-          <Text style={tutStyles.stepIndicator}>Étape {step + 1} / {TUTORIAL_STEPS.length}</Text>
+          <Text style={tutStyles.stepIndicator}>Étape {step <= 4 ? `${step + 1} / 5` : `${step - 4} / 2`}</Text>
           <Text style={tutStyles.text}>{data.text}</Text>
           {step <= 4 && (
             <TouchableOpacity style={tutStyles.nextBtnSmall} onPress={onNext}>
@@ -256,10 +256,11 @@ export default function WardedGameScreen() {
     }
   }, [events.length]);
 
-  // Tutorial: advance to night steps (MUST be before any conditional return — Rules of Hooks)
+  // Tutorial: start night tutorial when first night begins (MUST be before any conditional return)
   useEffect(() => {
-    if (state && state.phase === 'night' && !firstNightSeen.current && tutorialStep === 5) {
+    if (state && state.phase === 'night' && !firstNightSeen.current && tutorialStep === -1) {
       firstNightSeen.current = true;
+      setTutorialStep(5); // start night tutorial
     }
   }, [state?.phase]);
 
@@ -846,7 +847,7 @@ export default function WardedGameScreen() {
       {tutorialStep >= 0 && tutorialStep <= 4 && !showNightTransition && (
         <TutorialOverlay
           step={tutorialStep}
-          onNext={() => setTutorialStep(prev => prev < TUTORIAL_STEPS.length - 1 ? prev + 1 : -1)}
+          onNext={() => setTutorialStep(prev => prev < 4 ? prev + 1 : -1)}
           onSkip={() => setTutorialStep(-1)}
         />
       )}
