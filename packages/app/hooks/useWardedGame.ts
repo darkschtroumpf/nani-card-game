@@ -24,6 +24,9 @@ export interface WardedGameController {
   doGather: (locationId: LocationId) => void;
   endDay: () => void;
 
+  // Transition
+  startNewDay: () => void;
+
   // Night actions
   doWardedFlesh: (wardType: WardType, locationId: LocationId) => void;
   doMovePresence: (locationId: LocationId) => void;
@@ -94,6 +97,17 @@ export function useWardedGame(): WardedGameController {
     if (!s) return;
     startNight(s);
     setForecast(null);
+    sync(s);
+  }, [sync]);
+
+  // --- Transition ---
+
+  const startNewDay = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    processDawn(s);
+    setEvents([]);
+    setForecast(getThreatForecast(s));
     sync(s);
   }, [sync]);
 
@@ -179,7 +193,7 @@ export function useWardedGame(): WardedGameController {
 
   return {
     state, events, forecast,
-    startGame,
+    startGame, startNewDay,
     doCraft, doFortify, doGather, doWardedFlesh, endDay,
     doMovePresence, doStartWave, doActivateWard,
     doWardedFist, doMistWalk, doResolveDamage, doEndWave,

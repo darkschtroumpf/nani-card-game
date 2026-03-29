@@ -77,7 +77,9 @@ export interface Hero {
   title: string;
   hp: number;
   maxHp: number;
-  ap: number; // 5 for most, 6 for Leesha
+  ap: number;
+  level: number;          // increases each night survived
+  wardPowerBonus: number; // +X damage on all ward actives
   // Hero-specific state
   arlenCharge?: number;
   jardir_warriors?: { locationId: LocationId; strength: number }[];

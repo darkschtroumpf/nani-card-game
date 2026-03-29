@@ -90,6 +90,8 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     hp: heroTemplate.hp,
     maxHp: heroTemplate.hp,
     ap: heroTemplate.ap,
+    level: 1,
+    wardPowerBonus: 0,
     arlenCharge: heroId === 'arlen' ? 1 : undefined,
     jardir_warriors: heroId === 'jardir' ? [] : undefined,
     rojer_songs: heroId === 'rojer' ? [null, null, null] : undefined,
@@ -639,13 +641,14 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
 
 function applyWardActive(state: GameState, locId: LocationId, ward: WardType, presenceBonus: number, events: string[]) {
   const demons = state.demonsAtLocations[locId];
+  const powerBonus = state.hero.wardPowerBonus ?? 0;
 
   switch (ward) {
     case 'fire': {
-      // Blaze: 3 damage to 1 demon
+      // Blaze: 3 + level bonus damage to 1 demon
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
-        const dmg = 3 + presenceBonus;
+        const dmg = 3 + presenceBonus + powerBonus;
         strongest.currentStrength -= dmg;
         events.push(`Blaze inflige ${dmg} dégâts à ${strongest.demon.type} (str ${strongest.currentStrength}).`);
         if (strongest.currentStrength <= 0) {
@@ -706,13 +709,14 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
 function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo, presenceBonus: number, events: string[]) {
   const demons = state.demonsAtLocations[locId];
   const loc = getLocation(state, locId);
+  const powerBonus = state.hero.wardPowerBonus ?? 0;
 
   switch (combo.name) {
     case 'Magma Ward': {
       // Eruption: 4 dmg to strongest + 3 defense
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
-        const dmg = 4 + presenceBonus;
+        const dmg = 4 + presenceBonus + powerBonus;
         strongest.currentStrength -= dmg;
         events.push(`Eruption: ${dmg} dégâts à ${strongest.demon.type}.`);
         if (strongest.currentStrength <= 0) {
@@ -888,14 +892,32 @@ export function endNight(state: GameState): void {
     }
   }
 
-  // Check victory (Quick Mode)
+  // Check victory (Quick Mode — 3 nights)
   if (state.mode === 'quick' && !state.gameOver) {
     const standing = state.locations.filter(l => !l.fallen).length;
-    if (standing >= 3) {
-      // Survived the night!
+    const nightsPlayed = state.turnNumber; // turnNumber increments each day/night cycle
+
+    if (standing < 3) {
+      // Too many locations fell
+      state.gameOver = true;
+      state.victory = false;
+      state.defeatReason = `${4 - standing} lieux tombés.`;
+    } else if (nightsPlayed >= 3) {
+      // Survived 3 nights!
       state.gameOver = true;
       state.victory = true;
-      addLog(state, 'L\'aube arrive — vous avez survécu!', true);
+      addLog(state, 'L\'aube se lève pour la dernière fois — vous avez survécu 3 nuits!', true);
+    } else {
+      // Continue to next day — LEVEL UP
+      state.nightNumber++;
+      state.hero.level++;
+      state.hero.wardPowerBonus++;
+      state.hero.maxHp += 2;
+      state.hero.hp = Math.min(state.hero.hp + 5, state.hero.maxHp); // heal 5 HP
+      if (state.hero.id === 'arlen') {
+        state.hero.arlenCharge = Math.min((state.hero.arlenCharge ?? 0) + 1, 3); // start next night with more charge
+      }
+      addLog(state, `Nuit ${nightsPlayed} survécue! Niveau ${state.hero.level} — wards +${state.hero.wardPowerBonus} dégâts, +2 HP max`, true);
     }
   }
 

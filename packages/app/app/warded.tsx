@@ -223,6 +223,7 @@ export default function WardedGameScreen() {
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [showNightTransition, setShowNightTransition] = useState(false);
+  const [showLevelUp, setShowLevelUp] = useState(false);
   const [combatToast, setCombatToast] = useState<string | null>(null);
   const [showEventLog, setShowEventLog] = useState(false);
   const [damageResolved, setDamageResolved] = useState(false);
@@ -577,7 +578,7 @@ export default function WardedGameScreen() {
               onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
                 ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
                 : undefined}
-              canActivate={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)}
+              canActivate={isNight && state.activationsRemaining > 0 && !!(selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)}
               isActivated={state.activationsUsedAt?.includes(selectedLoc.id) ?? false}
               onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
                 ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
@@ -868,6 +869,10 @@ export default function WardedGameScreen() {
                       ctrl.doStartWave();
                     } else {
                       ctrl.doEndWave();
+                      // Show level up if game continues
+                      if (!state.gameOver) {
+                        setShowLevelUp(true);
+                      }
                     }
                   }}
                 >
@@ -879,7 +884,6 @@ export default function WardedGameScreen() {
             </View>
           )}
         </View>
-      )}
 
       {/* FIX 3: Event log — hidden by default, toggleable */}
       {events.length > 0 && (
@@ -896,6 +900,30 @@ export default function WardedGameScreen() {
               ))}
             </ScrollView>
           )}
+        </View>
+      )}
+
+      {/* Level Up overlay between nights */}
+      {showLevelUp && (
+        <View style={styles.transitionOverlay}>
+          <Text style={styles.transitionEmoji}>⬆</Text>
+          <Text style={styles.transitionText}>NIVEAU {state.hero.level}</Text>
+          <Text style={styles.transitionSub}>Nuit survécue ! {state.hero.name} devient plus fort.</Text>
+          <View style={{ gap: 6, marginTop: 12, alignItems: 'center' }}>
+            <Text style={{ color: warded.success, fontSize: wardedFonts.md, fontWeight: 'bold' }}>🛡 Wards +{state.hero.wardPowerBonus} dégâts</Text>
+            <Text style={{ color: warded.success, fontSize: wardedFonts.md, fontWeight: 'bold' }}>❤ +2 HP max ({state.hero.maxHp})</Text>
+            <Text style={{ color: warded.success, fontSize: wardedFonts.md, fontWeight: 'bold' }}>⚔ Charge initiale +1</Text>
+            <Text style={{ color: warded.warning, fontSize: wardedFonts.sm }}>Nuit {state.turnNumber} — les démons seront plus nombreux</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.phaseBtn, { marginTop: 20, borderColor: warded.accent }]}
+            onPress={() => {
+              setShowLevelUp(false);
+              ctrl.startNewDay();
+            }}
+          >
+            <Text style={[styles.phaseBtnText, { color: warded.accent }]}>Préparer le jour suivant</Text>
+          </TouchableOpacity>
         </View>
       )}
 
