@@ -350,6 +350,17 @@ export default function WardedGameScreen() {
       setMistWalkMode(false);
       return;
     }
+    // AUTO-FORTIFY: if day + reserves + location has empty slot + AP, place first reserve
+    if (isDay && state.wardReserves.length > 0 && state.hero.ap > 0) {
+      const loc = state.locations.find(l => l.id === locId);
+      if (loc && !loc.fallen && loc.wards.some(ws => !ws.ward)) {
+        ctrl.doFortify(state.wardReserves[0], locId);
+        setActionFlash('#4caf50'); // green flash
+        setTimeout(() => setActionFlash(null), 400);
+        if (tutorialStep === 3) setTutorialStep(4);
+        return;
+      }
+    }
     setSelectedLocation(locId);
     if (tutorialStep === 1) setTutorialStep(2);
   };
@@ -720,7 +731,7 @@ export default function WardedGameScreen() {
                   </View>
                 ))}
               </View>
-              <Text style={styles.reserveHint}>Tape un lieu sur la carte pour placer</Text>
+              <Text style={styles.reserveHint}>👆 Tape un lieu sur la carte pour y placer ta rune !</Text>
             </View>
           )}
 
@@ -931,15 +942,15 @@ const styles = StyleSheet.create({
 
   wardCraftScroll: { gap: 8, paddingRight: 8 },
   wardCraftBtn: {
-    width: 90, backgroundColor: 'rgba(20,20,35,0.9)', borderRadius: 10,
-    paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center',
-    borderWidth: 1.5, gap: 4,
+    width: 82, backgroundColor: 'rgba(20,20,35,0.9)', borderRadius: 8,
+    paddingVertical: 6, paddingHorizontal: 4, alignItems: 'center',
+    borderWidth: 1.5, gap: 2,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 4, elevation: 3,
   },
   btnDisabled: { opacity: 0.3 },
-  wardCraftIcon: { fontSize: 22 },
-  wardCraftImage: { width: 34, height: 34, borderRadius: 17 },
-  wardCraftName: { color: warded.text, fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 },
+  wardCraftIcon: { fontSize: 18 },
+  wardCraftImage: { width: 26, height: 26, borderRadius: 13 },
+  wardCraftName: { color: warded.text, fontSize: 9, fontWeight: 'bold', textTransform: 'uppercase' },
   wardCraftEffect: { color: warded.textDim, fontSize: 9, textAlign: 'center', lineHeight: 13 },
   wardCraftCost: { color: warded.warning, fontSize: 9, fontWeight: '600', textAlign: 'center' },
 
