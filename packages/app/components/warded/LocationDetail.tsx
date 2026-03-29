@@ -81,6 +81,7 @@ export default function LocationDetail({
       )}
 
       {/* Resources */}
+      <View style={styles.sectionDivider} />
       <View style={styles.resRow}>
         <ResChip label="Bois" value={location.stockpile.wood} color={warded.wood} />
         <ResChip label="Encre" value={location.stockpile.ink} color={warded.ink} />
@@ -88,6 +89,7 @@ export default function LocationDetail({
       </View>
 
       {/* Wards */}
+      <View style={styles.sectionDivider} />
       <View style={styles.section}>
         <Text style={styles.label}>Wards</Text>
         <View style={styles.wardSlots}>
@@ -116,6 +118,7 @@ export default function LocationDetail({
       {/* Demons (night) */}
       {isNight && demons.length > 0 && (
         <View style={styles.section}>
+          <View style={styles.sectionDivider} />
           <Text style={styles.label}>Démons ({demons.length})</Text>
           <View style={styles.demonList}>
             {demons.map((d, i) => (
@@ -300,7 +303,15 @@ const styles = StyleSheet.create({
   },
   resLabel: {
     color: warded.textDim,
-    fontSize: 8,
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: warded.border,
+    marginVertical: 2,
   },
   section: {
     gap: 6,
@@ -401,10 +412,12 @@ const styles = StyleSheet.create({
   actionBtn: {
     backgroundColor: warded.bgLight,
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: warded.border,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   comboBtn: {
     borderColor: warded.accent,

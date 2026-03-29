@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
@@ -544,6 +544,35 @@ export default function WardedGameScreen() {
         </View>
       )}
 
+      {/* FIX 6: Global threat vs defense summary during night */}
+      {isNight && !selectedLoc && (() => {
+        const totalDemonStr = Object.values(state.demonsAtLocations).flat().reduce((s, d) => s + d.currentStrength, 0);
+        const totalWardCount = state.locations.filter(l => !l.fallen).reduce((s, l) => s + l.wards.filter(ws => ws.ward).length, 0);
+        const totalPop = state.locations.filter(l => !l.fallen).reduce((s, l) => s + l.population, 0);
+        const ratio = totalDemonStr > 0 ? totalWardCount / totalDemonStr : 1;
+        const statusColor = ratio >= 0.8 ? warded.success : ratio >= 0.4 ? warded.warning : warded.danger;
+        const statusLabel = ratio >= 0.8 ? 'Defenses solides' : ratio >= 0.4 ? 'En danger' : 'Critique !';
+        return (
+          <View style={styles.threatSummaryBar}>
+            <View style={styles.threatSummaryItem}>
+              <Text style={[styles.threatSummaryValue, { color: warded.danger }]}>{totalDemonStr}</Text>
+              <Text style={styles.threatSummaryLabel}>Menace</Text>
+            </View>
+            <View style={[styles.threatSummaryStatus, { borderColor: statusColor }]}>
+              <Text style={[styles.threatSummaryStatusText, { color: statusColor }]}>{statusLabel}</Text>
+            </View>
+            <View style={styles.threatSummaryItem}>
+              <Text style={[styles.threatSummaryValue, { color: warded.wardLight }]}>{totalWardCount}</Text>
+              <Text style={styles.threatSummaryLabel}>Wards</Text>
+            </View>
+            <View style={styles.threatSummaryItem}>
+              <Text style={[styles.threatSummaryValue, { color: warded.success }]}>{totalPop}</Text>
+              <Text style={styles.threatSummaryLabel}>Pop.</Text>
+            </View>
+          </View>
+        );
+      })()}
+
       {/* FIX 5: Night phase step indicator */}
       {isNight && !selectedLoc && (
         <View style={styles.nightStepsBar}>
@@ -583,13 +612,31 @@ export default function WardedGameScreen() {
         <View style={[styles.actionFlashOverlay, { backgroundColor: actionFlash }]} pointerEvents="none" />
       )}
 
-      {/* FIX 5: Damage report overlay */}
+      {/* FIX 5: Damage report overlay — color-coded with summary */}
       {damageReport && (
         <View style={styles.damageReportOverlay}>
           <Text style={styles.damageReportTitle}>RESOLUTION — Vague {state.waveNumber}/3</Text>
-          {damageReport.map((line, i) => (
-            <Text key={i} style={styles.damageReportLine}>{line}</Text>
-          ))}
+          <View style={styles.damageReportDivider} />
+          {damageReport.map((line, i) => {
+            const isGood = line.includes('detruit') || line.includes('détruit') || line.includes('proteg') || line.includes('protég') || line.includes('Aucun');
+            const isBad = line.includes('degat') || line.includes('dégât') || line.includes('pop') || line.includes('tomb');
+            return (
+              <View key={i} style={styles.damageReportRow}>
+                <Text style={styles.damageReportIcon}>{isGood ? '🛡' : isBad ? '💥' : '⚔'}</Text>
+                <Text style={[
+                  styles.damageReportLine,
+                  isGood && { color: warded.success },
+                  isBad && { color: warded.danger },
+                ]}>{line}</Text>
+              </View>
+            );
+          })}
+          <View style={styles.damageReportDivider} />
+          <Text style={styles.damageReportSummary}>
+            {damageReport.length === 1 && damageReport[0].includes('Aucun')
+              ? 'Tes wards tiennent bon !'
+              : `${damageReport.length} evenement${damageReport.length > 1 ? 's' : ''} cette vague`}
+          </Text>
           <TouchableOpacity onPress={() => setDamageReport(null)} style={styles.damageReportClose}>
             <Text style={styles.damageReportCloseText}>Continuer</Text>
           </TouchableOpacity>
@@ -604,8 +651,8 @@ export default function WardedGameScreen() {
             <View style={styles.actionSection}>
               {state.hero.ap > 0 ? (
                 <>
-                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP)</Text>
-                  <View style={styles.wardCraftRow}>
+                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — glisse pour voir</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.wardCraftScroll}>
                     {WARD_TYPES.map(w => {
                       const cost = WARD_COSTS[w];
                       const bestLoc = state.locations.find(l => !l.fallen &&
@@ -643,7 +690,7 @@ export default function WardedGameScreen() {
                         </TouchableOpacity>
                       );
                     })}
-                  </View>
+                  </ScrollView>
                 </>
               ) : (
                 <View style={styles.noApBanner}>
@@ -878,19 +925,19 @@ const styles = StyleSheet.create({
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
 
-  wardCraftRow: { flexDirection: 'row', gap: 6 },
+  wardCraftScroll: { gap: 8, paddingRight: 8 },
   wardCraftBtn: {
-    flex: 1, backgroundColor: 'rgba(20,20,35,0.9)', borderRadius: 10,
-    paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center',
-    borderWidth: 1.5, gap: 3,
+    width: 90, backgroundColor: 'rgba(20,20,35,0.9)', borderRadius: 10,
+    paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center',
+    borderWidth: 1.5, gap: 4,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 4, elevation: 3,
   },
   btnDisabled: { opacity: 0.3 },
   wardCraftIcon: { fontSize: 22 },
-  wardCraftImage: { width: 28, height: 28, borderRadius: 14 },
-  wardCraftName: { color: warded.text, fontSize: 9, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 },
-  wardCraftEffect: { color: warded.textDim, fontSize: 8, textAlign: 'center', lineHeight: 11 },
-  wardCraftCost: { color: warded.warning, fontSize: 8, fontWeight: '600', textAlign: 'center' },
+  wardCraftImage: { width: 34, height: 34, borderRadius: 17 },
+  wardCraftName: { color: warded.text, fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 },
+  wardCraftEffect: { color: warded.textDim, fontSize: 9, textAlign: 'center', lineHeight: 13 },
+  wardCraftCost: { color: warded.warning, fontSize: 9, fontWeight: '600', textAlign: 'center' },
 
   // FIX 4: Ward reserves tray
   reserveTray: {
@@ -954,6 +1001,44 @@ const styles = StyleSheet.create({
   eventLog: { paddingHorizontal: 14, paddingVertical: 6 },
   eventText: { color: warded.textDim, fontSize: wardedFonts.xs },
   eventLatest: { color: warded.text, fontWeight: '600' },
+
+  // FIX 6: Threat vs defense summary bar
+  threatSummaryBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(10,10,20,0.7)',
+    borderRadius: 10,
+    marginHorizontal: 14,
+  },
+  threatSummaryItem: {
+    alignItems: 'center',
+  },
+  threatSummaryValue: {
+    fontSize: wardedFonts.lg,
+    fontWeight: 'bold',
+  },
+  threatSummaryLabel: {
+    color: warded.textDim,
+    fontSize: 8,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  threatSummaryStatus: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  threatSummaryStatusText: {
+    fontSize: wardedFonts.xs,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
 
   // FIX 1: Night transition overlay
   transitionOverlay: {
@@ -1229,21 +1314,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 2,
   },
+  damageReportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  damageReportIcon: {
+    fontSize: 14,
+  },
   damageReportLine: {
     color: warded.text,
     fontSize: wardedFonts.sm,
+    flex: 1,
+  },
+  damageReportDivider: {
+    height: 1,
+    backgroundColor: warded.danger + '40',
+  },
+  damageReportSummary: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   damageReportClose: {
-    backgroundColor: warded.danger + '30',
+    backgroundColor: warded.accent + '20',
     borderRadius: 8,
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
-    borderColor: warded.danger,
+    borderColor: warded.accent,
     alignItems: 'center',
     marginTop: 4,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   damageReportCloseText: {
-    color: warded.danger,
+    color: warded.accent,
     fontWeight: 'bold',
     fontSize: wardedFonts.md,
   },
