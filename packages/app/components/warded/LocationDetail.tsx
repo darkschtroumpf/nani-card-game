@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, DemonAtLocation, WardType } from '../../../engine/src/warded/types';
-import { WARD_COMBOS } from '../../../engine/src/warded/constants';
+import { WARD_COMBOS, WARD_TYPES } from '../../../engine/src/warded/constants';
 
 interface Props {
   location: Location;
@@ -20,12 +20,17 @@ interface Props {
   canFortify?: boolean;
   canGather?: boolean;
   canActivate?: boolean;
+  // CRITICAL 1: Warded Flesh
+  onWardedFlesh?: (wardType: WardType) => void;
+  // MAJOR 2: Activation indicator
+  isActivated?: boolean;
 }
 
 export default function LocationDetail({
   location, demons, isPresence, isNight, onClose,
   onCraft, onFortify, onGather, onActivateWard,
   availableWardReserves, canCraft, canFortify, canGather, canActivate,
+  onWardedFlesh, isActivated,
 }: Props) {
   const combo = getCombo(location);
 
@@ -126,7 +131,34 @@ export default function LocationDetail({
         </View>
       )}
 
-      {isNight && canActivate && (
+      {/* CRITICAL 1: Warded Flesh — place temp ward on this location */}
+      {onWardedFlesh && (
+        <View style={styles.actionSection}>
+          <Text style={styles.wardedFleshLabel}>⚔ Ward Temporaire (1 AP)</Text>
+          <View style={styles.wardedFleshRow}>
+            {WARD_TYPES.map(w => (
+              <TouchableOpacity
+                key={w}
+                style={[styles.wardedFleshBtn, { borderColor: wardColor(w) }]}
+                onPress={() => onWardedFlesh(w)}
+              >
+                <Text style={[styles.wardedFleshIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
+                <Text style={styles.wardedFleshName}>{w}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* MAJOR 2: Activated indicator */}
+      {isActivated && (
+        <View style={styles.activatedBanner}>
+          <Text style={styles.activatedText}>✓ Wards activées ce tour</Text>
+        </View>
+      )}
+
+      {/* MAJOR 1+3: Night ward activation - both slots, only if location has wards */}
+      {isNight && canActivate && !isActivated && (
         <View style={styles.actionSection}>
           {combo && (
             <TouchableOpacity style={[styles.actionBtn, styles.comboBtn]} onPress={() => onActivateWard?.(true)}>
@@ -134,11 +166,11 @@ export default function LocationDetail({
               <Text style={styles.actionDesc}>{combo.activeEffect}</Text>
             </TouchableOpacity>
           )}
-          {location.wards[0].ward && (
-            <TouchableOpacity style={styles.actionBtn} onPress={() => onActivateWard?.(false)}>
-              <Text style={styles.actionText}>Activer {location.wards[0].ward}</Text>
+          {location.wards.map((ws, i) => ws.ward ? (
+            <TouchableOpacity key={i} style={[styles.actionBtn, { borderColor: wardColor(ws.ward) }]} onPress={() => onActivateWard?.(false)}>
+              <Text style={styles.actionText}>Activer {WARD_SYMBOLS[ws.ward]} {ws.ward} (slot {i + 1})</Text>
             </TouchableOpacity>
-          )}
+          ) : null)}
         </View>
       )}
     </View>
@@ -360,5 +392,49 @@ const styles = StyleSheet.create({
     color: warded.textDim,
     fontSize: wardedFonts.xs,
     textAlign: 'center',
+  },
+  // CRITICAL 1: Warded Flesh styles
+  wardedFleshLabel: {
+    color: warded.accent,
+    fontSize: wardedFonts.xs,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  wardedFleshRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  wardedFleshBtn: {
+    flex: 1,
+    backgroundColor: warded.bgLight,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    gap: 2,
+  },
+  wardedFleshIcon: {
+    fontSize: 16,
+  },
+  wardedFleshName: {
+    color: warded.text,
+    fontSize: 8,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  // MAJOR 2: Activated banner
+  activatedBanner: {
+    backgroundColor: warded.success + '20',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: warded.success + '40',
+    alignItems: 'center',
+  },
+  activatedText: {
+    color: warded.success,
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
   },
 });

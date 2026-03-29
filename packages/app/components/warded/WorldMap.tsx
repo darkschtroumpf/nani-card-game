@@ -14,6 +14,7 @@ interface Props {
   isNight: boolean;
   forecast?: Record<string, string>;
   isPositioning?: boolean;
+  activationsUsedAt?: LocationId[];
 }
 
 function forecastBorderColor(level?: string): string {
@@ -34,7 +35,7 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
   south: { top: 1, left: 0.5 },
 };
 
-export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning }: Props) {
+export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt }: Props) {
   return (
     <View style={[styles.mapContainer, { width: MAP_SIZE, height: MAP_SIZE }]}>
       {/* Connection lines */}
@@ -53,6 +54,7 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
       {locations.map((loc) => {
         const pos = POSITIONS[loc.position];
         const isPresence = loc.id === presenceLocation;
+        const isActivated = activationsUsedAt?.includes(loc.id) ?? false;
         const isSelected = loc.id === selectedLocation;
         const demons = demonsAtLocations[loc.id] ?? [];
         const demonCount = demons.length;
@@ -75,6 +77,7 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
               loc.fallen && styles.locationFallen,
               isPresence && styles.locationPresence,
               isSelected && styles.locationSelected,
+              isActivated && styles.locationActivated,
               // FIX 3: extreme threat pulsing glow
               threatLevel === 'extreme' && !isSelected && !isPresence && {
                 shadowColor: '#ff0000',
@@ -132,6 +135,13 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
             {isPresence && (
               <View style={[styles.presenceBadge, isPositioning && styles.presenceBadgeLarge]}>
                 <Text style={[styles.presenceIcon, isPositioning && styles.presenceIconLarge]}>⚔</Text>
+              </View>
+            )}
+
+            {/* MAJOR 2: Activated checkmark */}
+            {isActivated && (
+              <View style={styles.activatedBadge}>
+                <Text style={styles.activatedIcon}>✓</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -290,5 +300,25 @@ const styles = StyleSheet.create({
   },
   presenceIconLarge: {
     fontSize: 14,
+  },
+  // MAJOR 2: Activated location styles
+  locationActivated: {
+    opacity: 0.55,
+  },
+  activatedBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: warded.success,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activatedIcon: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, fonts } from '../theme';
+import { warded, wardedFonts } from '../theme-warded';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -9,80 +9,44 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>NANI?!</Text>
-        <Text style={styles.subtitle}>Dojo</Text>
-        <Text style={styles.tagline}>Bluff. Deckbuild. Domine.</Text>
+        <Text style={styles.title}>THE DEMON'S</Text>
+        <Text style={styles.subtitle}>CYCLE</Text>
+        <Text style={styles.tagline}>Protège. Résiste. Survie.</Text>
       </View>
 
       <View style={styles.menu}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/lobby?mode=solo')}
-        >
-          <Text style={styles.buttonText}>Solo vs Bots</Text>
-          <Text style={styles.buttonDesc}>Affronte des IA</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.buttonOnline]}
-          onPress={() => router.push('/lobby?mode=online')}
-        >
-          <Text style={styles.buttonText}>En ligne</Text>
-          <Text style={styles.buttonDesc}>Joue avec des amis</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: colors.bgCard }]}
-          onPress={() => router.push('/deckbuilder')}
-        >
-          <Text style={styles.buttonText}>Deck Builder</Text>
-          <Text style={styles.buttonDesc}>Explore les archetypes</Text>
-        </TouchableOpacity>
-
-        <View style={styles.bottomRow}>
-          <TouchableOpacity
-            style={[styles.buttonSmall, styles.buttonSecondary]}
-            onPress={() => router.push('/rules')}
-          >
-            <Text style={styles.buttonTextSmall}>Regles</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.buttonSmall, styles.buttonSecondary]}
-            onPress={() => router.push('/stats')}
-          >
-            <Text style={styles.buttonTextSmall}>Stats</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.button, { backgroundColor: '#1a1a2e', borderWidth: 1, borderColor: '#ffd740' }]}
           onPress={() => router.push('/warded')}
         >
-          <Text style={[styles.buttonText, { color: '#ffd740' }]}>The Warded Man</Text>
-          <Text style={styles.buttonDesc}>Prototype — Sharak Ka</Text>
+          <Text style={styles.buttonText}>Jouer</Text>
+          <Text style={styles.buttonDesc}>Mode rapide — Arlen Bales</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.buttonSecondary]}
+          onPress={() => router.push('/warded')}
+        >
+          <Text style={styles.buttonText}>Campagne</Text>
+          <Text style={styles.buttonDesc}>Bientot disponible</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.version}>v2.0.0</Text>
+      <Text style={styles.version}>v2.1.0 — The Demon's Cycle</Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: 20 },
+  container: { flex: 1, backgroundColor: warded.bg, alignItems: 'center', justifyContent: 'center', padding: 20 },
   titleContainer: { alignItems: 'center', marginBottom: 60 },
-  title: { fontSize: 64, fontWeight: 'bold', color: colors.primary, letterSpacing: 4 },
-  subtitle: { fontSize: fonts.sizes.xxl, color: colors.accent, fontWeight: 'bold', marginTop: -4 },
-  tagline: { fontSize: fonts.sizes.md, color: colors.textDim, marginTop: 8 },
+  title: { fontSize: 36, fontWeight: 'bold', color: warded.accent, letterSpacing: 6 },
+  subtitle: { fontSize: 48, fontWeight: 'bold', color: warded.wardFire, letterSpacing: 8, marginTop: -4 },
+  tagline: { fontSize: wardedFonts.md, color: warded.textDim, marginTop: 12 },
   menu: { width: '100%', maxWidth: 320, gap: 16 },
-  button: { backgroundColor: colors.primary, paddingVertical: 18, paddingHorizontal: 24, borderRadius: 12, alignItems: 'center' },
-  buttonOnline: { backgroundColor: colors.secondary },
-  bottomRow: { flexDirection: 'row', gap: 12 },
-  buttonSmall: { flex: 1, paddingVertical: 14, paddingHorizontal: 16, borderRadius: 12, alignItems: 'center' },
-  buttonTextSmall: { color: colors.text, fontSize: fonts.sizes.lg, fontWeight: 'bold' },
-  buttonSecondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.textDim },
-  buttonText: { color: colors.text, fontSize: fonts.sizes.xl, fontWeight: 'bold' },
-  buttonDesc: { color: colors.textDim, fontSize: fonts.sizes.sm, marginTop: 4 },
-  version: { position: 'absolute', bottom: 20, color: colors.textDark, fontSize: fonts.sizes.xs },
+  button: { backgroundColor: warded.bgCard, paddingVertical: 18, paddingHorizontal: 24, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: warded.accent },
+  buttonSecondary: { borderColor: warded.textDark },
+  buttonText: { color: warded.text, fontSize: wardedFonts.xl, fontWeight: 'bold' },
+  buttonDesc: { color: warded.textDim, fontSize: wardedFonts.sm, marginTop: 4 },
+  version: { position: 'absolute', bottom: 20, color: warded.textDark, fontSize: wardedFonts.xs },
 });

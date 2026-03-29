@@ -197,6 +197,7 @@ export default function WardedGameScreen() {
   const [showEventLog, setShowEventLog] = useState(false);
   const [damageResolved, setDamageResolved] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0); // 0-6 active, -1 = done
+  const [mistWalkMode, setMistWalkMode] = useState(false);
   const firstNightSeen = useRef(false);
 
   useEffect(() => {
@@ -240,9 +241,24 @@ export default function WardedGameScreen() {
               ? `${state.hero.name} a protégé les cités!`
               : state.defeatReason ?? 'Les ténèbres recouvrent Ala.'}
           </Text>
-          <TouchableOpacity style={styles.menuBtn} onPress={() => router.replace('/')}>
-            <Text style={styles.menuBtnText}>Menu</Text>
-          </TouchableOpacity>
+          <View style={styles.gameOverBtns}>
+            <TouchableOpacity style={styles.replayBtn} onPress={() => {
+              ctrl.startGame('arlen', 'midnight');
+              setSelectedLocation(null);
+              setDamageResolved(false);
+              setMistWalkMode(false);
+              setShowNightTransition(false);
+              setCombatToast(null);
+              setShowEventLog(false);
+              setTutorialStep(0);
+              firstNightSeen.current = false;
+            }}>
+              <Text style={styles.replayBtnText}>Rejouer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuBtn} onPress={() => router.replace('/')}>
+              <Text style={styles.menuBtnText}>Menu</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -260,6 +276,17 @@ export default function WardedGameScreen() {
   // This is handled by rendering the overlay conditionally below.
 
   const handleLocationPress = (locId: LocationId) => {
+    // CRITICAL 2: During night positioning, tap moves presence instead of opening detail
+    if (isNight && state.waveNumber === 0 && !state.presenceMoveUsed) {
+      ctrl.doMovePresence(locId);
+      return;
+    }
+    // CRITICAL 3: In mistWalkMode, tap triggers mist walk
+    if (mistWalkMode) {
+      ctrl.doMistWalk(locId);
+      setMistWalkMode(false);
+      return;
+    }
     setSelectedLocation(locId);
     if (tutorialStep === 1) setTutorialStep(2);
   };
@@ -351,6 +378,29 @@ export default function WardedGameScreen() {
             </Text>
           </View>
         )}
+        {/* MAJOR 4: Global resource summary during day */}
+        {isDay && (() => {
+          const alive = state.locations.filter(l => !l.fallen);
+          const totalWood = alive.reduce((s, l) => s + l.stockpile.wood, 0);
+          const totalInk = alive.reduce((s, l) => s + l.stockpile.ink, 0);
+          const totalFood = alive.reduce((s, l) => s + l.stockpile.food, 0);
+          return (
+            <>
+              <View style={[styles.statChip, { borderColor: warded.wood + '60' }]}>
+                <Text style={styles.statLabel}>Bois</Text>
+                <Text style={[styles.statValue, { color: warded.wood }]}>{totalWood}</Text>
+              </View>
+              <View style={[styles.statChip, { borderColor: warded.ink + '60' }]}>
+                <Text style={styles.statLabel}>Encre</Text>
+                <Text style={[styles.statValue, { color: warded.ink }]}>{totalInk}</Text>
+              </View>
+              <View style={[styles.statChip, { borderColor: warded.food + '60' }]}>
+                <Text style={styles.statLabel}>Nourr.</Text>
+                <Text style={[styles.statValue, { color: warded.food }]}>{totalFood}</Text>
+              </View>
+            </>
+          );
+        })()}
       </View>
 
       {/* Map */}
@@ -363,6 +413,7 @@ export default function WardedGameScreen() {
         isNight={isNight}
         forecast={isDay && forecast ? forecast : undefined}
         isPositioning={isNight && state.waveNumber === 0}
+        activationsUsedAt={state.activationsUsedAt}
       />
 
       {/* Location detail (if selected) */}
@@ -390,7 +441,11 @@ export default function WardedGameScreen() {
               onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
                 ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
                 : undefined}
-              canActivate={isNight && state.activationsRemaining > 0}
+              canActivate={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)}
+              isActivated={state.activationsUsedAt?.includes(selectedLoc.id) ?? false}
+              onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
+                ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
+                : undefined}
             />
           </ScrollView>
         </View>
@@ -507,29 +562,7 @@ export default function WardedGameScreen() {
             </View>
           )}
 
-          {/* Arlen: Warded Flesh (place temp ward) */}
-          {isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLocation && (
-            <View style={styles.actionSection}>
-              <Text style={styles.actionLabel}>⚔ Warded Flesh (1 AP) — Ward temp à {selectedLocation}</Text>
-              <View style={styles.wardCraftRow}>
-                {WARD_TYPES.map(w => {
-                  const loc = state.locations.find(l => l.id === selectedLocation);
-                  const hasSlot = loc && loc.wards.some(ws => !ws.ward);
-                  return (
-                    <TouchableOpacity
-                      key={w}
-                      style={[styles.wardCraftBtn, !hasSlot && styles.btnDisabled, { borderColor: wardColor(w) }]}
-                      disabled={!hasSlot}
-                      onPress={() => { if (selectedLocation) ctrl.doWardedFlesh(w, selectedLocation); }}
-                    >
-                      <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
-                      <Text style={styles.wardCraftName}>temp</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
+          {/* Warded Flesh moved to LocationDetail (CRITICAL 1 fix) */}
 
           {/* Day: end day button */}
           {isDay && (
@@ -545,8 +578,9 @@ export default function WardedGameScreen() {
               <View style={styles.positioningBanner}>
                 <Text style={styles.positioningTitle}>POSITIONNEMENT</Text>
                 <Text style={styles.positioningHint}>
-                  Tape un lieu pour y déplacer ta Présence ({state.hero.name}).
-                  {'\n'}Ta Présence renforce les wards actives ici.
+                  {state.presenceMoveUsed
+                    ? 'Présence déplacée ! Lance la vague quand tu es prêt.'
+                    : `Tape un lieu pour déplacer ta Présence (${state.hero.name}).\nTa Présence renforce les wards actives ici.`}
                 </Text>
               </View>
               <TouchableOpacity style={styles.phaseBtn} onPress={ctrl.doStartWave}>
@@ -557,11 +591,28 @@ export default function WardedGameScreen() {
 
           {isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
             <View style={styles.nightActions}>
-              <Text style={styles.nightLabel}>Sélectionne un lieu pour activer ses wards ({state.activationsRemaining} restantes)</Text>
-              {state.hero.id === 'arlen' && !state.heroWaveAbilityUsed && (state.hero.arlenCharge ?? 0) > 0 && (
-                <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.accent + '30', borderColor: warded.accent }]} onPress={ctrl.doWardedFist}>
-                  <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
-                </TouchableOpacity>
+              {mistWalkMode ? (
+                <View style={styles.mistWalkBanner}>
+                  <Text style={styles.mistWalkTitle}>MIST WALK</Text>
+                  <Text style={styles.mistWalkHint}>Tape un lieu pour te téléporter</Text>
+                  <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.textDim }]} onPress={() => setMistWalkMode(false)}>
+                    <Text style={[styles.phaseBtnText, { color: warded.textDim }]}>Annuler</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.nightLabel}>Sélectionne un lieu pour activer ses wards ({state.activationsRemaining} restantes)</Text>
+                  {state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) >= 5 && (
+                    <TouchableOpacity style={[styles.phaseBtn, styles.mistWalkBtn]} onPress={() => setMistWalkMode(true)}>
+                      <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>MIST WALK (5 charges)</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'arlen' && !state.heroWaveAbilityUsed && (state.hero.arlenCharge ?? 0) > 0 && (
+                    <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.accent + '30', borderColor: warded.accent }]} onPress={ctrl.doWardedFist}>
+                      <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
             </View>
           )}
@@ -937,6 +988,35 @@ const styles = StyleSheet.create({
   gameOverEmoji: { fontSize: 64 },
   gameOverTitle: { fontSize: wardedFonts.title, fontWeight: 'bold', color: warded.accent, textAlign: 'center' },
   gameOverSub: { fontSize: wardedFonts.md, color: warded.textDim, textAlign: 'center' },
-  menuBtn: { backgroundColor: warded.accent + '30', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 10, borderWidth: 1, borderColor: warded.accent },
+  gameOverBtns: { flexDirection: 'row', gap: 12 },
+  replayBtn: { backgroundColor: warded.success + '30', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 10, borderWidth: 1, borderColor: warded.success },
+  replayBtnText: { color: warded.success, fontSize: wardedFonts.lg, fontWeight: 'bold' },
+  menuBtn: { backgroundColor: warded.accent + '30', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 10, borderWidth: 1, borderColor: warded.accent },
   menuBtnText: { color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold' },
+
+  // CRITICAL 3: Mist Walk styles
+  mistWalkBanner: {
+    backgroundColor: warded.wardLight + '15',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 2,
+    borderColor: warded.wardLight,
+    alignItems: 'center',
+    gap: 8,
+  },
+  mistWalkTitle: {
+    color: warded.wardLight,
+    fontSize: wardedFonts.lg,
+    fontWeight: 'bold',
+    letterSpacing: 3,
+  },
+  mistWalkHint: {
+    color: warded.textDim,
+    fontSize: wardedFonts.sm,
+  },
+  mistWalkBtn: {
+    backgroundColor: warded.wardLight + '20',
+    borderColor: warded.wardLight,
+    borderWidth: 2,
+  },
 });
