@@ -1,13 +1,15 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { warded, wardedFonts } from '../theme-warded';
+
+const BG_NIGHT = require('../assets/images/bg_night.png');
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ImageBackground source={BG_NIGHT} style={styles.container} imageStyle={{ opacity: 0.25 }}>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>THE DEMON'S</Text>
         <Text style={styles.subtitle}>CYCLE</Text>
@@ -32,8 +34,8 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.version}>v2.1.0 — The Demon's Cycle</Text>
-    </SafeAreaView>
+      <Text style={styles.version}>v2.2.0 — The Demon's Cycle</Text>
+    </ImageBackground>
   );
 }
 

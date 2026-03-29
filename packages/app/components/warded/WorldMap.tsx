@@ -1,6 +1,14 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, LocationId, DemonAtLocation } from '../../../engine/src/warded/types';
+
+const WARD_IMAGES: Record<string, any> = {
+  fire: require('../../assets/images/ward_fire.png'),
+  stone: require('../../assets/images/ward_stone.png'),
+  wind: require('../../assets/images/ward_wind.png'),
+  light: require('../../assets/images/ward_light.png'),
+  bone: require('../../assets/images/ward_bone.png'),
+};
 
 const { width: SCREEN_W } = Dimensions.get('window');
 const MAP_SIZE = Math.min(SCREEN_W - 32, 340);
@@ -114,7 +122,9 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
                   isNight && styles.wardDotNight,
                   ws.ward ? { backgroundColor: wardColor(ws.ward) } : styles.wardEmpty,
                 ]}>
-                  {ws.ward && <Text style={[styles.wardSymbol, isNight && styles.wardSymbolNight]}>{WARD_SYMBOLS[ws.ward]}</Text>}
+                  {ws.ward && WARD_IMAGES[ws.ward] && (
+                    <Image source={WARD_IMAGES[ws.ward]} style={[styles.wardImage, isNight && styles.wardImageNight]} />
+                  )}
                 </View>
               ))}
             </View>
@@ -246,6 +256,16 @@ const styles = StyleSheet.create({
   wardSymbol: {
     fontSize: 10,
     color: '#fff',
+  },
+  wardImage: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  wardImageNight: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
   },
   // FIX 2: Bigger ward dots at night
   wardDotNight: {

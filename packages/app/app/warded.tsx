@@ -2,7 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { ImageBackground, Image } from 'react-native';
 import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
+
+// Generated art assets
+const BG_DAY = require('../assets/images/bg_day.png');
+const BG_NIGHT = require('../assets/images/bg_night.png');
+const HERO_ARLEN = require('../assets/images/hero_arlen.png');
 import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
@@ -345,9 +351,9 @@ export default function WardedGameScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: isDay ? warded.dayBg : warded.nightBg }]}>
-      {/* Atmospheric background layer */}
-      <View style={isDay ? styles.bgPatternDay : styles.bgPatternNight} pointerEvents="none" />
+    <ImageBackground source={isDay ? BG_DAY : BG_NIGHT} style={styles.container} imageStyle={styles.bgImage}>
+      {/* Dark overlay for readability */}
+      <View style={styles.bgOverlay} pointerEvents="none" />
 
       {/* FIX 1: Night transition overlay */}
       {showNightTransition && (
@@ -360,9 +366,12 @@ export default function WardedGameScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.heroName}>⚔ {state.hero.name}</Text>
-          <Text style={styles.heroTitle}>{state.hero.title}</Text>
+        <View style={styles.heroRow}>
+          <Image source={HERO_ARLEN} style={styles.heroAvatar} />
+          <View>
+            <Text style={styles.heroName}>{state.hero.name}</Text>
+            <Text style={styles.heroTitle}>{state.hero.title}</Text>
+          </View>
         </View>
         <View style={styles.headerRight}>
           <Text style={styles.phaseText}>{isDay ? '☀ JOUR' : '🌙 NUIT'}</Text>
@@ -729,12 +738,14 @@ export default function WardedGameScreen() {
           onSkip={() => setTutorialStep(-1)}
         />
       )}
-    </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: warded.bg },
+  container: { flex: 1 },
+  bgImage: { opacity: 0.35 },
+  bgOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
   loadingText: { color: warded.text, fontSize: wardedFonts.xl, textAlign: 'center', marginTop: 100 },
 
   // Atmospheric background layers
@@ -760,6 +771,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,215,64,0.1)',
   },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  heroAvatar: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderColor: warded.accent },
   heroName: { color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold', textShadowColor: warded.accent, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 6 },
   heroTitle: { color: warded.textDim, fontSize: wardedFonts.xs, letterSpacing: 1 },
   headerRight: { alignItems: 'flex-end' },
