@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
@@ -38,6 +38,154 @@ function getNightStepIndex(waveNumber: number, activationsRemaining: number, tot
   return 3;
 }
 
+// --- Tutorial ---
+const TUTORIAL_STEPS: { text: string; buttonLabel: string }[] = [
+  { text: "Les bordures colorées montrent les menaces de la nuit. ROUGE = danger ! Prépare tes défenses.", buttonLabel: "Compris" },
+  { text: "Tape sur un lieu pour voir ses défenses et agir.", buttonLabel: "Suivant" },
+  { text: "Fabrique un ward pour protéger tes cités. Chaque ward a un effet unique.", buttonLabel: "Suivant" },
+  { text: "Place ton ward sur un lieu. Les combos de 2 wards sont plus puissants !", buttonLabel: "Suivant" },
+  { text: "Prêt ? Lance la nuit pour affronter les démons !", buttonLabel: "Suivant" },
+  { text: "Tape un lieu wardé pour activer ses défenses contre les démons.", buttonLabel: "Suivant" },
+  { text: "Résous les dégâts pour voir ce qui a survécu. Bonne chance !", buttonLabel: "Suivant" },
+];
+
+function TutorialOverlay({ step, onNext, onSkip }: { step: number; onNext: () => void; onSkip: () => void }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const data = TUTORIAL_STEPS[step];
+
+  useEffect(() => {
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+  }, [step]);
+
+  // Step 0 auto-advances after 3s
+  useEffect(() => {
+    if (step === 0) {
+      const timer = setTimeout(onNext, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
+  if (!data) return null;
+
+  // Steps 1-6 need the player to interact with the game, so use box-none
+  // to let touches pass through the overlay (except on the card/skip button).
+  // Step 0 blocks all touches (tap anywhere to advance).
+  const passThrough = step > 0;
+
+  return (
+    <Animated.View
+      style={[tutStyles.overlay, { opacity: fadeAnim }, passThrough && { backgroundColor: 'transparent' }]}
+      pointerEvents={passThrough ? 'box-none' : 'auto'}
+    >
+      {step === 0 && (
+        <TouchableOpacity style={tutStyles.overlayTouchable} activeOpacity={1} onPress={onNext}>
+          <View style={tutStyles.card}>
+            <Text style={tutStyles.stepIndicator}>Étape {step + 1} / {TUTORIAL_STEPS.length}</Text>
+            <Text style={tutStyles.text}>{data.text}</Text>
+            <TouchableOpacity style={tutStyles.nextBtn} onPress={onNext}>
+              <Text style={tutStyles.nextBtnText}>{data.buttonLabel}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      )}
+      {step > 0 && (
+        <View style={tutStyles.floatingCard} pointerEvents="auto">
+          <Text style={tutStyles.stepIndicator}>Étape {step + 1} / {TUTORIAL_STEPS.length}</Text>
+          <Text style={tutStyles.text}>{data.text}</Text>
+        </View>
+      )}
+      <View pointerEvents="auto" style={tutStyles.skipBtn}>
+        <TouchableOpacity onPress={onSkip}>
+          <Text style={tutStyles.skipText}>Passer le tuto</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
+  );
+}
+
+const tutStyles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    zIndex: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTouchable: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  } as any,
+  card: {
+    backgroundColor: warded.bgCard,
+    borderWidth: 1,
+    borderColor: warded.accent,
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    maxWidth: 280,
+    gap: 10,
+    alignItems: 'center',
+  },
+  stepIndicator: {
+    color: warded.textDim,
+    fontSize: 9,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  text: {
+    color: warded.text,
+    fontSize: wardedFonts.sm,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  nextBtn: {
+    backgroundColor: warded.accent + '30',
+    borderWidth: 1,
+    borderColor: warded.accent,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  nextBtnText: {
+    color: warded.accent,
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
+  },
+  floatingCard: {
+    position: 'absolute',
+    top: 40,
+    alignSelf: 'center',
+    backgroundColor: warded.bgCard,
+    borderWidth: 1,
+    borderColor: warded.accent,
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    maxWidth: 280,
+    gap: 6,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  skipBtn: {
+    position: 'absolute',
+    bottom: 14,
+    right: 14,
+  },
+  skipText: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    textDecorationLine: 'underline',
+  },
+});
+
 export default function WardedGameScreen() {
   const router = useRouter();
   const ctrl = useWardedGame();
@@ -48,6 +196,8 @@ export default function WardedGameScreen() {
   const [combatToast, setCombatToast] = useState<string | null>(null);
   const [showEventLog, setShowEventLog] = useState(false);
   const [damageResolved, setDamageResolved] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0); // 0-6 active, -1 = done
+  const firstNightSeen = useRef(false);
 
   useEffect(() => {
     if (!initialized) {
@@ -98,8 +248,50 @@ export default function WardedGameScreen() {
     );
   }
 
+  // Tutorial: advance to night steps on first night
+  useEffect(() => {
+    if (isNight && !firstNightSeen.current && tutorialStep === 5) {
+      firstNightSeen.current = true;
+    }
+  }, [isNight]);
+
+  // Tutorial: when we enter night and step is 5, wait for activation phase
+  // (waveNumber > 0 && activationsRemaining > 0)
+  // This is handled by rendering the overlay conditionally below.
+
+  const handleLocationPress = (locId: LocationId) => {
+    setSelectedLocation(locId);
+    if (tutorialStep === 1) setTutorialStep(2);
+  };
+
+  // Wrapped doCraft to advance tutorial
+  const handleCraft = (w: WardType, locId: LocationId) => {
+    ctrl.doCraft(w, locId);
+    if (tutorialStep === 2) setTutorialStep(3);
+  };
+
+  // Wrapped doFortify to advance tutorial
+  const handleFortify = (w: WardType, locId: LocationId) => {
+    ctrl.doFortify(w, locId);
+    if (tutorialStep === 3) setTutorialStep(4);
+  };
+
+  // Wrapped doActivateWard to advance tutorial
+  const handleActivateWard = (locId: LocationId, useCombo: boolean) => {
+    ctrl.doActivateWard(locId, useCombo);
+    if (tutorialStep === 5) setTutorialStep(6);
+  };
+
+  // Wrapped doResolveDamage to advance tutorial
+  const handleResolveDamage = () => {
+    ctrl.doResolveDamage();
+    setDamageResolved(true);
+    if (tutorialStep === 6) setTutorialStep(-1);
+  };
+
   // FIX 1: Wrapped endDay to show transition overlay
   const handleEndDay = () => {
+    if (tutorialStep === 4) setTutorialStep(5);
     setShowNightTransition(true);
     setTimeout(() => {
       setShowNightTransition(false);
@@ -167,7 +359,7 @@ export default function WardedGameScreen() {
         presenceLocation={state.presenceLocation}
         demonsAtLocations={state.demonsAtLocations}
         selectedLocation={selectedLocation}
-        onLocationPress={setSelectedLocation}
+        onLocationPress={handleLocationPress}
         isNight={isNight}
         forecast={isDay && forecast ? forecast : undefined}
         isPositioning={isNight && state.waveNumber === 0}
@@ -191,12 +383,12 @@ export default function WardedGameScreen() {
               onGather={isDay && state.hero.ap > 0 ? () => { ctrl.doGather(selectedLoc.id); } : undefined}
               canGather={isDay && state.hero.ap > 0}
               onFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0
-                ? (w: WardType) => { ctrl.doFortify(w, selectedLoc.id); }
+                ? (w: WardType) => { handleFortify(w, selectedLoc.id); }
                 : undefined}
               canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
               availableWardReserves={state.wardReserves}
               onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
-                ? (useCombo) => { ctrl.doActivateWard(selectedLoc.id, useCombo); }
+                ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
                 : undefined}
               canActivate={isNight && state.activationsRemaining > 0}
             />
@@ -264,7 +456,7 @@ export default function WardedGameScreen() {
                           key={w}
                           style={[styles.wardCraftBtn, !canAfford && styles.btnDisabledExplained, { borderColor: wardColor(w) }]}
                           disabled={!canAfford}
-                          onPress={() => { if (bestLoc) ctrl.doCraft(w, bestLoc.id); }}
+                          onPress={() => { if (bestLoc) handleCraft(w, bestLoc.id); }}
                         >
                           <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
                           <Text style={styles.wardCraftName}>{w}</Text>
@@ -396,8 +588,7 @@ export default function WardedGameScreen() {
                 <TouchableOpacity
                   style={[styles.phaseBtn, { backgroundColor: warded.danger + '20', borderColor: warded.danger }]}
                   onPress={() => {
-                    ctrl.doResolveDamage();
-                    setDamageResolved(true);
+                    handleResolveDamage();
                   }}
                 >
                   <Text style={styles.phaseBtnText}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
@@ -443,6 +634,29 @@ export default function WardedGameScreen() {
       )}
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
+
+      {/* Tutorial overlay */}
+      {tutorialStep >= 0 && tutorialStep <= 4 && !showNightTransition && (
+        <TutorialOverlay
+          step={tutorialStep}
+          onNext={() => setTutorialStep(prev => prev === 0 ? 1 : prev)}
+          onSkip={() => setTutorialStep(-1)}
+        />
+      )}
+      {tutorialStep === 5 && isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
+        <TutorialOverlay
+          step={5}
+          onNext={() => {}}
+          onSkip={() => setTutorialStep(-1)}
+        />
+      )}
+      {tutorialStep === 6 && isNight && state.activationsRemaining === 0 && !damageResolved && (
+        <TutorialOverlay
+          step={6}
+          onNext={() => {}}
+          onSkip={() => setTutorialStep(-1)}
+        />
+      )}
     </SafeAreaView>
   );
 }
