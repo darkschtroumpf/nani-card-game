@@ -8,6 +8,15 @@ import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
 const BG_DAY = require('../assets/images/bg_day.png');
 const BG_NIGHT = require('../assets/images/bg_night.png');
 const HERO_ARLEN = require('../assets/images/hero_arlen.png');
+
+const WARD_IMAGES: Record<string, any> = {
+  fire: require('../assets/images/ward_fire.png'),
+  stone: require('../assets/images/ward_stone.png'),
+  wind: require('../assets/images/ward_wind.png'),
+  light: require('../assets/images/ward_light.png'),
+  bone: require('../assets/images/ward_bone.png'),
+};
+
 import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
@@ -221,6 +230,15 @@ export default function WardedGameScreen() {
   const [mistWalkMode, setMistWalkMode] = useState(false);
   const firstNightSeen = useRef(false);
 
+  // FIX 3: Game stats tracking
+  const gameStats = useRef({ wardsCrafted: 0, activationsUsed: 0, demonsKilled: 0, populationLost: 0, nightsSurvived: 0 });
+
+  // FIX 4: Action flash feedback
+  const [actionFlash, setActionFlash] = useState<string | null>(null);
+
+  // FIX 5: Damage report overlay
+  const [damageReport, setDamageReport] = useState<string[] | null>(null);
+
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
@@ -269,6 +287,24 @@ export default function WardedGameScreen() {
               ? `${state.hero.name} a protégé les cités!`
               : state.defeatReason ?? 'Les ténèbres recouvrent Ala.'}
           </Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statsItem}>
+              <Text style={styles.statsValue}>{gameStats.current.nightsSurvived}</Text>
+              <Text style={styles.statsLabel}>Nuits survecues</Text>
+            </View>
+            <View style={styles.statsItem}>
+              <Text style={styles.statsValue}>{gameStats.current.wardsCrafted}</Text>
+              <Text style={styles.statsLabel}>Wards fabriquees</Text>
+            </View>
+            <View style={styles.statsItem}>
+              <Text style={styles.statsValue}>{gameStats.current.activationsUsed}</Text>
+              <Text style={styles.statsLabel}>Activations</Text>
+            </View>
+            <View style={styles.statsItem}>
+              <Text style={styles.statsValue}>{gameStats.current.demonsKilled}</Text>
+              <Text style={styles.statsLabel}>Demons tues</Text>
+            </View>
+          </View>
           <View style={styles.gameOverBtns}>
             <TouchableOpacity style={styles.replayBtn} onPress={() => {
               ctrl.startGame('arlen', 'midnight');
@@ -279,7 +315,10 @@ export default function WardedGameScreen() {
               setCombatToast(null);
               setShowEventLog(false);
               setTutorialStep(0);
+              setActionFlash(null);
+              setDamageReport(null);
               firstNightSeen.current = false;
+              gameStats.current = { wardsCrafted: 0, activationsUsed: 0, demonsKilled: 0, populationLost: 0, nightsSurvived: 0 };
             }}>
               <Text style={styles.replayBtnText}>Rejouer</Text>
             </TouchableOpacity>
@@ -317,6 +356,10 @@ export default function WardedGameScreen() {
   // Wrapped doCraft to advance tutorial
   const handleCraft = (w: WardType, locId: LocationId) => {
     ctrl.doCraft(w, locId);
+    gameStats.current.wardsCrafted++;
+    // FIX 4: gold flash on craft
+    setActionFlash('#FFD700');
+    setTimeout(() => setActionFlash(null), 400);
     if (tutorialStep === 2) setTutorialStep(3);
   };
 
@@ -329,19 +372,38 @@ export default function WardedGameScreen() {
   // Wrapped doActivateWard to advance tutorial
   const handleActivateWard = (locId: LocationId, useCombo: boolean) => {
     ctrl.doActivateWard(locId, useCombo);
+    gameStats.current.activationsUsed++;
+    // FIX 4: warm yellow flash on activate
+    setActionFlash('#FFAA00');
+    setTimeout(() => setActionFlash(null), 400);
     if (tutorialStep === 5) setTutorialStep(6);
   };
 
   // Wrapped doResolveDamage to advance tutorial
   const handleResolveDamage = () => {
+    const beforePop = state.locations.reduce((s, l) => s + l.population, 0);
+    const beforeEvents = events.length;
     ctrl.doResolveDamage();
     setDamageResolved(true);
+    // FIX 4: red flash on damage resolve
+    setActionFlash('#FF3333');
+    setTimeout(() => setActionFlash(null), 400);
+    // FIX 5: capture new events as damage report
+    const newEvents = events.slice(beforeEvents);
+    // FIX 3: count kills and pop loss from new events
+    const killCount = newEvents.filter(e => e.includes('détruit')).length;
+    gameStats.current.demonsKilled += killCount;
+    const afterPop = state.locations.reduce((s, l) => s + l.population, 0);
+    const popLost = beforePop - afterPop;
+    if (popLost > 0) gameStats.current.populationLost += popLost;
+    setDamageReport(newEvents.length > 0 ? newEvents : ['Aucun degat cette vague!']);
     if (tutorialStep === 6) setTutorialStep(-1);
   };
 
   // FIX 1: Wrapped endDay to show transition overlay
   const handleEndDay = () => {
     if (tutorialStep === 4) setTutorialStep(5);
+    gameStats.current.nightsSurvived++;
     setShowNightTransition(true);
     setTimeout(() => {
       setShowNightTransition(false);
@@ -516,6 +578,24 @@ export default function WardedGameScreen() {
         </View>
       )}
 
+      {/* FIX 4: Action flash feedback */}
+      {actionFlash && (
+        <View style={[styles.actionFlashOverlay, { backgroundColor: actionFlash }]} pointerEvents="none" />
+      )}
+
+      {/* FIX 5: Damage report overlay */}
+      {damageReport && (
+        <View style={styles.damageReportOverlay}>
+          <Text style={styles.damageReportTitle}>RESOLUTION — Vague {state.waveNumber}/3</Text>
+          {damageReport.map((line, i) => (
+            <Text key={i} style={styles.damageReportLine}>{line}</Text>
+          ))}
+          <TouchableOpacity onPress={() => setDamageReport(null)} style={styles.damageReportClose}>
+            <Text style={styles.damageReportCloseText}>Continuer</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* No location selected — show action bar */}
       {!selectedLoc && (
         <View style={styles.actionBar}>
@@ -544,7 +624,7 @@ export default function WardedGameScreen() {
                           disabled={!canAfford}
                           onPress={() => { if (bestLoc) handleCraft(w, bestLoc.id); }}
                         >
-                          <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
+                          <Image source={WARD_IMAGES[w]} style={styles.wardCraftImage} />
                           <Text style={styles.wardCraftName}>{w}</Text>
                           <Text style={styles.wardCraftEffect}>{WARD_EFFECTS[w]}</Text>
                           <Text style={styles.wardCraftCost}>
@@ -584,7 +664,7 @@ export default function WardedGameScreen() {
               <View style={styles.reserveChips}>
                 {state.wardReserves.map((w, i) => (
                   <View key={i} style={[styles.reserveChip, { borderColor: wardColor(w) }]}>
-                    <Text style={{ color: wardColor(w), fontSize: 18 }}>{WARD_SYMBOLS[w]}</Text>
+                    <Image source={WARD_IMAGES[w]} style={{ width: 22, height: 22, borderRadius: 11 }} />
                     <Text style={{ color: wardColor(w), fontSize: 9, fontWeight: '600' }}>{w}</Text>
                   </View>
                 ))}
@@ -807,6 +887,7 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.3 },
   wardCraftIcon: { fontSize: 22 },
+  wardCraftImage: { width: 28, height: 28, borderRadius: 14 },
   wardCraftName: { color: warded.text, fontSize: 9, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 },
   wardCraftEffect: { color: warded.textDim, fontSize: 8, textAlign: 'center', lineHeight: 11 },
   wardCraftCost: { color: warded.warning, fontSize: 8, fontWeight: '600', textAlign: 'center' },
@@ -1088,5 +1169,82 @@ const styles = StyleSheet.create({
     backgroundColor: warded.wardLight + '20',
     borderColor: warded.wardLight,
     borderWidth: 2,
+  },
+
+  // FIX 3: Game-over stats grid
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    marginVertical: 8,
+  },
+  statsItem: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    minWidth: 100,
+  },
+  statsValue: {
+    color: warded.accent,
+    fontSize: wardedFonts.xl,
+    fontWeight: 'bold',
+  },
+  statsLabel: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+
+  // FIX 4: Action flash overlay
+  actionFlashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.3,
+    zIndex: 50,
+  } as any,
+
+  // FIX 5: Damage report overlay
+  damageReportOverlay: {
+    position: 'absolute',
+    top: '20%',
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(20,10,10,0.95)',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: warded.danger,
+    gap: 8,
+    zIndex: 60,
+  } as any,
+  damageReportTitle: {
+    color: warded.danger,
+    fontSize: wardedFonts.lg,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    letterSpacing: 2,
+  },
+  damageReportLine: {
+    color: warded.text,
+    fontSize: wardedFonts.sm,
+  },
+  damageReportClose: {
+    backgroundColor: warded.danger + '30',
+    borderRadius: 8,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: warded.danger,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  damageReportCloseText: {
+    color: warded.danger,
+    fontWeight: 'bold',
+    fontSize: wardedFonts.md,
   },
 });

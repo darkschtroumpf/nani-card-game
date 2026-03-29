@@ -1,7 +1,24 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, DemonAtLocation, WardType } from '../../../engine/src/warded/types';
 import { WARD_COMBOS, WARD_TYPES } from '../../../engine/src/warded/constants';
+
+const DEMON_IMAGES: Record<string, any> = {
+  flame: require('../../assets/images/demon_flame.png'),
+  wood: require('../../assets/images/demon_wood.png'),
+  wind: require('../../assets/images/demon_wind.png'),
+  water: require('../../assets/images/demon_water.png'),
+  rock: require('../../assets/images/demon_rock.png'),
+  mind: require('../../assets/images/demon_mind.png'),
+};
+
+const WARD_IMAGES: Record<string, any> = {
+  fire: require('../../assets/images/ward_fire.png'),
+  stone: require('../../assets/images/ward_stone.png'),
+  wind: require('../../assets/images/ward_wind.png'),
+  light: require('../../assets/images/ward_light.png'),
+  bone: require('../../assets/images/ward_bone.png'),
+};
 
 interface Props {
   location: Location;
@@ -78,7 +95,7 @@ export default function LocationDetail({
             <View key={i} style={[styles.wardSlot, ws.ward ? { borderColor: wardColor(ws.ward) } : {}]}>
               {ws.ward ? (
                 <>
-                  <Text style={[styles.wardIcon, { color: wardColor(ws.ward) }]}>{WARD_SYMBOLS[ws.ward]}</Text>
+                  <Image source={WARD_IMAGES[ws.ward]} style={styles.wardSlotImage} />
                   <Text style={[styles.wardName, { color: wardColor(ws.ward) }]}>{ws.ward.toUpperCase()}</Text>
                   {ws.isTemporary && <Text style={styles.tempBadge}>TEMP</Text>}
                 </>
@@ -103,7 +120,7 @@ export default function LocationDetail({
           <View style={styles.demonList}>
             {demons.map((d, i) => (
               <View key={i} style={[styles.demonChip, { borderColor: demonColor(d.demon.type) }]}>
-                <Text style={styles.demonIcon}>{DEMON_SYMBOLS[d.demon.type]}</Text>
+                <Image source={DEMON_IMAGES[d.demon.type]} style={styles.demonImage} />
                 <Text style={[styles.demonStr, { color: demonColor(d.demon.type) }]}>{d.currentStrength}</Text>
                 {d.swarmed && <Text style={styles.swarmBadge}>S</Text>}
                 {d.demon.isLocked && <Text style={styles.lockedBadge}>L</Text>}
@@ -353,6 +370,16 @@ const styles = StyleSheet.create({
   },
   demonIcon: {
     fontSize: 14,
+  },
+  demonImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  wardSlotImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
   },
   demonStr: {
     fontSize: wardedFonts.md,

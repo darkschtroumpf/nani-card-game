@@ -10,6 +10,15 @@ const WARD_IMAGES: Record<string, any> = {
   bone: require('../../assets/images/ward_bone.png'),
 };
 
+const DEMON_IMAGES: Record<string, any> = {
+  flame: require('../../assets/images/demon_flame.png'),
+  wood: require('../../assets/images/demon_wood.png'),
+  wind: require('../../assets/images/demon_wind.png'),
+  water: require('../../assets/images/demon_water.png'),
+  rock: require('../../assets/images/demon_rock.png'),
+  mind: require('../../assets/images/demon_mind.png'),
+};
+
 const { width: SCREEN_W } = Dimensions.get('window');
 const MAP_SIZE = Math.min(SCREEN_W - 32, 340);
 
@@ -134,7 +143,7 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
               <View style={styles.demonInlineRow}>
                 <View style={styles.demonIconsRow}>
                   {demons.map((d, i) => (
-                    <Text key={i} style={styles.demonInlineIcon}>{DEMON_SYMBOLS[d.demon.type] ?? '👹'}</Text>
+                    <Image key={i} source={DEMON_IMAGES[d.demon.type]} style={styles.demonInlineImage} />
                   ))}
                 </View>
                 <Text style={styles.demonStrengthText}>⚔{totalStr}</Text>
@@ -289,6 +298,11 @@ const styles = StyleSheet.create({
   },
   demonInlineIcon: {
     fontSize: 12,
+  },
+  demonInlineImage: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
   },
   demonStrengthText: {
     color: warded.danger,
