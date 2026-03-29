@@ -40,11 +40,21 @@ export const warded = {
   success: '#4caf50',
   accent: '#ffd740',
 
-  // Phase
-  dayBg: '#1a1812',
-  nightBg: '#080810',
+  // Phase — richer backgrounds
+  dayBg: '#1e1a14',
+  dayBgGradientTop: '#2a2218',
+  dayBgGradientBottom: '#14120e',
+  nightBg: '#0a0a18',
+  nightBgGradientTop: '#0e0e22',
+  nightBgGradientBottom: '#060610',
   daySky: '#c4956a',
   nightSky: '#1a1a3a',
+
+  // Atmosphere
+  dayAmbient: 'rgba(196, 149, 106, 0.06)',
+  nightAmbient: 'rgba(100, 60, 180, 0.04)',
+  warmGlow: 'rgba(255, 215, 64, 0.08)',
+  coldGlow: 'rgba(80, 120, 200, 0.06)',
 
   // UI
   border: '#2a2a3a',

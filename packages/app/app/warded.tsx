@@ -346,6 +346,9 @@ export default function WardedGameScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: isDay ? warded.dayBg : warded.nightBg }]}>
+      {/* Atmospheric background layer */}
+      <View style={isDay ? styles.bgPatternDay : styles.bgPatternNight} pointerEvents="none" />
+
       {/* FIX 1: Night transition overlay */}
       {showNightTransition && (
         <View style={styles.transitionOverlay}>
@@ -734,18 +737,46 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: warded.bg },
   loadingText: { color: warded.text, fontSize: wardedFonts.xl, textAlign: 'center', marginTop: 100 },
 
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 8 },
-  heroName: { color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold' },
-  heroTitle: { color: warded.textDim, fontSize: wardedFonts.xs },
-  headerRight: { alignItems: 'flex-end' },
-  phaseText: { color: warded.text, fontSize: wardedFonts.md, fontWeight: 'bold' },
-  apText: { color: warded.wardLight, fontSize: wardedFonts.sm, fontWeight: 'bold' },
-  waveText: { color: warded.danger, fontSize: wardedFonts.sm, fontWeight: 'bold' },
+  // Atmospheric background layers
+  bgLayer: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.4,
+  },
+  bgPatternDay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: warded.dayAmbient,
+    borderBottomWidth: 1,
+    borderBottomColor: warded.warmGlow,
+  },
+  bgPatternNight: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: warded.nightAmbient,
+  },
 
-  statsRow: { flexDirection: 'row', paddingHorizontal: 14, gap: 8, marginBottom: 4 },
-  statChip: { backgroundColor: warded.bgCard, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: warded.border, alignItems: 'center' },
-  statLabel: { color: warded.textDim, fontSize: 8, fontWeight: '600', textTransform: 'uppercase' },
-  statValue: { fontSize: wardedFonts.md, fontWeight: 'bold' },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 10,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,215,64,0.1)',
+  },
+  heroName: { color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold', textShadowColor: warded.accent, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 6 },
+  heroTitle: { color: warded.textDim, fontSize: wardedFonts.xs, letterSpacing: 1 },
+  headerRight: { alignItems: 'flex-end' },
+  phaseText: { color: warded.text, fontSize: wardedFonts.lg, fontWeight: 'bold' },
+  apText: { color: warded.wardLight, fontSize: wardedFonts.md, fontWeight: 'bold' },
+  waveText: { color: warded.danger, fontSize: wardedFonts.md, fontWeight: 'bold' },
+
+  statsRow: { flexDirection: 'row', paddingHorizontal: 14, gap: 6, marginBottom: 6, flexWrap: 'wrap' },
+  statChip: {
+    backgroundColor: 'rgba(20,20,30,0.8)', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 6,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3,
+  },
+  statLabel: { color: warded.textDim, fontSize: 9, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 },
+  statValue: { fontSize: wardedFonts.lg, fontWeight: 'bold' },
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
@@ -754,12 +785,17 @@ const styles = StyleSheet.create({
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
 
   wardCraftRow: { flexDirection: 'row', gap: 6 },
-  wardCraftBtn: { flex: 1, backgroundColor: warded.bgCard, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', borderWidth: 1, gap: 2 },
+  wardCraftBtn: {
+    flex: 1, backgroundColor: 'rgba(20,20,35,0.9)', borderRadius: 10,
+    paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center',
+    borderWidth: 1.5, gap: 3,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 4, elevation: 3,
+  },
   btnDisabled: { opacity: 0.3 },
-  wardCraftIcon: { fontSize: 18 },
-  wardCraftName: { color: warded.text, fontSize: 8, fontWeight: '600', textTransform: 'uppercase' },
-  wardCraftEffect: { color: warded.textDim, fontSize: 7, textAlign: 'center' },
-  wardCraftCost: { color: warded.warning, fontSize: 7, fontWeight: '600', textAlign: 'center' },
+  wardCraftIcon: { fontSize: 22 },
+  wardCraftName: { color: warded.text, fontSize: 9, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 },
+  wardCraftEffect: { color: warded.textDim, fontSize: 8, textAlign: 'center', lineHeight: 11 },
+  wardCraftCost: { color: warded.warning, fontSize: 8, fontWeight: '600', textAlign: 'center' },
 
   // FIX 4: Ward reserves tray
   reserveTray: {
