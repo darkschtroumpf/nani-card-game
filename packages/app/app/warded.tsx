@@ -772,19 +772,18 @@ export default function WardedGameScreen() {
           )}
 
           {/* Night: wave controls */}
-          {/* FIX 5A: Explicit presence positioning UI */}
           {isNight && state.waveNumber === 0 && (
             <View style={styles.nightActions}>
               <View style={styles.positioningBanner}>
-                <Text style={styles.positioningTitle}>POSITIONNEMENT</Text>
+                <Text style={styles.positioningTitle}>🌙 PHASE DE NUIT</Text>
                 <Text style={styles.positioningHint}>
                   {state.presenceMoveUsed
-                    ? 'Présence déplacée ! Lance la vague quand tu es prêt.'
-                    : `Tape un lieu pour déplacer ta Présence (${state.hero.name}).\nTa Présence renforce les wards actives ici.`}
+                    ? `Présence: ${state.locations.find(l => l.id === state.presenceLocation)?.name}. Lance la vague !`
+                    : `Tape un lieu pour déplacer ta Présence.\nPuis lance la vague pour affronter les démons.`}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.phaseBtn} onPress={ctrl.doStartWave}>
-                <Text style={styles.phaseBtnText}>Lancer Vague 1</Text>
+              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={ctrl.doStartWave}>
+                <Text style={[styles.phaseBtnText, { color: warded.danger }]}>⚔ Lancer Vague 1</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -819,10 +818,23 @@ export default function WardedGameScreen() {
             </View>
           )}
 
-          {/* Night: activations done (or none) — resolve damage */}
+          {/* Night: wave started, resolve damage */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && (
             <View style={styles.nightActions}>
-              <Text style={styles.nightLabel}>Activations terminées — résous les dégâts</Text>
+              {/* Show what happened during auto-activation */}
+              <View style={styles.waveRecap}>
+                <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Défenses activées</Text>
+                {state.locations.filter(l => !l.fallen).map(l => {
+                  const demons = (state.demonsAtLocations[l.id] ?? []);
+                  const totalStr = demons.reduce((s, d) => s + d.currentStrength, 0);
+                  const hasWards = l.wards[0].ward || l.wards[1].ward;
+                  return (
+                    <Text key={l.id} style={[styles.waveRecapLine, { color: totalStr > 0 ? (totalStr > 3 ? warded.danger : warded.warning) : warded.success }]}>
+                      {totalStr > 3 ? '🔥' : totalStr > 0 ? '⚠' : '✅'} {l.name}: {demons.length > 0 ? `${demons.length} démons (force ${totalStr})` : 'aucun démon'} {hasWards ? '🛡' : ''}
+                    </Text>
+                  );
+                })}
+              </View>
               {/* Optional ability */}
               {!state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
                 <View style={styles.optionalAction}>
@@ -966,7 +978,7 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { paddingHorizontal: 14, gap: 8, paddingBottom: 8 },
+  actionBar: { paddingHorizontal: 14, gap: 8, paddingBottom: 8, marginTop: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
 
@@ -1042,6 +1054,25 @@ const styles = StyleSheet.create({
 
   nightActions: { gap: 8 },
   nightLabel: { color: warded.textDim, fontSize: wardedFonts.sm, textAlign: 'center' },
+  waveRecap: {
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 8,
+    padding: 8,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: warded.border,
+  },
+  waveRecapTitle: {
+    color: warded.accent,
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  waveRecapLine: {
+    fontSize: wardedFonts.xs,
+    fontWeight: '600',
+  },
 
   eventLog: { paddingHorizontal: 14, paddingVertical: 0, maxHeight: 24 },
   eventText: { color: warded.textDim, fontSize: wardedFonts.xs },
