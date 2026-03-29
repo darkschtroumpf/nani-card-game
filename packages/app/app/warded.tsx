@@ -643,9 +643,8 @@ export default function WardedGameScreen() {
         </View>
       )}
 
-      {/* No location selected — show action bar */}
-      {!selectedLoc && (
-        <View style={styles.actionBar}>
+      {/* Action bar — always visible */}
+      <View style={styles.actionBar}>
           {/* Day: craft wards — FIX 4: show effect + cost, FIX 2: 0 AP banner */}
           {isDay && (
             <View style={styles.actionSection}>
@@ -840,7 +839,7 @@ export default function WardedGameScreen() {
             </ScrollView>
           )}
         </View>
-      )}
+      </View>
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
 
@@ -1103,10 +1102,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
 
-  // FIX 1: Detail overlay + backdrop
+  // Detail overlay
   detailOverlay: {
-    maxHeight: '45%',
-    overflow: 'hidden',
+    maxHeight: '40%',
+    backgroundColor: warded.bg + 'f0',
+    borderTopWidth: 1,
+    borderTopColor: warded.accent + '40',
+    borderRadius: 12,
+    marginHorizontal: 6,
+    marginBottom: 4,
   },
   detailBackdrop: {
     position: 'absolute',

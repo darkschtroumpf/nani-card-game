@@ -10,6 +10,13 @@ const WARD_IMAGES: Record<string, any> = {
   bone: require('../../assets/images/ward_bone.png'),
 };
 
+const LOCATION_IMAGES: Record<string, any> = {
+  desert_spear: require('../../assets/images/loc_desert_spear.png'),
+  cutters_hollow: require('../../assets/images/loc_cutters_hollow.png'),
+  lakton: require('../../assets/images/loc_lakton.png'),
+  miln: require('../../assets/images/loc_miln.png'),
+};
+
 const DEMON_IMAGES: Record<string, any> = {
   flame: require('../../assets/images/demon_flame.png'),
   wood: require('../../assets/images/demon_wood.png'),
@@ -106,6 +113,10 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
             onPress={() => onLocationPress(loc.id)}
             activeOpacity={0.7}
           >
+            {/* Location illustration */}
+            {LOCATION_IMAGES[loc.id] && (
+              <Image source={LOCATION_IMAGES[loc.id]} style={styles.locationImage} />
+            )}
             {/* Name */}
             <Text style={[styles.locationName, loc.fallen && styles.textFallen]} numberOfLines={1}>
               {loc.name}
@@ -185,7 +196,7 @@ const styles = StyleSheet.create({
   },
   locationNode: {
     position: 'absolute',
-    width: 80,
+    width: 90,
     backgroundColor: warded.bgCard,
     borderRadius: 10,
     padding: 6,
@@ -210,6 +221,13 @@ const styles = StyleSheet.create({
   locationSelected: {
     borderColor: warded.accent,
     borderWidth: 3,
+  },
+  locationImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   locationName: {
     color: warded.text,
