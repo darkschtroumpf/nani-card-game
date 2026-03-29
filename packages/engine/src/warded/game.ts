@@ -448,6 +448,163 @@ function getTotalDemonCount(state: GameState): number {
 }
 
 // ============================================================
+// Ward Passives (resolve automatically each wave after spawn)
+// ============================================================
+
+export function resolveWardPassives(state: GameState): string[] {
+  const events: string[] = [];
+
+  // Skip if Warding Blight surge
+  if (state.currentSurge === 'warding_blight') {
+    events.push('Warding Blight! Les passives de wards sont désactivées cette nuit.');
+    return events;
+  }
+
+  for (const loc of state.locations) {
+    if (loc.fallen) continue;
+    const demons = state.demonsAtLocations[loc.id];
+    if (!demons) continue;
+    const isPresence = state.presenceLocation === loc.id;
+    const presenceBonus = isPresence ? 1 : 0;
+
+    const combo = getWardCombo(loc);
+
+    for (const ws of loc.wards) {
+      if (!ws.ward) continue;
+
+      switch (ws.ward) {
+        case 'fire': {
+          // Deal 1 damage to all demons (2 with Magma combo, +1 at Presence)
+          let fireDmg = 1;
+          if (combo?.name === 'Magma Ward') fireDmg = 2;
+          fireDmg += presenceBonus;
+
+          if (demons.length > 0) {
+            for (let i = demons.length - 1; i >= 0; i--) {
+              const d = demons[i];
+              // Wood demons take double from Fire
+              const multiplier = d.demon.type === 'wood' ? 2 : 1;
+              d.currentStrength -= fireDmg * multiplier;
+              if (d.currentStrength <= 0) {
+                events.push(`🜂 ${loc.name}: ${d.demon.type} détruit par Fire passive!`);
+                demons.splice(i, 1);
+                onDemonKilled(state, loc.id);
+              }
+            }
+            if (demons.length > 0) {
+              events.push(`🜂 ${loc.name}: Fire inflige ${fireDmg} à ${demons.length} démon(s).`);
+            }
+          }
+          break;
+        }
+
+        case 'stone': {
+          // +2 defense (handled in resolveDamage, not here)
+          // Just log for clarity
+          events.push(`⬡ ${loc.name}: Stone passive — +2 défense.`);
+          break;
+        }
+
+        case 'wind': {
+          // Redirect 1 non-locked, non-Wind demon to adjacent
+          if (demons.length > 0) {
+            const redirectable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind');
+            if (redirectable >= 0) {
+              const adj = getAdjacentIds(loc.id);
+              // Pick the adjacent with fewest demons (spread the load)
+              let bestAdj = adj[0];
+              let bestCount = 99;
+              for (const a of adj) {
+                const c = (state.demonsAtLocations[a] ?? []).length;
+                if (c < bestCount) { bestCount = c; bestAdj = a; }
+              }
+              const [demon] = demons.splice(redirectable, 1);
+              state.demonsAtLocations[bestAdj].push(demon);
+              events.push(`🜁 ${loc.name}: ${demon.demon.type} redirigé vers ${getLocation(state, bestAdj).name}.`);
+            }
+          }
+          break;
+        }
+
+        case 'light': {
+          // Reveal exact demon types (info is already visible in UI)
+          // With Storm combo: preview next wave (handled separately)
+          break;
+        }
+
+        case 'bone': {
+          // Heal at dawn (handled in processDawn), not per-wave
+          // Haven combo heals 1 Pop per wave
+          if (combo?.name === 'Haven Ward') {
+            loc.population = Math.min(loc.maxPopulation, loc.population + 1);
+            events.push(`☽ ${loc.name}: Haven Ward soigne 1 Pop (${loc.population}/${loc.maxPopulation}).`);
+          }
+          // Consecration combo: hero heals 1 HP per wave
+          if (combo?.name === 'Consecration Ward' && isPresence) {
+            state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 1);
+            events.push(`☽ ${loc.name}: Consecration soigne 1 HP héros.`);
+          }
+          break;
+        }
+      }
+    }
+
+    // Inferno combo (Fire+Wind): Fire passive affects adjacent too
+    if (combo?.name === 'Inferno Ward') {
+      for (const adjId of getAdjacentIds(loc.id)) {
+        const adjDemons = state.demonsAtLocations[adjId];
+        if (!adjDemons || adjDemons.length === 0) continue;
+        for (let i = adjDemons.length - 1; i >= 0; i--) {
+          const d = adjDemons[i];
+          const multiplier = d.demon.type === 'wood' ? 2 : 1;
+          d.currentStrength -= 1 * multiplier;
+          if (d.currentStrength <= 0) {
+            events.push(`🜂 ${getLocation(state, adjId).name}: ${d.demon.type} détruit par Inferno!`);
+            adjDemons.splice(i, 1);
+            onDemonKilled(state, adjId);
+          }
+        }
+      }
+    }
+
+    // Beacon combo (Fire+Light): demons killed by Fire give +1 resource
+    if (combo?.name === 'Beacon Ward') {
+      // Already handled via onDemonKilled (Hora Craft for Leesha)
+      // For Beacon, add the resource bonus
+      // Count how many demons were killed this resolution at this location
+      // (handled implicitly via Fire damage above)
+    }
+  }
+
+  return events;
+}
+
+// ============================================================
+// Arlen: Warded Flesh (Day Action — place temp ward)
+// ============================================================
+
+export function arlenWardedFlesh(state: GameState, wardType: WardType, targetLocationId: LocationId): boolean {
+  if (state.hero.id !== 'arlen') return false;
+  if (state.hero.ap <= 0) return false;
+
+  const loc = getLocation(state, targetLocationId);
+  if (loc.fallen) return false;
+
+  // Find a slot (prefer empty, or use temp slot)
+  const emptySlot = loc.wards.findIndex(w => !w.ward);
+  if (emptySlot >= 0) {
+    loc.wards[emptySlot] = { ward: wardType, isTemporary: true };
+  } else {
+    // Both slots full — can't place temp ward
+    return false;
+  }
+
+  state.hero.ap--;
+  addLog(state, `Warded Flesh: ward temporaire de ${wardType} à ${loc.name}.`);
+  return true;
+}
+
+// ============================================================
 // Ward Activation
 // ============================================================
 

@@ -5,8 +5,10 @@ import type {
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, getThreatForecast,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh,
+  getThreatForecast, resolveWardPassives,
 } from '../../engine/src/warded/game';
+import type { WardType as EngineWardType } from '../../engine/src/warded/types';
 
 export interface WardedGameController {
   state: GameState | null;
@@ -23,6 +25,7 @@ export interface WardedGameController {
   endDay: () => void;
 
   // Night actions
+  doWardedFlesh: (wardType: WardType, locationId: LocationId) => void;
   doMovePresence: (locationId: LocationId) => void;
   doStartWave: () => void;
   doActivateWard: (locationId: LocationId, useCombo: boolean) => void;
@@ -79,6 +82,13 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync]);
 
+  const doWardedFlesh = useCallback((wardType: WardType, locationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    arlenWardedFlesh(s, wardType as EngineWardType, locationId);
+    sync(s);
+  }, [sync]);
+
   const endDay = useCallback(() => {
     const s = stateRef.current;
     if (!s) return;
@@ -100,8 +110,11 @@ export function useWardedGame(): WardedGameController {
     const s = stateRef.current;
     if (!s) return;
     startWave(s);
+    // Auto-resolve ward passives after demons spawn
+    const passiveEvents = resolveWardPassives(s);
+    addEvents(passiveEvents);
     sync(s);
-  }, [sync]);
+  }, [sync, addEvents]);
 
   const doActivateWard = useCallback((locationId: LocationId, useCombo: boolean) => {
     const s = stateRef.current;
@@ -146,7 +159,7 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame,
-    doCraft, doFortify, doGather, endDay,
+    doCraft, doFortify, doGather, doWardedFlesh, endDay,
     doMovePresence, doStartWave, doActivateWard,
     doWardedFist, doMistWalk, doResolveDamage, doEndWave,
   };

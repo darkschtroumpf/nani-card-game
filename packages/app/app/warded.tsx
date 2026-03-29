@@ -173,10 +173,34 @@ export default function WardedGameScreen() {
             </Text>
           )}
 
+          {/* Arlen: Warded Flesh (place temp ward) */}
+          {isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLocation && (
+            <View style={styles.actionSection}>
+              <Text style={styles.actionLabel}>⚔ Warded Flesh (1 AP) — Ward temp à {selectedLocation}</Text>
+              <View style={styles.wardCraftRow}>
+                {WARD_TYPES.map(w => {
+                  const loc = state.locations.find(l => l.id === selectedLocation);
+                  const hasSlot = loc && loc.wards.some(ws => !ws.ward);
+                  return (
+                    <TouchableOpacity
+                      key={w}
+                      style={[styles.wardCraftBtn, !hasSlot && styles.btnDisabled, { borderColor: wardColor(w) }]}
+                      disabled={!hasSlot}
+                      onPress={() => { if (selectedLocation) ctrl.doWardedFlesh(w, selectedLocation); }}
+                    >
+                      <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
+                      <Text style={styles.wardCraftName}>temp</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
           {/* Day: end day button */}
           {isDay && (
-            <TouchableOpacity style={styles.phaseBtn} onPress={ctrl.endDay}>
-              <Text style={styles.phaseBtnText}>🌙 Tomber de la nuit</Text>
+            <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.nightBg, borderColor: warded.wardLight }]} onPress={ctrl.endDay}>
+              <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>🌙 Tomber de la nuit</Text>
             </TouchableOpacity>
           )}
 
@@ -201,9 +225,17 @@ export default function WardedGameScreen() {
             </View>
           )}
 
+          {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && !state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
+            <View style={styles.nightActions}>
+              <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent }]} onPress={ctrl.doWardedFist}>
+                <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && (
             <View style={styles.nightActions}>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30' }]} onPress={() => {
+              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '20', borderColor: warded.danger }]} onPress={() => {
                 ctrl.doResolveDamage();
                 setTimeout(() => {
                   const s = ctrl.state;
@@ -212,9 +244,9 @@ export default function WardedGameScreen() {
                   } else if (s && !s.gameOver && s.waveNumber >= 3) {
                     ctrl.doEndWave();
                   }
-                }, 1500);
+                }, 2000);
               }}>
-                <Text style={styles.phaseBtnText}>Résoudre les dégâts</Text>
+                <Text style={styles.phaseBtnText}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
               </TouchableOpacity>
             </View>
           )}
