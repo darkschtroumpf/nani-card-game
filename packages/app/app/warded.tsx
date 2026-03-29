@@ -229,6 +229,13 @@ export default function WardedGameScreen() {
   const isNight = state.phase === 'night';
   const selectedLoc = selectedLocation ? state.locations.find(l => l.id === selectedLocation) : null;
 
+  // Tutorial: advance to night steps on first night (must be before any conditional return)
+  useEffect(() => {
+    if (state && state.phase === 'night' && !firstNightSeen.current && tutorialStep === 5) {
+      firstNightSeen.current = true;
+    }
+  }, [state?.phase]);
+
   // Game over
   if (state.gameOver) {
     return (
@@ -264,12 +271,7 @@ export default function WardedGameScreen() {
     );
   }
 
-  // Tutorial: advance to night steps on first night
-  useEffect(() => {
-    if (isNight && !firstNightSeen.current && tutorialStep === 5) {
-      firstNightSeen.current = true;
-    }
-  }, [isNight]);
+  // (tutorial night effect moved above gameOver check to respect Rules of Hooks)
 
   // Tutorial: when we enter night and step is 5, wait for activation phase
   // (waveNumber > 0 && activationsRemaining > 0)
