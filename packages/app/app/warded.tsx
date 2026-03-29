@@ -29,7 +29,9 @@ function wardCostLabel(w: WardType): string {
 }
 
 // FIX 5: Night phase steps
-const NIGHT_STEPS = ['Position', 'Vague', 'Activation', 'Degats'] as const;
+function getNightStepLabels(activationsRemaining: number): string[] {
+  return ['Position', 'Vague', `Activer (${activationsRemaining})`, 'Dégâts'];
+}
 
 function getNightStepIndex(waveNumber: number, activationsRemaining: number, totalActivations: number): number {
   if (waveNumber === 0) return 0;
@@ -93,6 +95,11 @@ function TutorialOverlay({ step, onNext, onSkip }: { step: number; onNext: () =>
         <View style={tutStyles.floatingCard} pointerEvents="auto">
           <Text style={tutStyles.stepIndicator}>Étape {step + 1} / {TUTORIAL_STEPS.length}</Text>
           <Text style={tutStyles.text}>{data.text}</Text>
+          {step <= 4 && (
+            <TouchableOpacity style={tutStyles.nextBtnSmall} onPress={onNext}>
+              <Text style={tutStyles.nextBtnText}>{data.buttonLabel}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
       <View pointerEvents="auto" style={tutStyles.skipBtn}>
@@ -149,6 +156,15 @@ const tutStyles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 24,
+  },
+  nextBtnSmall: {
+    backgroundColor: warded.accent + '20',
+    borderWidth: 1,
+    borderColor: warded.accent,
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    marginTop: 6,
   },
   nextBtnText: {
     color: warded.accent,
@@ -456,7 +472,7 @@ export default function WardedGameScreen() {
       {/* FIX 5: Night phase step indicator */}
       {isNight && !selectedLoc && (
         <View style={styles.nightStepsBar}>
-          {NIGHT_STEPS.map((step, i) => {
+          {getNightStepLabels(state.activationsRemaining).map((step, i) => {
             const totalAct = state.locations.filter(l => !l.fallen && (l.wards[0].ward || l.wards[1].ward)).length;
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const isActive = i === currentStep;
@@ -473,7 +489,7 @@ export default function WardedGameScreen() {
                   isActive && styles.nightStepLabelActive,
                   isDone && styles.nightStepLabelDone,
                 ]}>{step}</Text>
-                {i < NIGHT_STEPS.length - 1 && <View style={styles.nightStepConnector} />}
+                {i < 3 && <View style={styles.nightStepConnector} />}
               </View>
             );
           })}
@@ -692,7 +708,7 @@ export default function WardedGameScreen() {
       {tutorialStep >= 0 && tutorialStep <= 4 && !showNightTransition && (
         <TutorialOverlay
           step={tutorialStep}
-          onNext={() => setTutorialStep(prev => prev === 0 ? 1 : prev)}
+          onNext={() => setTutorialStep(prev => prev < TUTORIAL_STEPS.length - 1 ? prev + 1 : -1)}
           onSkip={() => setTutorialStep(-1)}
         />
       )}
@@ -853,11 +869,12 @@ const styles = StyleSheet.create({
   },
   nightStepLabel: {
     color: warded.textDark,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '600',
   },
   nightStepLabelActive: {
     color: warded.accent,
+    fontSize: 13,
     fontWeight: 'bold',
   },
   nightStepLabelDone: {
@@ -872,7 +889,8 @@ const styles = StyleSheet.create({
 
   // FIX 1: Detail overlay + backdrop
   detailOverlay: {
-    flex: 1,
+    maxHeight: '45%',
+    overflow: 'hidden',
   },
   detailBackdrop: {
     position: 'absolute',
