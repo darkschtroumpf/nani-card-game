@@ -189,8 +189,15 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     color: warded.textDim,
-    fontSize: wardedFonts.xl,
-    padding: 4,
+    fontSize: 18,
+    fontWeight: 'bold',
+    backgroundColor: warded.bgLight,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    textAlign: 'center',
+    lineHeight: 40,
+    overflow: 'hidden',
   },
   popSection: {
     gap: 3,

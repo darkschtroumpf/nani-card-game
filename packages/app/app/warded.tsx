@@ -45,6 +45,9 @@ export default function WardedGameScreen() {
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [showNightTransition, setShowNightTransition] = useState(false);
+  const [combatToast, setCombatToast] = useState<string | null>(null);
+  const [showEventLog, setShowEventLog] = useState(false);
+  const [damageResolved, setDamageResolved] = useState(false);
 
   useEffect(() => {
     if (!initialized) {
@@ -52,6 +55,16 @@ export default function WardedGameScreen() {
       ctrl.startGame('arlen', 'midnight');
     }
   }, []);
+
+  // FIX 3: Combat toast from events
+  useEffect(() => {
+    if (events.length > 0) {
+      const latest = events[events.length - 1];
+      setCombatToast(latest);
+      const timer = setTimeout(() => setCombatToast(null), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [events.length]);
 
   if (!state) {
     return (
@@ -157,30 +170,38 @@ export default function WardedGameScreen() {
         onLocationPress={setSelectedLocation}
         isNight={isNight}
         forecast={isDay && forecast ? forecast : undefined}
+        isPositioning={isNight && state.waveNumber === 0}
       />
 
       {/* Location detail (if selected) */}
       {selectedLoc && (
-        <ScrollView style={styles.detailScroll}>
-          <LocationDetail
-            location={selectedLoc}
-            demons={state.demonsAtLocations[selectedLoc.id] ?? []}
-            isPresence={state.presenceLocation === selectedLoc.id}
-            isNight={isNight}
-            onClose={() => setSelectedLocation(null)}
-            onGather={isDay && state.hero.ap > 0 ? () => { ctrl.doGather(selectedLoc.id); } : undefined}
-            canGather={isDay && state.hero.ap > 0}
-            onFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0
-              ? (w: WardType) => { ctrl.doFortify(w, selectedLoc.id); }
-              : undefined}
-            canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
-            availableWardReserves={state.wardReserves}
-            onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
-              ? (useCombo) => { ctrl.doActivateWard(selectedLoc.id, useCombo); }
-              : undefined}
-            canActivate={isNight && state.activationsRemaining > 0}
+        <View style={styles.detailOverlay}>
+          <TouchableOpacity
+            style={styles.detailBackdrop}
+            activeOpacity={1}
+            onPress={() => setSelectedLocation(null)}
           />
-        </ScrollView>
+          <ScrollView style={styles.detailScroll}>
+            <LocationDetail
+              location={selectedLoc}
+              demons={state.demonsAtLocations[selectedLoc.id] ?? []}
+              isPresence={state.presenceLocation === selectedLoc.id}
+              isNight={isNight}
+              onClose={() => setSelectedLocation(null)}
+              onGather={isDay && state.hero.ap > 0 ? () => { ctrl.doGather(selectedLoc.id); } : undefined}
+              canGather={isDay && state.hero.ap > 0}
+              onFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0
+                ? (w: WardType) => { ctrl.doFortify(w, selectedLoc.id); }
+                : undefined}
+              canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
+              availableWardReserves={state.wardReserves}
+              onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
+                ? (useCombo) => { ctrl.doActivateWard(selectedLoc.id, useCombo); }
+                : undefined}
+              canActivate={isNight && state.activationsRemaining > 0}
+            />
+          </ScrollView>
+        </View>
       )}
 
       {/* FIX 5: Night phase step indicator */}
@@ -210,45 +231,88 @@ export default function WardedGameScreen() {
         </View>
       )}
 
+      {/* FIX 3: Combat toast */}
+      {combatToast && (
+        <View style={styles.combatToast}>
+          <Text style={styles.combatToastText}>{combatToast}</Text>
+        </View>
+      )}
+
       {/* No location selected — show action bar */}
       {!selectedLoc && (
         <View style={styles.actionBar}>
-          {/* Day: craft wards — FIX 4: show effect + cost */}
-          {isDay && state.hero.ap > 0 && (
+          {/* Day: craft wards — FIX 4: show effect + cost, FIX 2: 0 AP banner */}
+          {isDay && (
             <View style={styles.actionSection}>
-              <Text style={styles.actionLabel}>Crafter un Ward (1 AP)</Text>
-              <View style={styles.wardCraftRow}>
-                {WARD_TYPES.map(w => {
-                  const cost = WARD_COSTS[w];
-                  const canAfford = state.locations.some(l => !l.fallen &&
-                    l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
-                  return (
-                    <TouchableOpacity
-                      key={w}
-                      style={[styles.wardCraftBtn, !canAfford && styles.btnDisabled, { borderColor: wardColor(w) }]}
-                      disabled={!canAfford}
-                      onPress={() => {
-                        const fromLoc = state.locations.find(l => !l.fallen &&
-                          l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
-                        if (fromLoc) ctrl.doCraft(w, fromLoc.id);
-                      }}
-                    >
-                      <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
-                      <Text style={styles.wardCraftName}>{w}</Text>
-                      <Text style={styles.wardCraftEffect}>{WARD_EFFECTS[w]}</Text>
-                      <Text style={styles.wardCraftCost}>{wardCostLabel(w as WardType)}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              {state.hero.ap > 0 ? (
+                <>
+                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP)</Text>
+                  <View style={styles.wardCraftRow}>
+                    {WARD_TYPES.map(w => {
+                      const cost = WARD_COSTS[w];
+                      const bestLoc = state.locations.find(l => !l.fallen &&
+                        l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
+                      const canAfford = !!bestLoc;
+
+                      const maxWood = Math.max(...state.locations.filter(l => !l.fallen).map(l => l.stockpile.wood));
+                      const maxInk = Math.max(...state.locations.filter(l => !l.fallen).map(l => l.stockpile.ink));
+                      const needsWood = cost.wood > 0 && maxWood < cost.wood;
+                      const needsInk = cost.ink > 0 && maxInk < cost.ink;
+
+                      return (
+                        <TouchableOpacity
+                          key={w}
+                          style={[styles.wardCraftBtn, !canAfford && styles.btnDisabledExplained, { borderColor: wardColor(w) }]}
+                          disabled={!canAfford}
+                          onPress={() => { if (bestLoc) ctrl.doCraft(w, bestLoc.id); }}
+                        >
+                          <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
+                          <Text style={styles.wardCraftName}>{w}</Text>
+                          <Text style={styles.wardCraftEffect}>{WARD_EFFECTS[w]}</Text>
+                          <Text style={styles.wardCraftCost}>
+                            <Text style={{ color: needsWood ? warded.danger : warded.warning }}>
+                              {cost.wood > 0 ? `${cost.wood} Bois ` : ''}
+                            </Text>
+                            <Text style={{ color: needsInk ? warded.danger : warded.warning }}>
+                              {cost.ink > 0 ? `${cost.ink} Encre` : ''}
+                            </Text>
+                          </Text>
+                          {!canAfford && (
+                            <Text style={styles.disabledReason}>
+                              {needsWood && needsInk ? 'Manque Bois + Encre' : needsWood ? 'Manque Bois' : needsInk ? 'Manque Encre' : 'Aucun lieu'}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </>
+              ) : (
+                <View style={styles.noApBanner}>
+                  <Text style={styles.noApText}>0 AP restant — Lance la nuit !</Text>
+                  <Text style={styles.noApHint}>Tu as utilisé tes 5 actions. Appuie sur "Tomber de la nuit" pour combattre.</Text>
+                </View>
+              )}
             </View>
           )}
 
-          {/* Ward reserves */}
+          {/* FIX 4: Ward reserves tray */}
           {isDay && state.wardReserves.length > 0 && (
-            <Text style={styles.reserveText}>
-              Réserves: {state.wardReserves.map(w => `${WARD_SYMBOLS[w]} ${w}`).join(', ')} — Sélectionne un lieu pour placer
-            </Text>
+            <View style={styles.reserveTray}>
+              <View style={styles.reserveHeader}>
+                <Text style={styles.reserveLabel}>RESERVES</Text>
+                <Text style={styles.reserveCount}>{state.wardReserves.length}</Text>
+              </View>
+              <View style={styles.reserveChips}>
+                {state.wardReserves.map((w, i) => (
+                  <View key={i} style={[styles.reserveChip, { borderColor: wardColor(w) }]}>
+                    <Text style={{ color: wardColor(w), fontSize: 18 }}>{WARD_SYMBOLS[w]}</Text>
+                    <Text style={{ color: wardColor(w), fontSize: 9, fontWeight: '600' }}>{w}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={styles.reserveHint}>Tape un lieu sur la carte pour placer</Text>
+            </View>
           )}
 
           {/* Arlen: Warded Flesh (place temp ward) */}
@@ -283,9 +347,16 @@ export default function WardedGameScreen() {
           )}
 
           {/* Night: wave controls */}
+          {/* FIX 5A: Explicit presence positioning UI */}
           {isNight && state.waveNumber === 0 && (
             <View style={styles.nightActions}>
-              <Text style={styles.nightLabel}>Positionne ta Présence, puis lance la vague.</Text>
+              <View style={styles.positioningBanner}>
+                <Text style={styles.positioningTitle}>POSITIONNEMENT</Text>
+                <Text style={styles.positioningHint}>
+                  Tape un lieu pour y déplacer ta Présence ({state.hero.name}).
+                  {'\n'}Ta Présence renforce les wards actives ici.
+                </Text>
+              </View>
               <TouchableOpacity style={styles.phaseBtn} onPress={ctrl.doStartWave}>
                 <Text style={styles.phaseBtnText}>Lancer Vague 1</Text>
               </TouchableOpacity>
@@ -303,42 +374,71 @@ export default function WardedGameScreen() {
             </View>
           )}
 
-          {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && !state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
-            <View style={styles.nightActions}>
-              <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent }]} onPress={ctrl.doWardedFist}>
-                <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
+          {/* FIX 3 + FIX 5B: Separate optional from required actions when activations === 0 */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && (
             <View style={styles.nightActions}>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '20', borderColor: warded.danger }]} onPress={() => {
-                ctrl.doResolveDamage();
-                setTimeout(() => {
-                  const s = ctrl.state;
-                  if (s && !s.gameOver && s.waveNumber < 3) {
-                    ctrl.doStartWave();
-                  } else if (s && !s.gameOver && s.waveNumber >= 3) {
-                    ctrl.doEndWave();
-                  }
-                }, 2000);
-              }}>
-                <Text style={styles.phaseBtnText}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
-              </TouchableOpacity>
+              {/* Optional ability -- visually distinct (FIX 5B) */}
+              {!state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
+                <View style={styles.optionalAction}>
+                  <Text style={styles.optionalLabel}>ACTION BONUS (optionnel)</Text>
+                  <TouchableOpacity
+                    style={[styles.phaseBtn, { borderColor: warded.accent, backgroundColor: warded.accent + '15' }]}
+                    onPress={ctrl.doWardedFist}
+                  >
+                    <Text style={[styles.phaseBtnText, { color: warded.accent }]}>
+                      ⚔ Warded Fist ({state.hero.arlenCharge} dmg)
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {/* Required next step -- prominent (FIX 3: no auto-advance) */}
+              {!damageResolved ? (
+                <TouchableOpacity
+                  style={[styles.phaseBtn, { backgroundColor: warded.danger + '20', borderColor: warded.danger }]}
+                  onPress={() => {
+                    ctrl.doResolveDamage();
+                    setDamageResolved(true);
+                  }}
+                >
+                  <Text style={styles.phaseBtnText}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.phaseBtn, { backgroundColor: warded.wardLight + '20', borderColor: warded.wardLight }]}
+                  onPress={() => {
+                    setDamageResolved(false);
+                    if (state.waveNumber < 3) {
+                      ctrl.doStartWave();
+                    } else {
+                      ctrl.doEndWave();
+                    }
+                  }}
+                >
+                  <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>
+                    {state.waveNumber < 3 ? `Continuer — Vague ${state.waveNumber + 1}` : 'Fin de la nuit'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
       )}
 
-      {/* Event log */}
+      {/* FIX 3: Event log — hidden by default, toggleable */}
       {events.length > 0 && (
         <View style={styles.eventLog}>
-          {events.slice(-3).map((e, i) => (
-            <Text key={i} style={[styles.eventText, i === events.slice(-3).length - 1 && styles.eventLatest]}>
-              {e}
-            </Text>
-          ))}
+          <TouchableOpacity onPress={() => setShowEventLog(!showEventLog)}>
+            <Text style={styles.eventToggle}>{showEventLog ? 'Masquer historique' : 'Historique'} ({events.length})</Text>
+          </TouchableOpacity>
+          {showEventLog && (
+            <ScrollView style={styles.eventLogScroll}>
+              {events.slice(-6).map((e, i) => (
+                <Text key={i} style={[styles.eventText, i === events.slice(-6).length - 1 && styles.eventLatest]}>
+                  {e}
+                </Text>
+              ))}
+            </ScrollView>
+          )}
         </View>
       )}
 
@@ -378,7 +478,58 @@ const styles = StyleSheet.create({
   wardCraftEffect: { color: warded.textDim, fontSize: 7, textAlign: 'center' },
   wardCraftCost: { color: warded.warning, fontSize: 7, fontWeight: '600', textAlign: 'center' },
 
-  reserveText: { color: warded.accent, fontSize: wardedFonts.xs, textAlign: 'center', fontStyle: 'italic' },
+  // FIX 4: Ward reserves tray
+  reserveTray: {
+    backgroundColor: warded.bgCard,
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: warded.accent,
+    gap: 6,
+    alignItems: 'center',
+  },
+  reserveHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  reserveLabel: {
+    color: warded.accent,
+    fontSize: wardedFonts.xs,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+  reserveCount: {
+    color: warded.bg,
+    backgroundColor: warded.accent,
+    fontSize: wardedFonts.xs,
+    fontWeight: 'bold',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    textAlign: 'center',
+    lineHeight: 18,
+    overflow: 'hidden',
+  },
+  reserveChips: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  reserveChip: {
+    backgroundColor: warded.bgLight,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    gap: 2,
+  },
+  reserveHint: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    fontStyle: 'italic',
+  },
 
   phaseBtn: { backgroundColor: warded.bgCard, borderRadius: 10, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: warded.border },
   phaseBtnText: { color: warded.text, fontSize: wardedFonts.md, fontWeight: 'bold' },
@@ -450,6 +601,120 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: warded.border,
     marginHorizontal: 2,
+  },
+
+  // FIX 1: Detail overlay + backdrop
+  detailOverlay: {
+    flex: 1,
+  },
+  detailBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+
+  // FIX 2: Disabled button explanation + 0 AP banner
+  btnDisabledExplained: {
+    opacity: 0.55,
+  },
+  disabledReason: {
+    color: warded.danger,
+    fontSize: 7,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  noApBanner: {
+    backgroundColor: warded.nightBg,
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: warded.wardLight + '40',
+    gap: 4,
+  },
+  noApText: {
+    color: warded.wardLight,
+    fontSize: wardedFonts.md,
+    fontWeight: 'bold',
+  },
+  noApHint: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    textAlign: 'center',
+  },
+
+  // FIX 3: Combat toast
+  combatToast: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '40%',
+    backgroundColor: warded.bgCard + 'ee',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: warded.accent + '60',
+    maxWidth: '80%',
+    zIndex: 50,
+  } as any,
+  combatToastText: {
+    color: warded.text,
+    fontSize: wardedFonts.md,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  // FIX 3: Event log toggle
+  eventToggle: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  eventLogScroll: {
+    maxHeight: 80,
+  },
+
+  // FIX 5A: Positioning banner
+  positioningBanner: {
+    backgroundColor: warded.accent + '15',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: warded.accent + '40',
+    alignItems: 'center',
+    gap: 4,
+  },
+  positioningTitle: {
+    color: warded.accent,
+    fontSize: wardedFonts.md,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+  positioningHint: {
+    color: warded.textDim,
+    fontSize: wardedFonts.sm,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+
+  // FIX 5B: Optional vs required action labels
+  optionalAction: {
+    gap: 4,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: warded.border,
+    marginBottom: 4,
+  },
+  optionalLabel: {
+    color: warded.textDim,
+    fontSize: 8,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textAlign: 'center',
   },
 
   gameOverBox: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16, padding: 20 },

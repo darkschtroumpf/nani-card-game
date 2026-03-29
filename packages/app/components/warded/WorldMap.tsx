@@ -13,6 +13,7 @@ interface Props {
   onLocationPress: (id: LocationId) => void;
   isNight: boolean;
   forecast?: Record<string, string>;
+  isPositioning?: boolean;
 }
 
 function forecastBorderColor(level?: string): string {
@@ -33,7 +34,7 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
   south: { top: 1, left: 0.5 },
 };
 
-export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast }: Props) {
+export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning }: Props) {
   return (
     <View style={[styles.mapContainer, { width: MAP_SIZE, height: MAP_SIZE }]}>
       {/* Connection lines */}
@@ -127,10 +128,10 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
               </View>
             )}
 
-            {/* Presence indicator */}
+            {/* Presence indicator — FIX 5A: bigger when positioning */}
             {isPresence && (
-              <View style={styles.presenceBadge}>
-                <Text style={styles.presenceIcon}>⚔</Text>
+              <View style={[styles.presenceBadge, isPositioning && styles.presenceBadgeLarge]}>
+                <Text style={[styles.presenceIcon, isPositioning && styles.presenceIconLarge]}>⚔</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -277,5 +278,17 @@ const styles = StyleSheet.create({
   presenceIcon: {
     fontSize: 11,
     color: warded.bg,
+  },
+  // FIX 5A: Larger presence badge during positioning
+  presenceBadgeLarge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    bottom: -12,
+    borderWidth: 2,
+    borderColor: warded.wardLight,
+  },
+  presenceIconLarge: {
+    fontSize: 14,
   },
 });
