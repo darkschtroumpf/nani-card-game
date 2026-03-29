@@ -115,16 +115,17 @@ export function useWardedGame(): WardedGameController {
     const passiveEvents = resolveWardPassives(s);
     addEvents(passiveEvents);
 
-    // Auto-activate ALL ward actives (combo preferred)
+    // Auto-activate ALL ward actives — no limit, all wards fire
     const allEvents: string[] = [];
     for (const loc of s.locations) {
       if (loc.fallen) continue;
       if (!loc.wards[0].ward && !loc.wards[1].ward) continue;
-      if (s.activationsRemaining <= 0) break;
       const hasCombo = !!(loc.wards[0].ward && loc.wards[1].ward);
       const evts = activateWard(s, loc.id, hasCombo);
       allEvents.push(...evts);
     }
+    // Force activations to 0 so UI shows resolve button
+    s.activationsRemaining = 0;
     if (allEvents.length > 0) addEvents(allEvents);
 
     // Arlen: auto Warded Fist if charge > 0
