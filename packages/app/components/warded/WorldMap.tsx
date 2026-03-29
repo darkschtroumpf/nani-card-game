@@ -12,6 +12,18 @@ interface Props {
   selectedLocation: LocationId | null;
   onLocationPress: (id: LocationId) => void;
   isNight: boolean;
+  forecast?: Record<string, string>;
+}
+
+function forecastBorderColor(level?: string): string {
+  if (!level) return warded.border;
+  switch (level) {
+    case 'low': return warded.success;
+    case 'medium': return warded.warning;
+    case 'high': return warded.danger;
+    case 'extreme': return warded.danger;
+    default: return warded.border;
+  }
 }
 
 const POSITIONS: Record<string, { top: number; left: number }> = {
@@ -21,7 +33,7 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
   south: { top: 1, left: 0.5 },
 };
 
-export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight }: Props) {
+export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast }: Props) {
   return (
     <View style={[styles.mapContainer, { width: MAP_SIZE, height: MAP_SIZE }]}>
       {/* Connection lines */}
@@ -44,6 +56,9 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
         const demons = demonsAtLocations[loc.id] ?? [];
         const demonCount = demons.length;
         const totalStr = demons.reduce((s, d) => s + d.currentStrength, 0);
+        const nodeSize = isNight ? 100 : 80;
+        const threatLevel = forecast?.[loc.id];
+        const threatBorder = forecastBorderColor(threatLevel);
 
         return (
           <TouchableOpacity
@@ -51,12 +66,21 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
             style={[
               styles.locationNode,
               {
-                top: pos.top * (MAP_SIZE - 80),
-                left: pos.left * (MAP_SIZE - 80),
+                width: nodeSize,
+                top: pos.top * (MAP_SIZE - nodeSize),
+                left: pos.left * (MAP_SIZE - nodeSize),
+                borderColor: isSelected ? warded.accent : isPresence ? warded.accent : threatBorder,
               },
               loc.fallen && styles.locationFallen,
               isPresence && styles.locationPresence,
               isSelected && styles.locationSelected,
+              // FIX 3: extreme threat pulsing glow
+              threatLevel === 'extreme' && !isSelected && !isPresence && {
+                shadowColor: '#ff0000',
+                shadowOpacity: 0.6,
+                shadowRadius: 12,
+                elevation: 8,
+              },
             ]}
             onPress={() => onLocationPress(loc.id)}
             activeOpacity={0.7}
@@ -78,19 +102,28 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
             )}
             {loc.fallen && <Text style={styles.fallenText}>TOMBÉ</Text>}
 
-            {/* Ward indicators */}
+            {/* Ward indicators — FIX 2: bigger at night */}
             <View style={styles.wardRow}>
               {loc.wards.map((ws, i) => (
-                <View key={i} style={[styles.wardDot, ws.ward ? { backgroundColor: wardColor(ws.ward) } : styles.wardEmpty]}>
-                  {ws.ward && <Text style={styles.wardSymbol}>{WARD_SYMBOLS[ws.ward]}</Text>}
+                <View key={i} style={[
+                  styles.wardDot,
+                  isNight && styles.wardDotNight,
+                  ws.ward ? { backgroundColor: wardColor(ws.ward) } : styles.wardEmpty,
+                ]}>
+                  {ws.ward && <Text style={[styles.wardSymbol, isNight && styles.wardSymbolNight]}>{WARD_SYMBOLS[ws.ward]}</Text>}
                 </View>
               ))}
             </View>
 
-            {/* Demon count (night) */}
+            {/* FIX 2: Inline demon icons (replaces tiny badge) */}
             {isNight && demonCount > 0 && (
-              <View style={styles.demonBadge}>
-                <Text style={styles.demonBadgeText}>{demonCount}×{totalStr}</Text>
+              <View style={styles.demonInlineRow}>
+                <View style={styles.demonIconsRow}>
+                  {demons.map((d, i) => (
+                    <Text key={i} style={styles.demonInlineIcon}>{DEMON_SYMBOLS[d.demon.type] ?? '👹'}</Text>
+                  ))}
+                </View>
+                <Text style={styles.demonStrengthText}>⚔{totalStr}</Text>
               </View>
             )}
 
@@ -130,7 +163,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: warded.border,
     gap: 3,
-  },
+  } as any,
   locationFallen: {
     backgroundColor: '#1a0a0a',
     borderColor: warded.danger + '60',
@@ -203,18 +236,32 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#fff',
   },
-  demonBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: warded.danger,
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+  // FIX 2: Bigger ward dots at night
+  wardDotNight: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
   },
-  demonBadgeText: {
-    color: '#fff',
-    fontSize: 8,
+  wardSymbolNight: {
+    fontSize: 13,
+  },
+  // FIX 2: Inline demon row (replaces tiny absolute badge)
+  demonInlineRow: {
+    alignItems: 'center',
+    gap: 1,
+  },
+  demonIconsRow: {
+    flexDirection: 'row',
+    gap: 1,
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  demonInlineIcon: {
+    fontSize: 12,
+  },
+  demonStrengthText: {
+    color: warded.danger,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   presenceBadge: {

@@ -63,11 +63,11 @@ export const wardedFonts = {
 
 // Ward symbols (Unicode runes / geometric shapes)
 export const WARD_SYMBOLS: Record<string, string> = {
-  fire: '🜂',     // alchemical fire
-  stone: '⬡',    // hexagon
-  wind: '🜁',     // alchemical air
-  light: '✦',    // star
-  bone: '☽',     // crescent
+  fire: '🔥',
+  stone: '🪨',
+  wind: '💨',
+  light: '✨',
+  bone: '💀',
 };
 
 // Demon symbols

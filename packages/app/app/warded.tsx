@@ -7,7 +7,35 @@ import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
 import type { LocationId, WardType } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS } from '../../engine/src/warded/constants';
+import { WARD_TYPES, WARD_COSTS, WARD_PASSIVES } from '../../engine/src/warded/constants';
+
+// FIX 4: Short effect descriptions for ward craft cards (French)
+const WARD_EFFECTS: Record<string, string> = {
+  fire: '1 dmg a tous les demons',
+  stone: '+2 defense du lieu',
+  wind: 'redirige 1 demon',
+  light: 'revele les demons',
+  bone: '+1 pop a l\'aube',
+};
+
+// FIX 4: Cost display helper
+function wardCostLabel(w: WardType): string {
+  const c = WARD_COSTS[w];
+  const parts: string[] = [];
+  if (c.wood > 0) parts.push(`${c.wood} Bois`);
+  if (c.ink > 0) parts.push(`${c.ink} Encre`);
+  if (c.food > 0) parts.push(`${c.food} Nourriture`);
+  return parts.join(' ');
+}
+
+// FIX 5: Night phase steps
+const NIGHT_STEPS = ['Position', 'Vague', 'Activation', 'Degats'] as const;
+
+function getNightStepIndex(waveNumber: number, activationsRemaining: number): number {
+  if (waveNumber === 0) return 0;
+  if (activationsRemaining > 0) return 2;
+  return 3;
+}
 
 export default function WardedGameScreen() {
   const router = useRouter();
@@ -15,6 +43,7 @@ export default function WardedGameScreen() {
   const { state, events, forecast } = ctrl;
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [showNightTransition, setShowNightTransition] = useState(false);
 
   useEffect(() => {
     if (!initialized) {
@@ -55,8 +84,26 @@ export default function WardedGameScreen() {
     );
   }
 
+  // FIX 1: Wrapped endDay to show transition overlay
+  const handleEndDay = () => {
+    setShowNightTransition(true);
+    setTimeout(() => {
+      setShowNightTransition(false);
+      ctrl.endDay();
+    }, 1500);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: isDay ? warded.dayBg : warded.nightBg }]}>
+      {/* FIX 1: Night transition overlay */}
+      {showNightTransition && (
+        <View style={styles.transitionOverlay}>
+          <Text style={styles.transitionEmoji}>🌙</Text>
+          <Text style={styles.transitionText}>LA NUIT TOMBE</Text>
+          <Text style={styles.transitionSub}>Les demons surgissent de la terre...</Text>
+        </View>
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -108,6 +155,7 @@ export default function WardedGameScreen() {
         selectedLocation={selectedLocation}
         onLocationPress={setSelectedLocation}
         isNight={isNight}
+        forecast={isDay && forecast ? forecast : undefined}
       />
 
       {/* Location detail (if selected) */}
@@ -134,10 +182,36 @@ export default function WardedGameScreen() {
         </ScrollView>
       )}
 
+      {/* FIX 5: Night phase step indicator */}
+      {isNight && !selectedLoc && (
+        <View style={styles.nightStepsBar}>
+          {NIGHT_STEPS.map((step, i) => {
+            const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining);
+            const isActive = i === currentStep;
+            const isDone = i < currentStep;
+            return (
+              <View key={step} style={styles.nightStepItem}>
+                <View style={[
+                  styles.nightStepDot,
+                  isActive && styles.nightStepDotActive,
+                  isDone && styles.nightStepDotDone,
+                ]} />
+                <Text style={[
+                  styles.nightStepLabel,
+                  isActive && styles.nightStepLabelActive,
+                  isDone && styles.nightStepLabelDone,
+                ]}>{step}</Text>
+                {i < NIGHT_STEPS.length - 1 && <View style={styles.nightStepConnector} />}
+              </View>
+            );
+          })}
+        </View>
+      )}
+
       {/* No location selected — show action bar */}
       {!selectedLoc && (
         <View style={styles.actionBar}>
-          {/* Day: craft wards */}
+          {/* Day: craft wards — FIX 4: show effect + cost */}
           {isDay && state.hero.ap > 0 && (
             <View style={styles.actionSection}>
               <Text style={styles.actionLabel}>Crafter un Ward (1 AP)</Text>
@@ -159,6 +233,8 @@ export default function WardedGameScreen() {
                     >
                       <Text style={[styles.wardCraftIcon, { color: wardColor(w) }]}>{WARD_SYMBOLS[w]}</Text>
                       <Text style={styles.wardCraftName}>{w}</Text>
+                      <Text style={styles.wardCraftEffect}>{WARD_EFFECTS[w]}</Text>
+                      <Text style={styles.wardCraftCost}>{wardCostLabel(w as WardType)}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -199,7 +275,7 @@ export default function WardedGameScreen() {
 
           {/* Day: end day button */}
           {isDay && (
-            <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.nightBg, borderColor: warded.wardLight }]} onPress={ctrl.endDay}>
+            <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.nightBg, borderColor: warded.wardLight }]} onPress={handleEndDay}>
               <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>🌙 Tomber de la nuit</Text>
             </TouchableOpacity>
           )}
@@ -264,19 +340,7 @@ export default function WardedGameScreen() {
         </View>
       )}
 
-      {/* Threat forecast (day) */}
-      {isDay && forecast && (
-        <View style={styles.forecastRow}>
-          {Object.entries(forecast).map(([locId, level]) => (
-            <View key={locId} style={styles.forecastChip}>
-              <Text style={styles.forecastLoc}>{locId.split('_')[0]}</Text>
-              <Text style={[styles.forecastLevel, {
-                color: level === 'low' ? warded.success : level === 'medium' ? warded.warning : level === 'high' ? warded.danger : '#ff0000',
-              }]}>{level.toUpperCase()}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+      {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
     </SafeAreaView>
   );
 }
@@ -305,10 +369,12 @@ const styles = StyleSheet.create({
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
 
   wardCraftRow: { flexDirection: 'row', gap: 6 },
-  wardCraftBtn: { flex: 1, backgroundColor: warded.bgCard, borderRadius: 8, padding: 8, alignItems: 'center', borderWidth: 1 },
+  wardCraftBtn: { flex: 1, backgroundColor: warded.bgCard, borderRadius: 8, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', borderWidth: 1, gap: 2 },
   btnDisabled: { opacity: 0.3 },
   wardCraftIcon: { fontSize: 18 },
   wardCraftName: { color: warded.text, fontSize: 8, fontWeight: '600', textTransform: 'uppercase' },
+  wardCraftEffect: { color: warded.textDim, fontSize: 7, textAlign: 'center' },
+  wardCraftCost: { color: warded.warning, fontSize: 7, fontWeight: '600', textAlign: 'center' },
 
   reserveText: { color: warded.accent, fontSize: wardedFonts.xs, textAlign: 'center', fontStyle: 'italic' },
 
@@ -322,10 +388,67 @@ const styles = StyleSheet.create({
   eventText: { color: warded.textDim, fontSize: wardedFonts.xs },
   eventLatest: { color: warded.text, fontWeight: '600' },
 
-  forecastRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 4 },
-  forecastChip: { alignItems: 'center' },
-  forecastLoc: { color: warded.textDim, fontSize: 8 },
-  forecastLevel: { fontSize: wardedFonts.xs, fontWeight: 'bold' },
+  // FIX 1: Night transition overlay
+  transitionOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+    gap: 12,
+  },
+  transitionEmoji: { fontSize: 64 },
+  transitionText: { color: warded.text, fontSize: wardedFonts.xxl, fontWeight: 'bold', letterSpacing: 4 },
+  transitionSub: { color: warded.textDim, fontSize: wardedFonts.md },
+
+  // FIX 5: Night step indicator
+  nightStepsBar: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    gap: 0,
+  },
+  nightStepItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  nightStepDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: warded.bgLight,
+    borderWidth: 1,
+    borderColor: warded.border,
+  },
+  nightStepDotActive: {
+    backgroundColor: warded.accent,
+    borderColor: warded.accent,
+  },
+  nightStepDotDone: {
+    backgroundColor: warded.success,
+    borderColor: warded.success,
+  },
+  nightStepLabel: {
+    color: warded.textDark,
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  nightStepLabelActive: {
+    color: warded.accent,
+    fontWeight: 'bold',
+  },
+  nightStepLabelDone: {
+    color: warded.success,
+  },
+  nightStepConnector: {
+    width: 12,
+    height: 2,
+    backgroundColor: warded.border,
+    marginHorizontal: 2,
+  },
 
   gameOverBox: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16, padding: 20 },
   victoryBg: { backgroundColor: '#0a1a0a' },
