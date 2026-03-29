@@ -839,7 +839,6 @@ export default function WardedGameScreen() {
             </ScrollView>
           )}
         </View>
-      </View>
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
 
