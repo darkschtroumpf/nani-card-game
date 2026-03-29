@@ -10,10 +10,10 @@ import type {
 // --- Map ---
 
 export const LOCATIONS: { id: LocationId; name: string; position: MapPosition; primaryResource: ResourceType; secondaryFoodTurn: 'odd' | 'even' | null; startPop: number }[] = [
-  { id: 'desert_spear', name: 'Desert Spear', position: 'north', primaryResource: 'ink', secondaryFoodTurn: null, startPop: 5 },
-  { id: 'cutters_hollow', name: "Cutter's Hollow", position: 'west', primaryResource: 'wood', secondaryFoodTurn: 'odd', startPop: 5 },
-  { id: 'lakton', name: 'Lakton', position: 'east', primaryResource: 'food', secondaryFoodTurn: null, startPop: 4 },
-  { id: 'miln', name: 'Fort Miln', position: 'south', primaryResource: 'ink', secondaryFoodTurn: 'even', startPop: 5 },
+  { id: 'desert_spear', name: 'Desert Spear', position: 'north', primaryResource: 'ink', secondaryFoodTurn: null, startPop: 6 },
+  { id: 'cutters_hollow', name: "Cutter's Hollow", position: 'west', primaryResource: 'wood', secondaryFoodTurn: 'odd', startPop: 6 },
+  { id: 'lakton', name: 'Lakton', position: 'east', primaryResource: 'food', secondaryFoodTurn: null, startPop: 5 },
+  { id: 'miln', name: 'Fort Miln', position: 'south', primaryResource: 'ink', secondaryFoodTurn: 'even', startPop: 6 },
 ];
 
 export const ADJACENCY: Record<LocationId, LocationId[]> = {
@@ -64,6 +64,12 @@ export const WARD_COMBOS: WardCombo[] = [
   { name: 'Renewal Ward', wards: ['wind', 'bone'], passiveEffect: 'Heal 1 Pop when a demon is redirected away', activeEffect: 'Heal all locations 1 Pop + redirect 2 demons', activeName: 'Restoration' },
   { name: 'Consecration Ward', wards: ['light', 'bone'], passiveEffect: 'Hero heals 1 HP per wave at this location', activeEffect: 'Purge all str<=2 demons at this location', activeName: 'Purification' },
   { name: 'Revelation Ward', wards: ['stone', 'light'], passiveEffect: '+2 defense + reveal attacker types', activeEffect: '2 defense + deal 2 damage to all revealed demons', activeName: 'Judgement' },
+  // Triple combos (3 wards at same location)
+  { name: 'Infernal Fortress', wards: ['fire', 'stone', 'wind'], passiveEffect: 'Fire+Stone+Wind: 2 dmg to all, +3 defense, redirect 2', activeEffect: '5 dmg to strongest + immune this wave + redirect all non-locked', activeName: 'Cataclysm' },
+  { name: 'Sacred Beacon', wards: ['fire', 'light', 'bone'], passiveEffect: 'Fire+Light+Bone: 2 dmg, reveal all, heal 1 pop', activeEffect: '4 dmg to all demons, heal 2 pop, purge str<=3', activeName: 'Divine Light' },
+  { name: 'Tempest Sanctum', wards: ['wind', 'light', 'bone'], passiveEffect: 'Wind+Light+Bone: redirect 2, heal 1 pop per wave, preview', activeEffect: 'Rearrange all non-boss demons + heal all locations 2 pop', activeName: 'Grand Restoration' },
+  { name: 'Eternal Bastion', wards: ['fire', 'stone', 'bone'], passiveEffect: 'Fire+Stone+Bone: 2 dmg, +3 defense, heal 1', activeEffect: '4 dmg to strongest, immune, heal 3 pop', activeName: 'Last Stand' },
+  { name: 'Storm Nexus', wards: ['fire', 'wind', 'light'], passiveEffect: 'Fire+Wind+Light: 1 dmg to all + adjacent, redirect 1, reveal', activeEffect: '3 dmg to all demons here + all adjacent locations', activeName: 'Apocalypse' },
 ];
 
 // --- Demons ---
@@ -88,7 +94,7 @@ export const DEMON_TYPES: {
 // Demons per wave by night number
 // Reduced demon counts for better balance (was: 3,4,5,6...)
 export const DEMONS_PER_WAVE: Record<number, number> = {
-  1: 2, 2: 3, 3: 4, 4: 5, 5: 5, 6: 6, 7: 6, 8: 7, 9: 7, 10: 8, 11: 9, 12: 10,
+  1: 2, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6, 9: 6, 10: 7, 11: 8, 12: 9,
 };
 
 // --- Demon Surges ---

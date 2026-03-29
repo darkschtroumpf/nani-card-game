@@ -41,17 +41,31 @@ function getAdjacentIds(locationId: LocationId): LocationId[] {
 }
 
 function getWardCombo(loc: Location): WardCombo | null {
-  const w1 = loc.wards[0].ward;
-  const w2 = loc.wards[1].ward;
-  if (!w1 || !w2) return null;
-  return WARD_COMBOS.find(c =>
-    (c.wards[0] === w1 && c.wards[1] === w2) ||
-    (c.wards[0] === w2 && c.wards[1] === w1)
-  ) ?? null;
+  const activeWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
+  if (activeWards.length < 2) return null;
+
+  // Check triple combos first (3 wards)
+  if (activeWards.length >= 3) {
+    const tripleCombo = WARD_COMBOS.find(c =>
+      c.wards.length === 3 &&
+      c.wards.every(cw => activeWards.includes(cw)) &&
+      activeWards.filter(w => c.wards.includes(w)).length >= 3
+    );
+    if (tripleCombo) return tripleCombo;
+  }
+
+  // Check double combos (best pair)
+  for (const combo of WARD_COMBOS) {
+    if (combo.wards.length !== 2) continue;
+    if (activeWards.includes(combo.wards[0]) && activeWards.includes(combo.wards[1])) {
+      return combo;
+    }
+  }
+  return null;
 }
 
 function wardedLocationCount(state: GameState): number {
-  return state.locations.filter(l => !l.fallen && (l.wards[0].ward || l.wards[1].ward)).length;
+  return state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward)).length;
 }
 
 // ============================================================
@@ -69,7 +83,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     maxPopulation: l.startPop,
     primaryResource: l.primaryResource,
     secondaryFoodTurn: l.secondaryFoodTurn,
-    wards: [{ ward: null, isTemporary: false }, { ward: null, isTemporary: false }] as [WardSlot, WardSlot],
+    wards: [{ ward: null, isTemporary: false }, { ward: null, isTemporary: false }, { ward: null, isTemporary: false }],
     fallen: false,
     fallenNightsAgo: 0,
     stockpile: { wood: 0, ink: 0, food: 0 },
@@ -178,7 +192,7 @@ export function processDawn(state: GameState): void {
 
   // Remove temporary wards
   for (const loc of state.locations) {
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < loc.wards.length; i++) {
       if (loc.wards[i].isTemporary) {
         loc.wards[i] = { ward: null, isTemporary: false };
       }
@@ -341,20 +355,22 @@ function spawnDemons(state: GameState): void {
     // Blood Moon surge
     if (state.currentSurge === 'blood_moon') strength += 1;
 
-    // Wind demons are special (group of 3 with str 1 each)
+    // Wind demons: group of 2, SPREAD across locations instead of stacking
     if (demonDef.type === 'wind') {
-      for (let w = 0; w < 3; w++) {
+      const windLocs = shuffle(state.locations.filter(l => !l.fallen).map(l => l.id));
+      for (let w = 0; w < 2; w++) {
+        const windTarget = windLocs[w % windLocs.length];
         const windDemon: DemonCard = {
           type: 'wind',
           strength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0),
-          targetLocation: target,
+          targetLocation: windTarget,
           isLocked: false,
           isBoss: false,
           isPrinceUpgraded: false,
         };
-        state.demonsAtLocations[target].push({ demon: windDemon, currentStrength: windDemon.strength, swarmed: false });
+        state.demonsAtLocations[windTarget].push({ demon: windDemon, currentStrength: windDemon.strength, swarmed: false });
       }
-      continue; // wind counts as 1 card but spawns 3 demons
+      continue;
     }
 
     const demon: DemonCard = {
@@ -411,29 +427,45 @@ function determineDemonTarget(state: GameState, demonType: DemonType): LocationI
   const living = state.locations.filter(l => !l.fallen);
   if (living.length === 0) return 'cutters_hollow';
 
+  // Anti-clustering: soft cap — locations with many demons are less likely targets
+  const demonCounts = new Map<LocationId, number>();
+  for (const l of living) {
+    demonCounts.set(l.id, (state.demonsAtLocations[l.id] ?? []).length);
+  }
+  const maxPerLoc = Math.max(2, Math.ceil(DEMONS_PER_WAVE[state.nightNumber] / living.length));
+
+  // Helper: pick among candidates, preferring less crowded locations
+  function pickSpread(candidates: Location[]): LocationId {
+    // Filter out overly crowded first
+    const uncrowded = candidates.filter(l => (demonCounts.get(l.id) ?? 0) < maxPerLoc);
+    const pool = uncrowded.length > 0 ? uncrowded : candidates;
+    // Weighted random: fewer demons = higher chance
+    const weights = pool.map(l => 1 / (1 + (demonCounts.get(l.id) ?? 0)));
+    const totalWeight = weights.reduce((s, w) => s + w, 0);
+    let r = Math.random() * totalWeight;
+    for (let i = 0; i < pool.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return pool[i].id;
+    }
+    return pool[pool.length - 1].id;
+  }
+
   switch (demonType) {
-    case 'wood':
-      // Target least ward defense
-      return living.reduce((a, b) => {
-        const aDef = getWardDefense(a);
-        const bDef = getWardDefense(b);
-        return aDef <= bDef ? a : b;
-      }).id;
+    case 'wood': {
+      // Prefer least defense, but spread
+      const sorted = [...living].sort((a, b) => getWardDefense(a) - getWardDefense(b));
+      return pickSpread(sorted.slice(0, Math.max(2, Math.ceil(sorted.length / 2))));
+    }
     case 'rock':
-      return living.reduce((a, b) => a.population >= b.population ? a : b).id;
-    case 'water':
-      // 60% Lakton, 40% Desert Spear
-      if (Math.random() < 0.6) {
-        const lakton = getLocation(state, 'lakton');
-        if (!lakton.fallen) return 'lakton';
-      }
-      const ds = getLocation(state, 'desert_spear');
-      if (!ds.fallen) return 'desert_spear';
-      return living[Math.floor(Math.random() * living.length)].id;
+      return pickSpread(living.sort((a, b) => b.population - a.population).slice(0, 2));
+    case 'water': {
+      const waterTargets = living.filter(l => l.id === 'lakton' || l.id === 'desert_spear');
+      return waterTargets.length > 0 ? pickSpread(waterTargets) : pickSpread(living);
+    }
     case 'mind':
       return state.presenceLocation;
     default:
-      return living[Math.floor(Math.random() * living.length)].id;
+      return pickSpread(living);
   }
 }
 
@@ -617,7 +649,7 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
   if (state.activationsRemaining <= 0) return ['Plus d\'activations disponibles.'];
   const loc = getLocation(state, locationId);
   if (loc.fallen) return ['Lieu tombé.'];
-  if (!loc.wards[0].ward && !loc.wards[1].ward) return ['Pas de ward ici.'];
+  if (!loc.wards.some(ws => ws.ward)) return ['Pas de ward ici.'];
 
   const events: string[] = [];
   const demons = state.demonsAtLocations[locationId];
@@ -630,11 +662,12 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
     events.push(`${combo.activeName} activé à ${loc.name}!`);
     applyComboActive(state, locationId, combo, presenceBonus, events);
   } else {
-    // Activate individual ward
-    const ward = loc.wards[0].ward ?? loc.wards[1].ward;
-    if (!ward) return ['Pas de ward.'];
-    events.push(`${ward} activé à ${loc.name}!`);
-    applyWardActive(state, locationId, ward, presenceBonus, events);
+    // Activate each individual ward
+    for (const ws of loc.wards) {
+      if (!ws.ward) continue;
+      events.push(`${ws.ward} activé à ${loc.name}!`);
+      applyWardActive(state, locationId, ws.ward, presenceBonus, events);
+    }
   }
 
   state.activationsRemaining--;
@@ -737,7 +770,98 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo,
       events.push('Tempest: réarrangement de démons disponible.');
       break;
     }
-    // ... other combos would be implemented similarly
+    case 'Infernal Fortress': {
+      // Cataclysm: 5 dmg to strongest + immune + redirect all non-locked
+      if (demons.length > 0) {
+        const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        const dmg = 5 + presenceBonus + powerBonus;
+        strongest.currentStrength -= dmg;
+        events.push(`Cataclysm: ${dmg} dégâts à ${strongest.demon.type}.`);
+        if (strongest.currentStrength <= 0) {
+          demons.splice(demons.indexOf(strongest), 1);
+          events.push(`${strongest.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        }
+      }
+      (loc as any)._bulwarkActive = true;
+      // Redirect remaining non-locked
+      const adj = getAdjacentIds(locId);
+      for (let i = demons.length - 1; i >= 0; i--) {
+        if (!demons[i].demon.isLocked && !demons[i].demon.isBoss) {
+          const target = adj[Math.floor(Math.random() * adj.length)];
+          state.demonsAtLocations[target].push(demons[i]);
+          events.push(`${demons[i].demon.type} redirigé vers ${getLocation(state, target).name}.`);
+          demons.splice(i, 1);
+        }
+      }
+      break;
+    }
+    case 'Sacred Beacon': {
+      // Divine Light: 4 dmg to all + heal 2 + purge str<=3
+      const dmg = 4 + presenceBonus + powerBonus;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        demons[i].currentStrength -= dmg;
+        if (demons[i].currentStrength <= 0) {
+          events.push(`${demons[i].demon.type} purifié par Divine Light!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      loc.population = Math.min(loc.maxPopulation, loc.population + 2);
+      events.push(`Divine Light: +2 Pop à ${loc.name}.`);
+      break;
+    }
+    case 'Tempest Sanctum': {
+      // Grand Restoration: heal all 2 pop + rearrange non-boss
+      for (const l of state.locations) {
+        if (!l.fallen) l.population = Math.min(l.maxPopulation, l.population + 2);
+      }
+      events.push('Grand Restoration: +2 Pop partout!');
+      break;
+    }
+    case 'Eternal Bastion': {
+      // Last Stand: 4 dmg to strongest + immune + heal 3
+      if (demons.length > 0) {
+        const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        const dmg = 4 + presenceBonus + powerBonus;
+        strongest.currentStrength -= dmg;
+        events.push(`Last Stand: ${dmg} dégâts à ${strongest.demon.type}.`);
+        if (strongest.currentStrength <= 0) {
+          demons.splice(demons.indexOf(strongest), 1);
+          events.push(`${strongest.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        }
+      }
+      (loc as any)._bulwarkActive = true;
+      loc.population = Math.min(loc.maxPopulation, loc.population + 3);
+      events.push(`+3 Pop et immunité à ${loc.name}.`);
+      break;
+    }
+    case 'Storm Nexus': {
+      // Apocalypse: 3 dmg to all here + all adjacent
+      const dmg = 3 + presenceBonus + powerBonus;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        demons[i].currentStrength -= dmg;
+        if (demons[i].currentStrength <= 0) {
+          events.push(`${demons[i].demon.type} détruit par Apocalypse!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      for (const adjId of getAdjacentIds(locId)) {
+        const adjDemons = state.demonsAtLocations[adjId];
+        for (let i = adjDemons.length - 1; i >= 0; i--) {
+          adjDemons[i].currentStrength -= dmg;
+          if (adjDemons[i].currentStrength <= 0) {
+            events.push(`${adjDemons[i].demon.type} détruit à ${getLocation(state, adjId).name}!`);
+            onDemonKilled(state, adjId);
+            adjDemons.splice(i, 1);
+          }
+        }
+      }
+      events.push(`Apocalypse: ${dmg} dégâts ici et aux lieux adjacents!`);
+      break;
+    }
     default:
       events.push(`${combo.activeName} activé.`);
   }
@@ -857,7 +981,7 @@ export function resolveDamage(state: GameState): string[] {
         loc.fallen = true;
         loc.fallenNightsAgo = 0;
         // Destroy wards
-        loc.wards = [{ ward: null, isTemporary: false }, { ward: null, isTemporary: false }];
+        loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false }));
         events.push(`${loc.name} est TOMBÉ!`);
         addLog(state, `${loc.name} est tombé!`, true);
       }
@@ -1312,13 +1436,10 @@ export function leesha_greaterWardCircle(state: GameState): string[] {
   // Place a temporary ward at every location that has an empty slot
   for (const loc of state.locations) {
     if (loc.fallen) continue;
-    for (let i = 0; i < 2; i++) {
-      if (!loc.wards[i].ward) {
-        // Pick best ward type for the location
-        const wardType: WardType = loc.wards.some(w => w.ward === 'fire') ? 'stone' : 'fire';
-        loc.wards[i] = { ward: wardType, isTemporary: true };
-        break; // only 1 per location
-      }
+    const emptyIdx = loc.wards.findIndex(ws => !ws.ward);
+    if (emptyIdx >= 0) {
+      const wardType: WardType = loc.wards.some(w => w.ward === 'fire') ? 'stone' : 'fire';
+      loc.wards[emptyIdx] = { ward: wardType, isTemporary: true };
     }
   }
 

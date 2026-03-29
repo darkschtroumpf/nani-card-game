@@ -251,8 +251,8 @@ export function useWardedGame(): WardedGameController {
     const allEvents: string[] = [];
     for (const loc of s.locations) {
       if (loc.fallen) continue;
-      if (!loc.wards[0].ward && !loc.wards[1].ward) continue;
-      const hasCombo = !!(loc.wards[0].ward && loc.wards[1].ward);
+      if (!loc.wards.some(ws => ws.ward)) continue;
+      const hasCombo = loc.wards.filter(ws => ws.ward).length >= 2;
       const evts = activateWard(s, loc.id, hasCombo);
       allEvents.push(...evts);
     }

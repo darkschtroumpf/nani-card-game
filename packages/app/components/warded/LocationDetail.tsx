@@ -207,11 +207,18 @@ function ResChip({ label, value, color }: { label: string; value: number; color:
 }
 
 function getCombo(loc: Location) {
-  const w1 = loc.wards[0].ward;
-  const w2 = loc.wards[1].ward;
-  if (!w1 || !w2) return null;
+  const activeWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
+  if (activeWards.length < 2) return null;
+  // Check triple combos first
+  if (activeWards.length >= 3) {
+    const triple = WARD_COMBOS.find(c =>
+      c.wards.length === 3 && c.wards.every(cw => activeWards.includes(cw))
+    );
+    if (triple) return triple;
+  }
+  // Double combos
   return WARD_COMBOS.find(c =>
-    (c.wards[0] === w1 && c.wards[1] === w2) || (c.wards[0] === w2 && c.wards[1] === w1)
+    c.wards.length === 2 && activeWards.includes(c.wards[0]) && activeWards.includes(c.wards[1])
   ) ?? null;
 }
 

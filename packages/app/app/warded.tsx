@@ -441,8 +441,8 @@ export default function WardedGameScreen() {
     // NIGHT: auto-activate ward when tapping a warded location with activations remaining
     if (isNight && state.waveNumber > 0 && state.activationsRemaining > 0) {
       const loc = state.locations.find(l => l.id === locId);
-      if (loc && !loc.fallen && (loc.wards[0].ward || loc.wards[1].ward)) {
-        const hasCombo = loc.wards[0].ward && loc.wards[1].ward;
+      if (loc && !loc.fallen && loc.wards.some(ws => ws.ward)) {
+        const hasCombo = loc.wards.filter(ws => ws.ward).length >= 2;
         handleActivateWard(locId, !!hasCombo);
         return;
       }
@@ -680,10 +680,10 @@ export default function WardedGameScreen() {
                 : undefined}
               canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
               availableWardReserves={state.wardReserves}
-              onActivateWard={isNight && state.activationsRemaining > 0 && (selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)
+              onActivateWard={isNight && state.activationsRemaining > 0 && selectedLoc.wards.some(ws => ws.ward)
                 ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
                 : undefined}
-              canActivate={isNight && state.activationsRemaining > 0 && !!(selectedLoc.wards[0].ward || selectedLoc.wards[1].ward)}
+              canActivate={isNight && state.activationsRemaining > 0 && !!selectedLoc.wards.some(ws => ws.ward)}
               isActivated={state.activationsUsedAt?.includes(selectedLoc.id) ?? false}
               onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
                 ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
@@ -726,7 +726,7 @@ export default function WardedGameScreen() {
       {isNight && !selectedLoc && (
         <View style={styles.nightStepsBar}>
           {getNightStepLabels(state.activationsRemaining).map((step, i) => {
-            const totalAct = state.locations.filter(l => !l.fallen && (l.wards[0].ward || l.wards[1].ward)).length;
+            const totalAct = state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward)).length;
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const isActive = i === currentStep;
             const isDone = i < currentStep;

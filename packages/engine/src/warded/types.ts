@@ -15,7 +15,7 @@ export interface Location {
   maxPopulation: number;
   primaryResource: ResourceType;
   secondaryFoodTurn: 'odd' | 'even' | null; // produces 1 Food on these turns
-  wards: [WardSlot, WardSlot]; // 2 ward slots
+  wards: WardSlot[]; // up to 3 ward slots
   fallen: boolean;
   fallenNightsAgo: number; // for Horde tracking
   stockpile: ResourceStockpile;
@@ -42,7 +42,7 @@ export type WardType = 'fire' | 'stone' | 'wind' | 'light' | 'bone';
 
 export interface WardCombo {
   name: string;
-  wards: [WardType, WardType];
+  wards: WardType[];
   passiveEffect: string;
   activeEffect: string;
   activeName: string;
