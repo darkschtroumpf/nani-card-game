@@ -1,14 +1,16 @@
 import { useState, useCallback, useRef } from 'react';
 import type {
-  GameState, LocationId, WardType, HeroId, Difficulty,
+  GameState, LocationId, WardType, HeroId, Difficulty, SongType, Consumable,
 } from '../../engine/src/warded/types';
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
   endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh,
   getThreatForecast, resolveWardPassives,
+  jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, resolveWarriorCombat,
+  rojer_rehearse, rojer_symphony, rojer_minorCharm, resolveSongs,
+  leesha_craftConsumable, leesha_useConsumable, leesha_greaterWardCircle, leesha_triage,
 } from '../../engine/src/warded/game';
-import type { WardType as EngineWardType } from '../../engine/src/warded/types';
 
 export interface WardedGameController {
   state: GameState | null;
@@ -27,13 +29,31 @@ export interface WardedGameController {
   // Transition
   startNewDay: () => void;
 
-  // Night actions
+  // Arlen
   doWardedFlesh: (wardType: WardType, locationId: LocationId) => void;
+  doWardedFist: () => void;
+  doMistWalk: (locationId: LocationId) => void;
+
+  // Jardir
+  doDeployWarrior: (locationId: LocationId) => void;
+  doCrownOfKaji: () => void;
+  doRally: () => void;
+
+  // Rojer
+  doRehearse: (songs: [SongType | null, SongType | null, SongType | null]) => void;
+  doSymphony: () => void;
+  doMinorCharm: () => void;
+
+  // Leesha
+  doCraftConsumable: (type: Consumable['type'], fromLocationId: LocationId) => void;
+  doUseConsumable: (index: number, targetLocationId?: LocationId) => void;
+  doGreaterWardCircle: () => void;
+  doTriage: (consumableIndex: number, targetLocationId?: LocationId) => void;
+
+  // Night actions
   doMovePresence: (locationId: LocationId) => void;
   doStartWave: () => void;
   doActivateWard: (locationId: LocationId, useCombo: boolean) => void;
-  doWardedFist: () => void;
-  doMistWalk: (locationId: LocationId) => void;
   doResolveDamage: () => void;
   doEndWave: () => void;
 }
@@ -88,7 +108,7 @@ export function useWardedGame(): WardedGameController {
   const doWardedFlesh = useCallback((wardType: WardType, locationId: LocationId) => {
     const s = stateRef.current;
     if (!s) return;
-    arlenWardedFlesh(s, wardType as EngineWardType, locationId);
+    arlenWardedFlesh(s, wardType, locationId);
     sync(s);
   }, [sync]);
 
@@ -111,6 +131,92 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync]);
 
+  // --- Jardir ---
+
+  const doDeployWarrior = useCallback((locationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = jardir_deployWarrior(s, locationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doCrownOfKaji = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = jardir_crownOfKaji(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doRally = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = jardir_rally(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  // --- Rojer ---
+
+  const doRehearse = useCallback((songs: [SongType | null, SongType | null, SongType | null]) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = rojer_rehearse(s, songs);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doSymphony = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = rojer_symphony(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doMinorCharm = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = rojer_minorCharm(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  // --- Leesha ---
+
+  const doCraftConsumable = useCallback((type: Consumable['type'], fromLocationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leesha_craftConsumable(s, type, fromLocationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doUseConsumable = useCallback((index: number, targetLocationId?: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leesha_useConsumable(s, index, targetLocationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doGreaterWardCircle = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leesha_greaterWardCircle(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doTriage = useCallback((consumableIndex: number, targetLocationId?: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leesha_triage(s, consumableIndex, targetLocationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
   // --- Night Actions ---
 
   const doMovePresence = useCallback((locationId: LocationId) => {
@@ -124,6 +230,18 @@ export function useWardedGame(): WardedGameController {
     const s = stateRef.current;
     if (!s) return;
     startWave(s);
+
+    // Rojer: auto-resolve songs for this wave
+    if (s.hero.id === 'rojer') {
+      const songEvts = resolveSongs(s, s.waveNumber - 1);
+      if (songEvts.length > 0) addEvents(songEvts);
+    }
+
+    // Jardir: auto-resolve warrior combat
+    if (s.hero.id === 'jardir') {
+      const warriorEvts = resolveWarriorCombat(s);
+      if (warriorEvts.length > 0) addEvents(warriorEvts);
+    }
 
     // Auto-resolve ward passives
     const passiveEvents = resolveWardPassives(s);
@@ -194,8 +312,16 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame, startNewDay,
-    doCraft, doFortify, doGather, doWardedFlesh, endDay,
-    doMovePresence, doStartWave, doActivateWard,
-    doWardedFist, doMistWalk, doResolveDamage, doEndWave,
+    doCraft, doFortify, doGather, endDay,
+    // Arlen
+    doWardedFlesh, doWardedFist, doMistWalk,
+    // Jardir
+    doDeployWarrior, doCrownOfKaji, doRally,
+    // Rojer
+    doRehearse, doSymphony, doMinorCharm,
+    // Leesha
+    doCraftConsumable, doUseConsumable, doGreaterWardCircle, doTriage,
+    // Night
+    doMovePresence, doStartWave, doActivateWard, doResolveDamage, doEndWave,
   };
 }

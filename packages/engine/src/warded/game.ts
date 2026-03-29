@@ -12,7 +12,7 @@ import {
   LOCATIONS, ADJACENCY, WARD_COSTS, WARD_COMBOS,
   DEMON_TYPES, DEMONS_PER_WAVE, QUICK_MODE_SURGES, CAMPAIGN_SURGES,
   QUICK_MODE_STARTING_WARDS, HEROES, SWARM_THRESHOLD,
-  HORDE_FORMATION_NIGHTS, SONGS,
+  HORDE_FORMATION_NIGHTS, SONGS, CONSUMABLE_RECIPES,
 } from './constants';
 
 // ============================================================
@@ -269,9 +269,12 @@ export function startNight(state: GameState): void {
   state.waveNumber = 0;
   state.presenceMoveUsed = false;
 
-  // Reset Arlen charge
+  // Reset hero-specific state
   if (state.hero.id === 'arlen') {
     state.hero.arlenCharge = 1;
+  }
+  if (state.hero.id === 'rojer') {
+    delete (state as any)._symphonyActive;
   }
 
   // Draw surge
@@ -776,10 +779,24 @@ export function resolveDamage(state: GameState): string[] {
 
     // Calculate defense
     let defense = getWardDefense(loc);
+    // Forbiddance Circle (Leesha consumable)
+    if ((loc as any)._forbiddance > 0) {
+      events.push(`${loc.name}: Forbiddance Circle — aucun dégât!`);
+      (loc as any)._forbiddance--;
+      if ((loc as any)._forbiddance <= 0) delete (loc as any)._forbiddance;
+      continue;
+    }
     if ((loc as any)._bulwarkActive) {
       events.push(`${loc.name}: Bulwark — aucun dégât!`);
       delete (loc as any)._bulwarkActive;
       delete (loc as any)._comboDefense;
+      continue;
+    }
+    // Filter out lullaby'd demons (Rojer)
+    const activeDemonsCount = demons.filter(d => !(d as any)._lullaby).length;
+    if (activeDemonsCount === 0 && demons.length > 0) {
+      events.push(`${loc.name}: Lullaby — démons endormis, aucun dégât!`);
+      for (const d of demons) delete (d as any)._lullaby;
       continue;
     }
     if ((loc as any)._comboDefense) {
@@ -795,8 +812,10 @@ export function resolveDamage(state: GameState): string[] {
     const hasRock = demons.some(d => d.demon.type === 'rock');
     if (hasRock && defense > 0) defense = Math.max(0, defense - 1);
 
-    // Total demon strength
-    const totalStr = demons.reduce((sum, d) => sum + Math.max(0, d.currentStrength), 0);
+    // Total demon strength (skip lullaby'd)
+    const totalStr = demons.filter(d => !(d as any)._lullaby).reduce((sum, d) => sum + Math.max(0, d.currentStrength), 0);
+    // Clean up lullaby markers
+    for (const d of demons) delete (d as any)._lullaby;
     const damage = Math.max(0, totalStr - defense);
 
     if (damage > 0) {
@@ -915,7 +934,11 @@ export function endNight(state: GameState): void {
       state.hero.maxHp += 2;
       state.hero.hp = Math.min(state.hero.hp + 5, state.hero.maxHp); // heal 5 HP
       if (state.hero.id === 'arlen') {
-        state.hero.arlenCharge = Math.min((state.hero.arlenCharge ?? 0) + 1, 3); // start next night with more charge
+        state.hero.arlenCharge = Math.min((state.hero.arlenCharge ?? 0) + 1, 3);
+      }
+      if (state.hero.id === 'jardir') {
+        // Warriors heal between nights
+        for (const w of (state.hero.jardir_warriors ?? [])) w.strength = Math.min(w.strength + 1, 3);
       }
       addLog(state, `Nuit ${nightsPlayed} survécue! Niveau ${state.hero.level} — wards +${state.hero.wardPowerBonus} dégâts, +2 HP max`, true);
     }
@@ -993,4 +1016,320 @@ export function arlenMistWalk(state: GameState, targetLocationId: LocationId): b
   state.hero.arlenCharge = 0;
   addLog(state, `Mist Walk! Arlen se téléporte à ${getLocation(state, targetLocationId).name}. Charge reset à 0.`, true);
   return true;
+}
+
+// ============================================================
+// Jardir-specific
+// ============================================================
+
+export function jardir_deployWarrior(state: GameState, locationId: LocationId): string[] {
+  if (state.hero.id !== 'jardir') return ['Jardir uniquement.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return ['Lieu tombé.'];
+
+  state.hero.jardir_warriors = state.hero.jardir_warriors ?? [];
+  state.hero.jardir_warriors.push({ locationId, strength: 2 });
+  state.hero.ap--;
+
+  addLog(state, `Sharum déployé à ${loc.name} (force 2).`);
+  return [`Guerrier Sharum déployé à ${loc.name} (force 2).`];
+}
+
+export function jardir_crownOfKaji(state: GameState): string[] {
+  if (state.hero.id !== 'jardir') return ['Jardir uniquement.'];
+  if (state.hero.ap < 2) return ['Coûte 2 AP.'];
+  const warriors = state.hero.jardir_warriors ?? [];
+  if (warriors.length === 0) return ['Aucun guerrier déployé.'];
+
+  for (const w of warriors) w.strength += 2;
+  state.hero.ap -= 2;
+
+  addLog(state, 'Crown of Kaji! Tous les guerriers +2 force.', true);
+  return [`Crown of Kaji: ${warriors.length} guerrier(s) gagnent +2 force!`];
+}
+
+export function jardir_rally(state: GameState): string[] {
+  if (state.hero.id !== 'jardir' || state.heroWaveAbilityUsed) return ['Déjà utilisé.'];
+  const warriors = (state.hero.jardir_warriors ?? []).filter(w => w.locationId === state.presenceLocation);
+  if (warriors.length === 0) return ['Pas de guerrier à la Présence.'];
+
+  const target = warriors[0];
+  target.strength = 3; // heal to full (2) + 1 bonus
+  state.heroWaveAbilityUsed = true;
+
+  addLog(state, `Rally! Guerrier à ${getLocation(state, target.locationId).name} monte à force ${target.strength}.`);
+  return [`Rally: guerrier à la Présence monte à force ${target.strength}!`];
+}
+
+/** Auto-resolve warrior combat during waves */
+export function resolveWarriorCombat(state: GameState): string[] {
+  if (state.hero.id !== 'jardir') return [];
+  const warriors = state.hero.jardir_warriors ?? [];
+  const events: string[] = [];
+
+  for (let i = warriors.length - 1; i >= 0; i--) {
+    const w = warriors[i];
+    const demons = state.demonsAtLocations[w.locationId];
+    if (!demons || demons.length === 0) continue;
+
+    // Warrior attacks weakest demon
+    const weakest = demons.reduce((a, b) => a.currentStrength <= b.currentStrength ? a : b);
+    weakest.currentStrength -= w.strength;
+    events.push(`Sharum (${w.strength}) combat ${weakest.demon.type} à ${getLocation(state, w.locationId).name}.`);
+
+    if (weakest.currentStrength <= 0) {
+      demons.splice(demons.indexOf(weakest), 1);
+      events.push(`${weakest.demon.type} détruit par le guerrier!`);
+      onDemonKilled(state, w.locationId);
+    } else {
+      // Demon counter-attacks — warrior takes 1 damage
+      w.strength -= 1;
+      if (w.strength <= 0) {
+        warriors.splice(i, 1);
+        events.push('Guerrier Sharum tombé au combat!');
+      }
+    }
+  }
+
+  return events;
+}
+
+// ============================================================
+// Rojer-specific
+// ============================================================
+
+export function rojer_rehearse(state: GameState, songs: [SongType | null, SongType | null, SongType | null]): string[] {
+  if (state.hero.id !== 'rojer') return ['Rojer uniquement.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
+
+  state.hero.rojer_songs = songs;
+  state.hero.ap--;
+
+  const songNames = songs.filter(Boolean).map(s => SONGS.find(x => x.type === s)?.name ?? s);
+  addLog(state, `Répétition: ${songNames.join(', ')}.`);
+  return [`Chansons préparées: ${songNames.join(', ')}`];
+}
+
+export function rojer_symphony(state: GameState): string[] {
+  if (state.hero.id !== 'rojer') return ['Rojer uniquement.'];
+  if (state.hero.ap < 2) return ['Coûte 2 AP.'];
+
+  (state as any)._symphonyActive = true;
+  state.hero.ap -= 2;
+
+  addLog(state, 'Symphony of the Damned! Toutes les chansons affectent TOUS les lieux cette nuit.', true);
+  return ['Symphony of the Damned activée!'];
+}
+
+export function rojer_minorCharm(state: GameState): string[] {
+  if (state.hero.id !== 'rojer' || state.heroWaveAbilityUsed) return ['Déjà utilisé.'];
+
+  // Move 1 non-locked, non-boss demon from adjacent to Presence
+  const adjacentIds = getAdjacentIds(state.presenceLocation);
+  for (const adjId of adjacentIds) {
+    const demons = state.demonsAtLocations[adjId];
+    const idx = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss);
+    if (idx >= 0) {
+      const [demon] = demons.splice(idx, 1);
+      state.demonsAtLocations[state.presenceLocation].push(demon);
+      state.heroWaveAbilityUsed = true;
+      const locName = getLocation(state, state.presenceLocation).name;
+      return [`Minor Charm: ${demon.demon.type} attiré vers ${locName}.`];
+    }
+  }
+  return ['Aucun démon à attirer.'];
+}
+
+/** Auto-resolve songs during waves */
+export function resolveSongs(state: GameState, waveIndex: number): string[] {
+  if (state.hero.id !== 'rojer') return [];
+  const songs = state.hero.rojer_songs ?? [null, null, null];
+  const song = songs[waveIndex] ?? null;
+  if (!song) return [];
+
+  const events: string[] = [];
+  const isSymphony = !!(state as any)._symphonyActive;
+  const targetLocations = isSymphony
+    ? state.locations.filter(l => !l.fallen).map(l => l.id)
+    : [state.presenceLocation, ...getAdjacentIds(state.presenceLocation)];
+
+  for (const locId of targetLocations) {
+    const demons = state.demonsAtLocations[locId];
+    if (!demons || demons.length === 0) continue;
+
+    switch (song) {
+      case 'lullaby': {
+        // Demons at location skip their attack (mark them)
+        for (const d of demons) (d as any)._lullaby = true;
+        events.push(`Lullaby à ${getLocation(state, locId).name}: ${demons.length} démon(s) endormis.`);
+        break;
+      }
+      case 'frenzy': {
+        // Demons attack each other (each deals 1 dmg to another)
+        for (let i = demons.length - 1; i >= 0; i--) {
+          demons[i].currentStrength -= 1;
+          if (demons[i].currentStrength <= 0) {
+            events.push(`${demons[i].demon.type} détruit par Frenzy à ${getLocation(state, locId).name}!`);
+            onDemonKilled(state, locId);
+            demons.splice(i, 1);
+          }
+        }
+        if (demons.length > 0) events.push(`Frenzy à ${getLocation(state, locId).name}: démons s'attaquent!`);
+        break;
+      }
+      case 'the_call': {
+        // Move up to 2 non-locked demons from adjacent to this location
+        if (locId !== state.presenceLocation) break; // only at presence
+        let moved = 0;
+        for (const adjId of getAdjacentIds(locId)) {
+          const adjDemons = state.demonsAtLocations[adjId];
+          for (let i = adjDemons.length - 1; i >= 0 && moved < 2; i--) {
+            if (!adjDemons[i].demon.isLocked && !adjDemons[i].demon.isBoss) {
+              state.demonsAtLocations[locId].push(adjDemons[i]);
+              adjDemons.splice(i, 1);
+              moved++;
+            }
+          }
+        }
+        if (moved > 0) events.push(`The Call: ${moved} démon(s) attirés à la Présence.`);
+        break;
+      }
+      case 'dissipation': {
+        // Remove up to 2 demons with str<=2
+        let removed = 0;
+        for (let i = demons.length - 1; i >= 0 && removed < 2; i--) {
+          if (demons[i].currentStrength <= 2) {
+            events.push(`Dissipation: ${demons[i].demon.type} dissipé à ${getLocation(state, locId).name}!`);
+            onDemonKilled(state, locId);
+            demons.splice(i, 1);
+            removed++;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  // Harmony bonus: 3 different songs in wave 3 = +1 activation
+  if (waveIndex === 2) {
+    const uniqueSongs = new Set(songs.filter(Boolean));
+    if (uniqueSongs.size >= 3) {
+      state.activationsRemaining += 1;
+      events.push('Harmony! 3 chansons différentes — +1 activation bonus!');
+    }
+  }
+
+  return events;
+}
+
+// ============================================================
+// Leesha-specific
+// ============================================================
+
+export function leesha_craftConsumable(state: GameState, type: Consumable['type'], fromLocationId: LocationId): string[] {
+  if (state.hero.id !== 'leesha') return ['Leesha uniquement.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
+
+  const recipe = CONSUMABLE_RECIPES.find(r => r.type === type);
+  if (!recipe) return ['Recette inconnue.'];
+
+  const loc = getLocation(state, fromLocationId);
+  if (loc.fallen) return ['Lieu tombé.'];
+  if (loc.stockpile.wood < recipe.cost.wood || loc.stockpile.ink < recipe.cost.ink || loc.stockpile.food < recipe.cost.food) {
+    return ['Ressources insuffisantes.'];
+  }
+
+  loc.stockpile.wood -= recipe.cost.wood;
+  loc.stockpile.ink -= recipe.cost.ink;
+  loc.stockpile.food -= recipe.cost.food;
+  state.hero.leesha_consumables = state.hero.leesha_consumables ?? [];
+  state.hero.leesha_consumables.push({ type, name: recipe.name });
+  state.hero.ap--;
+
+  addLog(state, `${recipe.name} fabriqué depuis ${loc.name}.`);
+  return [`${recipe.name} créé!`];
+}
+
+export function leesha_useConsumable(state: GameState, index: number, targetLocationId?: LocationId): string[] {
+  if (state.hero.id !== 'leesha') return ['Leesha uniquement.'];
+  const consumables = state.hero.leesha_consumables ?? [];
+  if (index < 0 || index >= consumables.length) return ['Consommable invalide.'];
+
+  const item = consumables[index];
+  const events: string[] = [];
+
+  switch (item.type) {
+    case 'healing_potion': {
+      if (targetLocationId) {
+        const loc = getLocation(state, targetLocationId);
+        const healed = Math.min(3, loc.maxPopulation - loc.population);
+        loc.population += healed;
+        events.push(`Healing Potion: +${healed} Pop à ${loc.name}.`);
+      } else {
+        const healed = Math.min(3, state.hero.maxHp - state.hero.hp);
+        state.hero.hp += healed;
+        events.push(`Healing Potion: +${healed} HP à ${state.hero.name}.`);
+      }
+      break;
+    }
+    case 'firespit': {
+      const locId = targetLocationId ?? state.presenceLocation;
+      const demons = state.demonsAtLocations[locId];
+      if (demons.length > 0) {
+        const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        target.currentStrength -= 3;
+        events.push(`Firespit: 3 dégâts à ${target.demon.type} à ${getLocation(state, locId).name}.`);
+        if (target.currentStrength <= 0) {
+          demons.splice(demons.indexOf(target), 1);
+          events.push(`${target.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        }
+      }
+      break;
+    }
+    case 'forbiddance_circle': {
+      const locId = targetLocationId ?? state.presenceLocation;
+      const loc = getLocation(state, locId);
+      (loc as any)._forbiddance = locId === state.presenceLocation ? 2 : 1;
+      events.push(`Forbiddance Circle: ${loc.name} protégé${locId === state.presenceLocation ? ' (2 vagues)' : ''}.`);
+      break;
+    }
+    case 'hora_lantern': {
+      events.push('Hora Lantern: tous les démons révélés cette vague!');
+      break;
+    }
+  }
+
+  consumables.splice(index, 1);
+  return events;
+}
+
+export function leesha_greaterWardCircle(state: GameState): string[] {
+  if (state.hero.id !== 'leesha') return ['Leesha uniquement.'];
+  if (state.hero.ap < 3) return ['Coûte 3 AP.'];
+
+  // Place a temporary ward at every location that has an empty slot
+  for (const loc of state.locations) {
+    if (loc.fallen) continue;
+    for (let i = 0; i < 2; i++) {
+      if (!loc.wards[i].ward) {
+        // Pick best ward type for the location
+        const wardType: WardType = loc.wards.some(w => w.ward === 'fire') ? 'stone' : 'fire';
+        loc.wards[i] = { ward: wardType, isTemporary: true };
+        break; // only 1 per location
+      }
+    }
+  }
+
+  state.hero.ap -= 3;
+  addLog(state, 'Greater Ward Circle! Wards temporaires placés partout.', true);
+  return ['Greater Ward Circle: ward temporaire à chaque lieu!'];
+}
+
+export function leesha_triage(state: GameState, consumableIndex: number, targetLocationId?: LocationId): string[] {
+  if (state.hero.id !== 'leesha' || state.heroWaveAbilityUsed) return ['Déjà utilisé.'];
+  const result = leesha_useConsumable(state, consumableIndex, targetLocationId);
+  state.heroWaveAbilityUsed = true;
+  return result;
 }

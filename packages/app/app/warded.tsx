@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,42 @@ import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
 const BG_DAY = require('../assets/images/bg_day.png');
 const BG_NIGHT = require('../assets/images/bg_night.png');
 const HERO_ARLEN = require('../assets/images/hero_arlen.png');
+
+// Hero images (fallback to Arlen for now)
+const HERO_IMAGES: Record<string, any> = {
+  arlen: HERO_ARLEN,
+  jardir: HERO_ARLEN, // TODO: generate
+  rojer: HERO_ARLEN,  // TODO: generate
+  leesha: HERO_ARLEN, // TODO: generate
+};
+
+// Hero selection lore & gameplay descriptions
+const HERO_LORE: Record<string, { emoji: string; lore: string; gameplay: string; color: string }> = {
+  arlen: {
+    emoji: '⚔',
+    lore: 'Arlen Bales, le premier homme depuis des générations à oser affronter les démons la nuit. Son corps couvert de tatouages de wards lui confère une puissance surnaturelle.',
+    gameplay: 'Guerrier solitaire. Accumule des Charges en tuant des démons. Warded Fist frappe les démons, Mist Walk le téléporte à Charge 5. Peut poser des wards temporaires (Warded Flesh).',
+    color: '#FFD740',
+  },
+  jardir: {
+    emoji: '👑',
+    lore: 'Ahmann Jardir, le Shar\'Dama Ka — Celui Qui Voit dans la Nuit. Chef guerrier de Krasia, il mène ses Sharum au combat avec une ferveur divine.',
+    gameplay: 'Commandant militaire. Déploie des guerriers Sharum (force 2) sur la carte. Crown of Kaji booste tous les guerriers de +2. Rally renforce un guerrier à la Présence.',
+    color: '#FF5252',
+  },
+  rojer: {
+    emoji: '🎵',
+    lore: 'Rojer Inn, le Jongleur de Fidèle, dont la musique envoûte les démons eux-mêmes. Son violon est l\'arme la plus improbable contre les ténèbres.',
+    gameplay: 'Contrôle par la musique. Prépare 3 chansons le jour (Lullaby, Frenzy, Dissipation, The Call). Elles s\'activent automatiquement la nuit. Symphony affecte TOUS les lieux.',
+    color: '#7C4DFF',
+  },
+  leesha: {
+    emoji: '🧪',
+    lore: 'Leesha Paper, Herboriste de Cutter\'s Hollow. Son intelligence et ses connaissances des plantes et des wards en font une protectrice redoutable.',
+    gameplay: 'Support & crafting. Fabrique des consommables (Potions, Firespit, Forbiddance). Greater Ward Circle place un ward temporaire partout. Triage utilise un objet gratuitement chaque vague.',
+    color: '#69F0AE',
+  },
+};
 
 const WARD_IMAGES: Record<string, any> = {
   fire: require('../assets/images/ward_fire.png'),
@@ -20,8 +56,8 @@ const WARD_IMAGES: Record<string, any> = {
 import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
-import type { LocationId, WardType } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS } from '../../engine/src/warded/constants';
+import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable } from '../../engine/src/warded/types';
+import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES } from '../../engine/src/warded/constants';
 
 // FIX 4: Short effect descriptions for ward craft cards (French)
 const WARD_EFFECTS: Record<string, string> = {
@@ -222,6 +258,7 @@ export default function WardedGameScreen() {
   const { state, events, forecast } = ctrl;
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [selectedHero, setSelectedHero] = useState<HeroId | null>(null);
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [combatToast, setCombatToast] = useState<string | null>(null);
@@ -240,12 +277,11 @@ export default function WardedGameScreen() {
   // FIX 5: Damage report overlay
   const [damageReport, setDamageReport] = useState<string[] | null>(null);
 
-  useEffect(() => {
-    if (!initialized) {
-      setInitialized(true);
-      ctrl.startGame('arlen', 'waning');
-    }
-  }, []);
+  // Game starts when hero is selected (no more auto-start)
+  const handleStartGame = useCallback((heroId: HeroId) => {
+    setInitialized(true);
+    ctrl.startGame(heroId, 'waning');
+  }, [ctrl]);
 
   // FIX 3: Combat toast from events
   useEffect(() => {
@@ -266,9 +302,59 @@ export default function WardedGameScreen() {
   }, [state?.phase]);
 
   if (!state) {
+    // Hero selection screen
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>Chargement...</Text>
+        <ImageBackground source={BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={{ opacity: 0.3 }}>
+          <View style={styles.bgOverlay} />
+        </ImageBackground>
+        <ScrollView contentContainerStyle={styles.heroSelectContainer}>
+          <Text style={styles.heroSelectTitle}>CHOISIS TON CHAMPION</Text>
+          <Text style={styles.heroSelectSub}>Quick Mode — 3 nuits de survie</Text>
+
+          {HEROES.map(h => {
+            const info = HERO_LORE[h.id];
+            const isSelected = selectedHero === h.id;
+            return (
+              <TouchableOpacity
+                key={h.id}
+                style={[
+                  styles.heroCard,
+                  isSelected && { borderColor: info.color, borderWidth: 2 },
+                ]}
+                onPress={() => setSelectedHero(h.id as HeroId)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.heroCardHeader}>
+                  <Image source={HERO_IMAGES[h.id]} style={[styles.heroCardAvatar, { borderColor: info.color }]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.heroCardName, { color: info.color }]}>{info.emoji} {h.name}</Text>
+                    <Text style={styles.heroCardTitle}>{h.title}</Text>
+                    <Text style={styles.heroCardStats}>AP: {h.ap} | HP: {h.hp}</Text>
+                  </View>
+                </View>
+                {isSelected && (
+                  <View style={styles.heroCardDetail}>
+                    <Text style={styles.heroCardLore}>{info.lore}</Text>
+                    <View style={[styles.heroCardDivider, { backgroundColor: info.color + '40' }]} />
+                    <Text style={styles.heroCardGameplay}>{info.gameplay}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+
+          {selectedHero && (
+            <TouchableOpacity
+              style={[styles.heroStartBtn, { borderColor: HERO_LORE[selectedHero].color, backgroundColor: HERO_LORE[selectedHero].color + '20' }]}
+              onPress={() => handleStartGame(selectedHero)}
+            >
+              <Text style={[styles.heroStartBtnText, { color: HERO_LORE[selectedHero].color }]}>
+                Commencer avec {HEROES.find(h => h.id === selectedHero)?.name}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -309,7 +395,7 @@ export default function WardedGameScreen() {
           </View>
           <View style={styles.gameOverBtns}>
             <TouchableOpacity style={styles.replayBtn} onPress={() => {
-              ctrl.startGame('arlen', 'waning');
+              ctrl.startGame(state.hero.id, 'waning');
               setSelectedLocation(null);
               setDamageResolved(false);
               setMistWalkMode(false);
@@ -319,6 +405,7 @@ export default function WardedGameScreen() {
               setTutorialStep(0);
               setActionFlash(null);
               setDamageReport(null);
+              setShowLevelUp(false);
               firstNightSeen.current = false;
               gameStats.current = { wardsCrafted: 0, activationsUsed: 0, demonsKilled: 0, populationLost: 0, nightsSurvived: 0 };
             }}>
@@ -474,7 +561,7 @@ export default function WardedGameScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.heroRow}>
-          <Image source={HERO_ARLEN} style={styles.heroAvatar} />
+          <Image source={HERO_IMAGES[state.hero.id] ?? HERO_ARLEN} style={styles.heroAvatar} />
           <View>
             <Text style={styles.heroName}>{state.hero.name}</Text>
             <Text style={styles.heroTitle}>{state.hero.title}</Text>
@@ -495,10 +582,28 @@ export default function WardedGameScreen() {
             {state.hero.hp}/{state.hero.maxHp}
           </Text>
         </View>
-        {state.hero.arlenCharge !== undefined && (
+        {state.hero.id === 'arlen' && state.hero.arlenCharge !== undefined && (
           <View style={styles.statChip}>
             <Text style={styles.statLabel}>Charge</Text>
             <Text style={[styles.statValue, { color: warded.accent }]}>{state.hero.arlenCharge}</Text>
+          </View>
+        )}
+        {state.hero.id === 'jardir' && (
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>Sharum</Text>
+            <Text style={[styles.statValue, { color: '#FF5252' }]}>{(state.hero.jardir_warriors ?? []).length}</Text>
+          </View>
+        )}
+        {state.hero.id === 'rojer' && (
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>Chansons</Text>
+            <Text style={[styles.statValue, { color: '#7C4DFF' }]}>{(state.hero.rojer_songs ?? []).filter(Boolean).length}/3</Text>
+          </View>
+        )}
+        {state.hero.id === 'leesha' && (
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>Objets</Text>
+            <Text style={[styles.statValue, { color: '#69F0AE' }]}>{(state.hero.leesha_consumables ?? []).length}</Text>
           </View>
         )}
         {isNight && (
@@ -765,6 +870,112 @@ export default function WardedGameScreen() {
 
           {/* Warded Flesh moved to LocationDetail (CRITICAL 1 fix) */}
 
+          {/* Jardir: deploy warrior */}
+          {isDay && state.hero.id === 'jardir' && state.hero.ap > 0 && (
+            <View style={styles.actionSection}>
+              <Text style={styles.actionLabel}>👑 Sharum ({(state.hero.jardir_warriors ?? []).length} déployés) — tape un lieu</Text>
+              <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                {state.locations.filter(l => !l.fallen).map(l => (
+                  <TouchableOpacity key={l.id} style={[styles.phaseBtn, { borderColor: '#FF5252', paddingHorizontal: 10 }]}
+                    onPress={() => { ctrl.doDeployWarrior(l.id); setActionFlash('#FF5252'); setTimeout(() => setActionFlash(null), 400); }}>
+                    <Text style={[styles.phaseBtnText, { color: '#FF5252', fontSize: 11 }]}>
+                      ⚔ {l.name} {(state.hero.jardir_warriors ?? []).filter(w => w.locationId === l.id).length > 0
+                        ? `(${(state.hero.jardir_warriors ?? []).filter(w => w.locationId === l.id).length})` : ''}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {state.hero.ap >= 2 && (state.hero.jardir_warriors ?? []).length > 0 && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FFD740', backgroundColor: '#FFD74015' }]}
+                  onPress={() => { ctrl.doCrownOfKaji(); setActionFlash('#FFD740'); setTimeout(() => setActionFlash(null), 400); }}>
+                  <Text style={[styles.phaseBtnText, { color: '#FFD740' }]}>👑 Crown of Kaji (2 AP) — tous les guerriers +2</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Rojer: rehearse songs */}
+          {isDay && state.hero.id === 'rojer' && state.hero.ap > 0 && (
+            <View style={styles.actionSection}>
+              <Text style={styles.actionLabel}>🎵 Chansons pour la nuit (1 AP)</Text>
+              {SONGS.map(song => {
+                const songs = state.hero.rojer_songs ?? [null, null, null];
+                const count = songs.filter(s => s === song.type).length;
+                return (
+                  <TouchableOpacity key={song.type} style={[styles.phaseBtn, { borderColor: '#7C4DFF', paddingHorizontal: 10 }]}
+                    onPress={() => {
+                      // Quick-assign: fill first empty slot
+                      const newSongs: [SongType | null, SongType | null, SongType | null] = [...songs] as any;
+                      const emptyIdx = newSongs.findIndex(s => !s);
+                      if (emptyIdx >= 0) { newSongs[emptyIdx] = song.type; }
+                      else { newSongs[2] = song.type; } // replace last
+                      ctrl.doRehearse(newSongs);
+                      setActionFlash('#7C4DFF'); setTimeout(() => setActionFlash(null), 400);
+                    }}>
+                    <Text style={[styles.phaseBtnText, { color: '#7C4DFF', fontSize: 11 }]}>
+                      🎵 {song.name} {count > 0 ? `(x${count})` : ''} — {song.effect.substring(0, 40)}...
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {state.hero.ap >= 2 && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#E040FB', backgroundColor: '#E040FB15' }]}
+                  onPress={() => { ctrl.doSymphony(); setActionFlash('#E040FB'); setTimeout(() => setActionFlash(null), 400); }}>
+                  <Text style={[styles.phaseBtnText, { color: '#E040FB' }]}>🎻 Symphony of the Damned (2 AP) — chansons partout</Text>
+                </TouchableOpacity>
+              )}
+              <View style={{ flexDirection: 'row', gap: 4, marginTop: 4 }}>
+                {(state.hero.rojer_songs ?? [null, null, null]).map((s, i) => (
+                  <View key={i} style={[styles.songSlot, s ? { borderColor: '#7C4DFF', backgroundColor: '#7C4DFF20' } : {}]}>
+                    <Text style={{ color: s ? '#7C4DFF' : warded.textDim, fontSize: 10 }}>
+                      V{i + 1}: {s ? (SONGS.find(x => x.type === s)?.name ?? s) : '—'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Leesha: craft consumables */}
+          {isDay && state.hero.id === 'leesha' && state.hero.ap > 0 && (
+            <View style={styles.actionSection}>
+              <Text style={styles.actionLabel}>🧪 Fabrication ({(state.hero.leesha_consumables ?? []).length} objets)</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
+                {CONSUMABLE_RECIPES.map(recipe => {
+                  const bestLoc = state.locations.find(l => !l.fallen &&
+                    l.stockpile.wood >= recipe.cost.wood && l.stockpile.ink >= recipe.cost.ink && l.stockpile.food >= recipe.cost.food);
+                  return (
+                    <TouchableOpacity key={recipe.type}
+                      style={[styles.phaseBtn, { borderColor: bestLoc ? '#69F0AE' : warded.textDim, opacity: bestLoc ? 1 : 0.5, paddingHorizontal: 8 }]}
+                      disabled={!bestLoc}
+                      onPress={() => { if (bestLoc) { ctrl.doCraftConsumable(recipe.type, bestLoc.id); setActionFlash('#69F0AE'); setTimeout(() => setActionFlash(null), 400); } }}>
+                      <Text style={[styles.phaseBtnText, { color: bestLoc ? '#69F0AE' : warded.textDim, fontSize: 10 }]}>
+                        {recipe.name}
+                      </Text>
+                      <Text style={{ color: warded.textDim, fontSize: 8 }}>{recipe.effect.substring(0, 30)}...</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              {state.hero.ap >= 3 && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#69F0AE', backgroundColor: '#69F0AE15' }]}
+                  onPress={() => { ctrl.doGreaterWardCircle(); setActionFlash('#69F0AE'); setTimeout(() => setActionFlash(null), 400); }}>
+                  <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🛡 Greater Ward Circle (3 AP) — wards temporaires partout</Text>
+                </TouchableOpacity>
+              )}
+              {(state.hero.leesha_consumables ?? []).length > 0 && (
+                <View style={{ flexDirection: 'row', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                  {(state.hero.leesha_consumables ?? []).map((c, i) => (
+                    <TouchableOpacity key={i} style={[styles.songSlot, { borderColor: '#69F0AE' }]}
+                      onPress={() => { ctrl.doUseConsumable(i, state.presenceLocation); setActionFlash('#69F0AE'); setTimeout(() => setActionFlash(null), 400); }}>
+                      <Text style={{ color: '#69F0AE', fontSize: 9 }}>{c.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Day: end day button */}
           {isDay && (
             <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.nightBg, borderColor: warded.wardLight }]} onPress={handleEndDay}>
@@ -836,18 +1047,31 @@ export default function WardedGameScreen() {
                   );
                 })}
               </View>
-              {/* Optional ability */}
-              {!state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
+              {/* Optional hero wave abilities */}
+              {!state.heroWaveAbilityUsed && (
                 <View style={styles.optionalAction}>
                   <Text style={styles.optionalLabel}>ACTION BONUS (optionnel)</Text>
-                  <TouchableOpacity
-                    style={[styles.phaseBtn, { borderColor: warded.accent, backgroundColor: warded.accent + '15' }]}
-                    onPress={ctrl.doWardedFist}
-                  >
-                    <Text style={[styles.phaseBtnText, { color: warded.accent }]}>
-                      ⚔ Warded Fist ({state.hero.arlenCharge} dmg)
-                    </Text>
-                  </TouchableOpacity>
+                  {state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent, backgroundColor: warded.accent + '15' }]} onPress={ctrl.doWardedFist}>
+                      <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'jardir' && (state.hero.jardir_warriors ?? []).some(w => w.locationId === state.presenceLocation) && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FF5252', backgroundColor: '#FF525215' }]} onPress={ctrl.doRally}>
+                      <Text style={[styles.phaseBtnText, { color: '#FF5252' }]}>👑 Rally — renforcer guerrier</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'rojer' && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#7C4DFF', backgroundColor: '#7C4DFF15' }]} onPress={ctrl.doMinorCharm}>
+                      <Text style={[styles.phaseBtnText, { color: '#7C4DFF' }]}>🎵 Minor Charm — attirer 1 démon</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'leesha' && (state.hero.leesha_consumables ?? []).length > 0 && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#69F0AE', backgroundColor: '#69F0AE15' }]}
+                      onPress={() => ctrl.doTriage(0, state.presenceLocation)}>
+                      <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🧪 Triage — utiliser {(state.hero.leesha_consumables ?? [])[0]?.name}</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
               {/* Required next step -- prominent (FIX 3: no auto-advance) */}
@@ -1461,5 +1685,107 @@ const styles = StyleSheet.create({
     color: warded.accent,
     fontWeight: 'bold',
     fontSize: wardedFonts.md,
+  },
+
+  // --- Hero Selection Screen ---
+  heroSelectContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 40,
+    gap: 12,
+    alignItems: 'center',
+  },
+  heroSelectTitle: {
+    color: warded.accent,
+    fontSize: 24,
+    fontWeight: 'bold',
+    letterSpacing: 3,
+    textAlign: 'center',
+    textShadowColor: warded.accent,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  heroSelectSub: {
+    color: warded.textDim,
+    fontSize: wardedFonts.sm,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  heroCard: {
+    width: '100%',
+    backgroundColor: warded.bgCard,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: warded.border,
+    gap: 8,
+  },
+  heroCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  heroCardAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+  },
+  heroCardName: {
+    fontSize: wardedFonts.lg,
+    fontWeight: 'bold',
+  },
+  heroCardTitle: {
+    color: warded.textDim,
+    fontSize: wardedFonts.xs,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  heroCardStats: {
+    color: warded.text,
+    fontSize: wardedFonts.sm,
+    marginTop: 2,
+  },
+  heroCardDetail: {
+    gap: 8,
+    paddingTop: 4,
+  },
+  heroCardLore: {
+    color: warded.text,
+    fontSize: wardedFonts.sm,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  heroCardDivider: {
+    height: 1,
+    width: '100%',
+  },
+  heroCardGameplay: {
+    color: warded.text,
+    fontSize: wardedFonts.sm,
+    lineHeight: 20,
+  },
+  heroStartBtn: {
+    marginTop: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+    borderWidth: 2,
+    alignItems: 'center',
+    width: '100%',
+  },
+  heroStartBtnText: {
+    fontSize: wardedFonts.lg,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+
+  // --- Song/consumable slots ---
+  songSlot: {
+    borderWidth: 1,
+    borderColor: warded.border,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
 });
