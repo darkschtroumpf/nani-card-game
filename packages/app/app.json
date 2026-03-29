@@ -1,33 +1,31 @@
 {
   "expo": {
-    "name": "NANI?!",
-    "slug": "nani-card-game",
+    "name": "The Demon's Cycle",
+    "slug": "demons-cycle",
     "owner": "darkschtroumpf",
-    "version": "1.0.0",
+    "version": "2.2.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/ward_fire.png",
     "userInterfaceStyle": "dark",
-    "scheme": "nani",
+    "scheme": "demonscycle",
     "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1a1a2e"
+      "image": "./assets/images/bg_night.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#0a0a18"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.darkschtroumpf.nani"
+      "bundleIdentifier": "com.darkschtroumpf.demonscycle"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#1a1a2e",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#0a0a18",
+        "foregroundImage": "./assets/images/ward_fire.png"
       },
-      "package": "com.darkschtroumpf.nani"
+      "package": "com.darkschtroumpf.demonscycle"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
+      "favicon": "./assets/images/ward_fire.png",
       "bundler": "metro"
     },
     "plugins": [

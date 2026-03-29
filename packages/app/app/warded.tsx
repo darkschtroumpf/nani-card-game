@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ImageBackground, Image } from 'react-native';
 import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
 
 // Generated art assets
@@ -351,9 +350,11 @@ export default function WardedGameScreen() {
   };
 
   return (
-    <ImageBackground source={isDay ? BG_DAY : BG_NIGHT} style={styles.container} imageStyle={styles.bgImage}>
-      {/* Dark overlay for readability */}
-      <View style={styles.bgOverlay} pointerEvents="none" />
+    <SafeAreaView style={styles.container}>
+      {/* Background image */}
+      <ImageBackground source={isDay ? BG_DAY : BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={styles.bgImage}>
+        <View style={styles.bgOverlay} />
+      </ImageBackground>
 
       {/* FIX 1: Night transition overlay */}
       {showNightTransition && (
@@ -738,7 +739,7 @@ export default function WardedGameScreen() {
           onSkip={() => setTutorialStep(-1)}
         />
       )}
-    </ImageBackground>
+    </SafeAreaView>
   );
 }
 
