@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { warded, wardedFonts, wardColor, WARD_SYMBOLS } from '../theme-warded';
+import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS } from '../theme-warded';
 
 // Generated art assets
 const BG_DAY = require('../assets/images/bg_day.png');
@@ -56,8 +56,8 @@ const WARD_IMAGES: Record<string, any> = {
 import { useWardedGame } from '../hooks/useWardedGame';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
-import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES } from '../../engine/src/warded/constants';
+import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
+import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS } from '../../engine/src/warded/constants';
 
 // FIX 4: Short effect descriptions for ward craft cards (French)
 const WARD_EFFECTS: Record<string, string> = {
@@ -67,6 +67,41 @@ const WARD_EFFECTS: Record<string, string> = {
   light: 'revele les demons',
   bone: '+1 pop a l\'aube',
 };
+
+// Combo advisor: compute active combos + possible combos with reserves
+function getComboAdvisor(locations: { id: LocationId; name: string; wards: { ward: WardType | null }[]; fallen: boolean }[], reserves: WardType[]) {
+  const active: { locName: string; combo: typeof WARD_COMBOS[0] }[] = [];
+  const possible: { locName: string; combo: typeof WARD_COMBOS[0]; missing: WardType[] }[] = [];
+
+  for (const loc of locations) {
+    if (loc.fallen) continue;
+    const locWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
+    const emptySlots = loc.wards.filter(ws => !ws.ward).length;
+
+    // Check active combos
+    for (const combo of WARD_COMBOS) {
+      const comboWards = combo.wards;
+      if (comboWards.every(cw => locWards.includes(cw))) {
+        active.push({ locName: loc.name, combo });
+      }
+    }
+
+    // Check possible combos (with reserves)
+    if (emptySlots > 0 && reserves.length > 0) {
+      for (const combo of WARD_COMBOS) {
+        const comboWards = combo.wards;
+        if (comboWards.every(cw => locWards.includes(cw))) continue; // already active
+        const missing = comboWards.filter(cw => !locWards.includes(cw));
+        if (missing.length > emptySlots) continue; // not enough slots
+        if (missing.every(m => reserves.includes(m))) {
+          possible.push({ locName: loc.name, combo, missing });
+        }
+      }
+    }
+  }
+
+  return { active, possible };
+}
 
 // FIX 4: Cost display helper
 function wardCostLabel(w: WardType): string {
@@ -266,6 +301,8 @@ export default function WardedGameScreen() {
   const [damageResolved, setDamageResolved] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0); // 0-6 active, -1 = done
   const [mistWalkMode, setMistWalkMode] = useState(false);
+  const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
+  const [showComboPanel, setShowComboPanel] = useState(false);
   const firstNightSeen = useRef(false);
 
   // FIX 3: Game stats tracking
@@ -870,6 +907,42 @@ export default function WardedGameScreen() {
 
           {/* Warded Flesh moved to LocationDetail (CRITICAL 1 fix) */}
 
+          {/* Combo advisor panel */}
+          {isDay && (() => {
+            const advisor = getComboAdvisor(state.locations, state.wardReserves);
+            if (advisor.active.length === 0 && advisor.possible.length === 0) return null;
+            return (
+              <View style={styles.comboPanel}>
+                <TouchableOpacity onPress={() => setShowComboPanel(!showComboPanel)} style={styles.comboPanelHeader}>
+                  <Text style={styles.comboPanelTitle}>
+                    ✨ Combos {advisor.active.length > 0 ? `(${advisor.active.length} actif${advisor.active.length > 1 ? 's' : ''})` : ''}
+                  </Text>
+                  <Text style={styles.comboPanelToggle}>{showComboPanel ? '▼' : '▶'}</Text>
+                </TouchableOpacity>
+                {showComboPanel && (
+                  <View style={styles.comboPanelBody}>
+                    {advisor.active.map((a, i) => (
+                      <View key={`a${i}`} style={[styles.comboRow, { borderColor: warded.accent }]}>
+                        <Text style={[styles.comboRowName, { color: warded.accent }]}>✓ {a.combo.name}</Text>
+                        <Text style={styles.comboRowLoc}>{a.locName}</Text>
+                        <Text style={styles.comboRowEffect}>Passif: {a.combo.passiveEffect}</Text>
+                        <Text style={styles.comboRowEffect}>Actif: {a.combo.activeEffect}</Text>
+                      </View>
+                    ))}
+                    {advisor.possible.map((p, i) => (
+                      <View key={`p${i}`} style={[styles.comboRow, { borderColor: warded.warning }]}>
+                        <Text style={[styles.comboRowName, { color: warded.warning }]}>→ {p.combo.name}</Text>
+                        <Text style={styles.comboRowLoc}>{p.locName} — place {p.missing.map(m => m.toUpperCase()).join(' + ')}</Text>
+                        <Text style={styles.comboRowEffect}>Passif: {p.combo.passiveEffect}</Text>
+                        <Text style={styles.comboRowEffect}>Actif: {p.combo.activeEffect}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })()}
+
           {/* Jardir: deploy warrior */}
           {isDay && state.hero.id === 'jardir' && state.hero.ap > 0 && (
             <View style={styles.actionSection}>
@@ -1074,6 +1147,63 @@ export default function WardedGameScreen() {
                   )}
                 </View>
               )}
+              {/* Wind redirect (interactive) */}
+              {!damageResolved && (() => {
+                const hasWindWard = state.locations.some(l => !l.fallen && l.wards.some(ws => ws.ward === 'wind'));
+                const redirectableDemons = Object.entries(state.demonsAtLocations).flatMap(([locId, demons]) =>
+                  demons.map((d, i) => ({ locId: locId as LocationId, demon: d, index: i }))
+                    .filter(d => !d.demon.demon.isLocked && !d.demon.demon.isBoss && d.demon.demon.type !== 'wind')
+                );
+                if (!hasWindWard || redirectableDemons.length === 0) return null;
+
+                return (
+                  <View style={styles.windRedirectSection}>
+                    <Text style={styles.windRedirectTitle}>🌀 REDIRECTION (Wind Wards)</Text>
+                    {windRedirectDemon ? (
+                      <>
+                        <Text style={styles.windRedirectHint}>
+                          Envoyer {windRedirectDemon ? state.demonsAtLocations[windRedirectDemon.locId]?.[windRedirectDemon.demonIndex]?.demon.type : ''} vers :
+                        </Text>
+                        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                          {state.locations.filter(l => !l.fallen && l.id !== windRedirectDemon?.locId).map(l => (
+                            <TouchableOpacity key={l.id}
+                              style={[styles.phaseBtn, { borderColor: '#81D4FA', paddingHorizontal: 10 }]}
+                              onPress={() => {
+                                ctrl.doWindRedirect(windRedirectDemon!.locId, windRedirectDemon!.demonIndex, l.id);
+                                setWindRedirectDemon(null);
+                              }}>
+                              <Text style={[styles.phaseBtnText, { color: '#81D4FA', fontSize: 11 }]}>→ {l.name}</Text>
+                            </TouchableOpacity>
+                          ))}
+                          <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.textDim }]}
+                            onPress={() => setWindRedirectDemon(null)}>
+                            <Text style={[styles.phaseBtnText, { color: warded.textDim }]}>Annuler</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.windRedirectHint}>Tape un démon pour le déplacer</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 4 }}>
+                          {redirectableDemons.slice(0, 8).map((d, i) => (
+                            <TouchableOpacity key={i}
+                              style={[styles.windDemonChip, { borderColor: demonColor(d.demon.demon.type) }]}
+                              onPress={() => setWindRedirectDemon({ locId: d.locId, demonIndex: d.index })}>
+                              <Text style={{ color: demonColor(d.demon.demon.type), fontSize: 10, fontWeight: 'bold' }}>
+                                {d.demon.demon.type} ({d.demon.currentStrength})
+                              </Text>
+                              <Text style={{ color: warded.textDim, fontSize: 8 }}>
+                                {state.locations.find(l => l.id === d.locId)?.name}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </>
+                    )}
+                  </View>
+                );
+              })()}
+
               {/* Required next step -- prominent (FIX 3: no auto-advance) */}
               {!damageResolved ? (
                 <TouchableOpacity
@@ -1778,6 +1908,82 @@ const styles = StyleSheet.create({
     fontSize: wardedFonts.lg,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+
+  // --- Combo Advisor Panel ---
+  comboPanel: {
+    backgroundColor: 'rgba(20,20,30,0.9)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: warded.accent + '40',
+    overflow: 'hidden',
+  },
+  comboPanelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  comboPanelTitle: {
+    color: warded.accent,
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
+  },
+  comboPanelToggle: {
+    color: warded.accent,
+    fontSize: 12,
+  },
+  comboPanelBody: {
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    gap: 6,
+  },
+  comboRow: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    gap: 2,
+  },
+  comboRowName: {
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
+  },
+  comboRowLoc: {
+    color: warded.textDim,
+    fontSize: 10,
+  },
+  comboRowEffect: {
+    color: warded.text,
+    fontSize: 10,
+    lineHeight: 14,
+  },
+
+  // --- Wind Redirect ---
+  windRedirectSection: {
+    backgroundColor: 'rgba(129, 212, 250, 0.08)',
+    borderWidth: 1,
+    borderColor: '#81D4FA40',
+    borderRadius: 10,
+    padding: 10,
+    gap: 6,
+  },
+  windRedirectTitle: {
+    color: '#81D4FA',
+    fontSize: wardedFonts.sm,
+    fontWeight: 'bold',
+  },
+  windRedirectHint: {
+    color: warded.textDim,
+    fontSize: 11,
+  },
+  windDemonChip: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignItems: 'center',
+    gap: 1,
   },
 
   // --- Song/consumable slots ---

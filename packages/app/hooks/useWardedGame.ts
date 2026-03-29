@@ -50,6 +50,9 @@ export interface WardedGameController {
   doGreaterWardCircle: () => void;
   doTriage: (consumableIndex: number, targetLocationId?: LocationId) => void;
 
+  // Wind redirect (interactive)
+  doWindRedirect: (fromLocationId: LocationId, demonIndex: number, toLocationId: LocationId) => void;
+
   // Night actions
   doMovePresence: (locationId: LocationId) => void;
   doStartWave: () => void;
@@ -217,6 +220,23 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync, addEvents]);
 
+  // --- Wind Redirect ---
+
+  const doWindRedirect = useCallback((fromLocationId: LocationId, demonIndex: number, toLocationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const fromDemons = s.demonsAtLocations[fromLocationId];
+    if (!fromDemons || demonIndex < 0 || demonIndex >= fromDemons.length) return;
+    const demon = fromDemons[demonIndex];
+    if (demon.demon.isLocked || demon.demon.isBoss) return;
+    fromDemons.splice(demonIndex, 1);
+    s.demonsAtLocations[toLocationId].push(demon);
+    const fromName = s.locations.find(l => l.id === fromLocationId)?.name ?? fromLocationId;
+    const toName = s.locations.find(l => l.id === toLocationId)?.name ?? toLocationId;
+    addEvents([`🌀 ${demon.demon.type} redirigé de ${fromName} vers ${toName}.`]);
+    sync(s);
+  }, [sync, addEvents]);
+
   // --- Night Actions ---
 
   const doMovePresence = useCallback((locationId: LocationId) => {
@@ -321,6 +341,8 @@ export function useWardedGame(): WardedGameController {
     doRehearse, doSymphony, doMinorCharm,
     // Leesha
     doCraftConsumable, doUseConsumable, doGreaterWardCircle, doTriage,
+    // Wind redirect
+    doWindRedirect,
     // Night
     doMovePresence, doStartWave, doActivateWard, doResolveDamage, doEndWave,
   };
