@@ -789,9 +789,10 @@ export default function WardedGameScreen() {
             </View>
           )}
 
+          {/* Activations are now automatic — this block only shows if somehow activations remain (shouldn't happen) */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
             <View style={styles.nightActions}>
-              <Text style={styles.nightLabel}>Tape un lieu wardé pour activer ses défenses ({state.activationsRemaining} restantes)</Text>
+              <Text style={styles.nightLabel}>Activations en cours...</Text>
               {mistWalkMode ? (
                 <View style={styles.mistWalkBanner}>
                   <Text style={styles.mistWalkTitle}>MIST WALK</Text>
@@ -1042,7 +1043,7 @@ const styles = StyleSheet.create({
   nightActions: { gap: 8 },
   nightLabel: { color: warded.textDim, fontSize: wardedFonts.sm, textAlign: 'center' },
 
-  eventLog: { paddingHorizontal: 14, paddingVertical: 2, maxHeight: 40 },
+  eventLog: { paddingHorizontal: 14, paddingVertical: 0, maxHeight: 24 },
   eventText: { color: warded.textDim, fontSize: wardedFonts.xs },
   eventLatest: { color: warded.text, fontWeight: '600' },
 
@@ -1225,7 +1226,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   eventLogScroll: {
-    maxHeight: 50,
+    maxHeight: 30,
   },
 
   // FIX 5A: Positioning banner

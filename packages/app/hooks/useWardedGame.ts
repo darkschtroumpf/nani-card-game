@@ -110,9 +110,29 @@ export function useWardedGame(): WardedGameController {
     const s = stateRef.current;
     if (!s) return;
     startWave(s);
-    // Auto-resolve ward passives after demons spawn
+
+    // Auto-resolve ward passives
     const passiveEvents = resolveWardPassives(s);
     addEvents(passiveEvents);
+
+    // Auto-activate ALL ward actives (combo preferred)
+    const allEvents: string[] = [];
+    for (const loc of s.locations) {
+      if (loc.fallen) continue;
+      if (!loc.wards[0].ward && !loc.wards[1].ward) continue;
+      if (s.activationsRemaining <= 0) break;
+      const hasCombo = !!(loc.wards[0].ward && loc.wards[1].ward);
+      const evts = activateWard(s, loc.id, hasCombo);
+      allEvents.push(...evts);
+    }
+    if (allEvents.length > 0) addEvents(allEvents);
+
+    // Arlen: auto Warded Fist if charge > 0
+    if (s.hero.id === 'arlen' && (s.hero.arlenCharge ?? 0) > 0) {
+      const fistEvts = arlenWardedFist(s);
+      addEvents(fistEvts);
+    }
+
     sync(s);
   }, [sync, addEvents]);
 

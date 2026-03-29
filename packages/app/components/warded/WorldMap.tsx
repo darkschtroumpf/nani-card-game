@@ -132,7 +132,11 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
                 <Text style={styles.popText}>{loc.population}</Text>
               </View>
             )}
-            {loc.fallen && <Text style={styles.fallenText}>TOMBÉ</Text>}
+            {loc.fallen && (
+              <View style={styles.fallenOverlay} pointerEvents="none">
+                <Text style={styles.fallenStamp}>FALLEN</Text>
+              </View>
+            )}
 
             {/* Ward indicators — FIX 2: bigger at night */}
             <View style={styles.wardRow}>
@@ -258,6 +262,26 @@ const styles = StyleSheet.create({
     color: warded.text,
     fontSize: 7,
     fontWeight: 'bold',
+  },
+  fallenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 10,
+    zIndex: 10,
+  },
+  fallenStamp: {
+    color: warded.danger,
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 4,
+    transform: [{ rotate: '-25deg' }],
+    borderWidth: 2,
+    borderColor: warded.danger,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    textTransform: 'uppercase',
   },
   fallenText: {
     color: warded.danger,
