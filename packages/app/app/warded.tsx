@@ -415,8 +415,12 @@ export default function WardedGameScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Background image */}
-      <ImageBackground source={isDay ? BG_DAY : BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={styles.bgImage}>
-        <View style={styles.bgOverlay} />
+      <ImageBackground
+        source={isDay ? BG_DAY : BG_NIGHT}
+        style={StyleSheet.absoluteFillObject}
+        imageStyle={{ opacity: isDay ? 0.5 : 0.35 }}
+      >
+        <View style={[styles.bgOverlay, { backgroundColor: isDay ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.6)' }]} />
       </ImageBackground>
 
       {/* FIX 1: Night transition overlay */}
