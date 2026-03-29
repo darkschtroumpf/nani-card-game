@@ -86,8 +86,9 @@ export const DEMON_TYPES: {
 ];
 
 // Demons per wave by night number
+// Reduced demon counts for better balance (was: 3,4,5,6...)
 export const DEMONS_PER_WAVE: Record<number, number> = {
-  1: 3, 2: 4, 3: 5, 4: 6, 5: 6, 6: 7, 7: 7, 8: 8, 9: 8, 10: 9, 11: 10, 12: 12,
+  1: 2, 2: 3, 3: 4, 4: 5, 5: 5, 6: 6, 7: 6, 8: 7, 9: 7, 10: 8, 11: 9, 12: 10,
 };
 
 // --- Demon Surges ---
@@ -117,7 +118,7 @@ export const HEROES: {
 }[] = [
   {
     id: 'arlen', name: 'Arlen Bales', title: 'The Warded Man',
-    ap: 5, hp: 10,
+    ap: 6, hp: 10,
     passive: 'Warded Flesh: Starts each night at Ward Charge 1. Gains +1 Charge per demon killed at Presence. Gains +1 Charge when taking overflow damage.',
     signatureName: 'Mist Walk',
     signatureEffect: 'At Ward Charge 5: teleport Presence to any location. Charge resets to 0.',
@@ -176,6 +177,7 @@ export const CONSUMABLE_RECIPES: { type: Consumable['type']; name: string; cost:
 export const QUICK_MODE_STARTING_WARDS: { locationId: LocationId; ward: WardType }[] = [
   { locationId: 'cutters_hollow', ward: 'fire' },
   { locationId: 'miln', ward: 'wind' },
+  { locationId: 'lakton', ward: 'stone' },
 ];
 
 // --- Starting resources (Quick Mode) ---
