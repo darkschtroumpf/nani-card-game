@@ -238,6 +238,13 @@ export default function WardedGameScreen() {
     }
   }, [events.length]);
 
+  // Tutorial: advance to night steps (MUST be before any conditional return — Rules of Hooks)
+  useEffect(() => {
+    if (state && state.phase === 'night' && !firstNightSeen.current && tutorialStep === 5) {
+      firstNightSeen.current = true;
+    }
+  }, [state?.phase]);
+
   if (!state) {
     return (
       <SafeAreaView style={styles.container}>
@@ -249,13 +256,6 @@ export default function WardedGameScreen() {
   const isDay = state.phase === 'day';
   const isNight = state.phase === 'night';
   const selectedLoc = selectedLocation ? state.locations.find(l => l.id === selectedLocation) : null;
-
-  // Tutorial: advance to night steps on first night (must be before any conditional return)
-  useEffect(() => {
-    if (state && state.phase === 'night' && !firstNightSeen.current && tutorialStep === 5) {
-      firstNightSeen.current = true;
-    }
-  }, [state?.phase]);
 
   // Game over
   if (state.gameOver) {
