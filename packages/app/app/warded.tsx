@@ -350,7 +350,17 @@ export default function WardedGameScreen() {
       setMistWalkMode(false);
       return;
     }
-    // AUTO-FORTIFY: if day + reserves + location has empty slot + AP, place first reserve
+    // NIGHT: auto-activate ward when tapping a warded location with activations remaining
+    if (isNight && state.waveNumber > 0 && state.activationsRemaining > 0) {
+      const loc = state.locations.find(l => l.id === locId);
+      if (loc && !loc.fallen && (loc.wards[0].ward || loc.wards[1].ward)) {
+        const hasCombo = loc.wards[0].ward && loc.wards[1].ward;
+        handleActivateWard(locId, !!hasCombo);
+        return;
+      }
+    }
+
+    // DAY: auto-fortify if reserves + location has empty slot + AP
     if (isDay && state.wardReserves.length > 0 && state.hero.ap > 0) {
       const loc = state.locations.find(l => l.id === locId);
       if (loc && !loc.fallen && loc.wards.some(ws => !ws.ward)) {
@@ -659,9 +669,9 @@ export default function WardedGameScreen() {
         </View>
       )}
 
-      {/* Action bar — always visible */}
+      {/* Action bar */}
       <View style={styles.actionBar}>
-          {/* Day: craft wards — FIX 4: show effect + cost, FIX 2: 0 AP banner */}
+          {/* Day ONLY: craft wards */}
           {isDay && (
             <View style={styles.actionSection}>
               {state.hero.ap > 0 ? (
@@ -764,6 +774,7 @@ export default function WardedGameScreen() {
 
           {isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
             <View style={styles.nightActions}>
+              <Text style={styles.nightLabel}>Tape un lieu wardé pour activer ses défenses ({state.activationsRemaining} restantes)</Text>
               {mistWalkMode ? (
                 <View style={styles.mistWalkBanner}>
                   <Text style={styles.mistWalkTitle}>MIST WALK</Text>
@@ -790,10 +801,11 @@ export default function WardedGameScreen() {
             </View>
           )}
 
-          {/* FIX 3 + FIX 5B: Separate optional from required actions when activations === 0 */}
+          {/* Night: activations done (or none) — resolve damage */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining === 0 && (
             <View style={styles.nightActions}>
-              {/* Optional ability -- visually distinct (FIX 5B) */}
+              <Text style={styles.nightLabel}>Activations terminées — résous les dégâts</Text>
+              {/* Optional ability */}
               {!state.heroWaveAbilityUsed && state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
                 <View style={styles.optionalAction}>
                   <Text style={styles.optionalLabel}>ACTION BONUS (optionnel)</Text>
