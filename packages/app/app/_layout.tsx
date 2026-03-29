@@ -24,6 +24,7 @@ export default function RootLayout() {
         <Stack.Screen name="lobby" options={{ title: 'Lobby' }} />
         <Stack.Screen name="room" options={{ title: 'Salle d\'attente' }} />
         <Stack.Screen name="deckbuilder" options={{ title: 'Deck Builder' }} />
+        <Stack.Screen name="warded" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen
           name="game"
           options={{ headerShown: false, gestureEnabled: false }}

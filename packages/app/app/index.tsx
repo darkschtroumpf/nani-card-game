@@ -56,7 +56,16 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Text style={styles.version}>v1.0.0 — NANI?! Dojo</Text>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#1a1a2e', borderWidth: 1, borderColor: '#ffd740' }]}
+          onPress={() => router.push('/warded')}
+        >
+          <Text style={[styles.buttonText, { color: '#ffd740' }]}>The Warded Man</Text>
+          <Text style={styles.buttonDesc}>Prototype — Sharak Ka</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.version}>v2.0.0</Text>
     </SafeAreaView>
   );
 }
