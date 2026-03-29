@@ -242,7 +242,7 @@ export default function WardedGameScreen() {
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
-      ctrl.startGame('arlen', 'midnight');
+      ctrl.startGame('arlen', 'waning');
     }
   }, []);
 
@@ -308,7 +308,7 @@ export default function WardedGameScreen() {
           </View>
           <View style={styles.gameOverBtns}>
             <TouchableOpacity style={styles.replayBtn} onPress={() => {
-              ctrl.startGame('arlen', 'midnight');
+              ctrl.startGame('arlen', 'waning');
               setSelectedLocation(null);
               setDamageResolved(false);
               setMistWalkMode(false);
@@ -401,24 +401,41 @@ export default function WardedGameScreen() {
     if (tutorialStep === 5) setTutorialStep(6);
   };
 
-  // Wrapped doResolveDamage to advance tutorial
+  // Wrapped doResolveDamage with clear per-location report
   const handleResolveDamage = () => {
-    const beforePop = state.locations.reduce((s, l) => s + l.population, 0);
-    const beforeEvents = events.length;
+    // Snapshot before
+    const beforePop: Record<string, number> = {};
+    state.locations.forEach(l => { beforePop[l.id] = l.population; });
+
     ctrl.doResolveDamage();
     setDamageResolved(true);
-    // FIX 4: red flash on damage resolve
     setActionFlash('#FF3333');
     setTimeout(() => setActionFlash(null), 400);
-    // FIX 5: capture new events as damage report
-    const newEvents = events.slice(beforeEvents);
-    // FIX 3: count kills and pop loss from new events
-    const killCount = newEvents.filter(e => e.includes('détruit')).length;
-    gameStats.current.demonsKilled += killCount;
-    const afterPop = state.locations.reduce((s, l) => s + l.population, 0);
-    const popLost = beforePop - afterPop;
-    if (popLost > 0) gameStats.current.populationLost += popLost;
-    setDamageReport(newEvents.length > 0 ? newEvents : ['Aucun degat cette vague!']);
+
+    // Build clear per-location report
+    const report: string[] = [];
+    state.locations.forEach(l => {
+      const before = beforePop[l.id] ?? 0;
+      const after = l.population;
+      const dmg = before - after;
+      const demons = (state.demonsAtLocations[l.id] ?? []).length;
+
+      if (l.fallen && before > 0) {
+        report.push(`💀 ${l.name} est TOMBÉ !`);
+      } else if (dmg > 0) {
+        report.push(`🔥 ${l.name} : -${dmg} pop (${after} restante)`);
+      } else if (demons > 0) {
+        report.push(`🛡 ${l.name} : wards tiennent ! (${after} pop)`);
+      } else {
+        report.push(`✅ ${l.name} : aucun démon (${after} pop)`);
+      }
+    });
+
+    // Stats
+    const totalDmg = Object.values(beforePop).reduce((s, v) => s + v, 0) - state.locations.reduce((s, l) => s + l.population, 0);
+    if (totalDmg > 0) gameStats.current.populationLost += totalDmg;
+
+    setDamageReport(report);
     if (tutorialStep === 6) setTutorialStep(-1);
   };
 
@@ -581,15 +598,15 @@ export default function WardedGameScreen() {
         return (
           <View style={styles.threatSummaryBar}>
             <View style={styles.threatSummaryItem}>
-              <Text style={[styles.threatSummaryValue, { color: warded.danger }]}>{totalDemonStr}</Text>
-              <Text style={styles.threatSummaryLabel}>Menace</Text>
+              <Text style={[styles.threatSummaryValue, { color: warded.danger }]}>👹 {totalDemonStr}</Text>
+              <Text style={styles.threatSummaryLabel}>Force démons</Text>
             </View>
             <View style={[styles.threatSummaryStatus, { borderColor: statusColor }]}>
               <Text style={[styles.threatSummaryStatusText, { color: statusColor }]}>{statusLabel}</Text>
             </View>
             <View style={styles.threatSummaryItem}>
-              <Text style={[styles.threatSummaryValue, { color: warded.wardLight }]}>{totalWardCount}</Text>
-              <Text style={styles.threatSummaryLabel}>Wards</Text>
+              <Text style={[styles.threatSummaryValue, { color: warded.wardLight }]}>🛡 {totalWardCount}</Text>
+              <Text style={styles.threatSummaryLabel}>Défenses</Text>
             </View>
             <View style={styles.threatSummaryItem}>
               <Text style={[styles.threatSummaryValue, { color: warded.success }]}>{totalPop}</Text>
@@ -1025,7 +1042,7 @@ const styles = StyleSheet.create({
   nightActions: { gap: 8 },
   nightLabel: { color: warded.textDim, fontSize: wardedFonts.sm, textAlign: 'center' },
 
-  eventLog: { paddingHorizontal: 14, paddingVertical: 6 },
+  eventLog: { paddingHorizontal: 14, paddingVertical: 2, maxHeight: 40 },
   eventText: { color: warded.textDim, fontSize: wardedFonts.xs },
   eventLatest: { color: warded.text, fontWeight: '600' },
 
@@ -1208,7 +1225,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   eventLogScroll: {
-    maxHeight: 80,
+    maxHeight: 50,
   },
 
   // FIX 5A: Positioning banner
