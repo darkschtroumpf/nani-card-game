@@ -143,6 +143,10 @@ export interface GameState {
   };
   campaignFlags?: Record<string, boolean | number>;
 
+  // Victory condition
+  maxNights: number;          // survive this many nights to win
+  minStandingLocations: number; // minimum non-fallen locations
+
   // Game over
   gameOver: boolean;
   victory: boolean;

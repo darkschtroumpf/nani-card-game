@@ -139,6 +139,8 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     chapter: 1,
     skillPoints: 0,
     questsCompleted: [],
+    maxNights: 3,
+    minStandingLocations: mode === 'quick' ? 3 : 1,
     gameOver: false,
     victory: false,
     defeatReason: null,
@@ -355,7 +357,7 @@ function spawnDemons(state: GameState): void {
   if (state.campaignModifiers?.extraDemonsPerWave) count += state.campaignModifiers.extraDemonsPerWave;
 
   // Terrain-based demon spawning — each location attracts demons matching its terrain
-  const living = state.locations.filter(l => !l.fallen);
+  const living = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
   const availableChapter = state.mode === 'campaign' ? state.chapter : state.nightNumber;
 
   for (let i = 0; i < count; i++) {
@@ -437,51 +439,6 @@ function spawnDemons(state: GameState): void {
   }
 }
 
-function determineDemonTarget(state: GameState, demonType: DemonType): LocationId {
-  const living = state.locations.filter(l => !l.fallen);
-  if (living.length === 0) return 'cutters_hollow';
-
-  // Anti-clustering: soft cap — locations with many demons are less likely targets
-  const demonCounts = new Map<LocationId, number>();
-  for (const l of living) {
-    demonCounts.set(l.id, (state.demonsAtLocations[l.id] ?? []).length);
-  }
-  const maxPerLoc = Math.max(2, Math.ceil(DEMONS_PER_WAVE[state.nightNumber] / living.length));
-
-  // Helper: pick among candidates, preferring less crowded locations
-  function pickSpread(candidates: Location[]): LocationId {
-    // Filter out overly crowded first
-    const uncrowded = candidates.filter(l => (demonCounts.get(l.id) ?? 0) < maxPerLoc);
-    const pool = uncrowded.length > 0 ? uncrowded : candidates;
-    // Weighted random: fewer demons = higher chance
-    const weights = pool.map(l => 1 / (1 + (demonCounts.get(l.id) ?? 0)));
-    const totalWeight = weights.reduce((s, w) => s + w, 0);
-    let r = Math.random() * totalWeight;
-    for (let i = 0; i < pool.length; i++) {
-      r -= weights[i];
-      if (r <= 0) return pool[i].id;
-    }
-    return pool[pool.length - 1].id;
-  }
-
-  switch (demonType) {
-    case 'wood': {
-      // Prefer least defense, but spread
-      const sorted = [...living].sort((a, b) => getWardDefense(a) - getWardDefense(b));
-      return pickSpread(sorted.slice(0, Math.max(2, Math.ceil(sorted.length / 2))));
-    }
-    case 'rock':
-      return pickSpread(living.sort((a, b) => b.population - a.population).slice(0, 2));
-    case 'water': {
-      const waterTargets = living.filter(l => l.id === 'lakton' || l.id === 'desert_spear');
-      return waterTargets.length > 0 ? pickSpread(waterTargets) : pickSpread(living);
-    }
-    case 'mind':
-      return state.presenceLocation;
-    default:
-      return pickSpread(living);
-  }
-}
 
 function getWardDefense(loc: Location): number {
   let def = 0;
@@ -1055,12 +1012,12 @@ export function resolveDamage(state: GameState): string[] {
     }
   }
 
-  // Check defeat
-  const fallenCount = state.locations.filter(l => l.fallen).length;
-  if (state.mode === 'quick' && fallenCount >= 2) {
+  // Check defeat — too many locations fallen
+  const standing = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).length;
+  if (standing < state.minStandingLocations) {
     state.gameOver = true;
     state.victory = false;
-    state.defeatReason = `${fallenCount} lieux tombés.`;
+    state.defeatReason = `Trop de lieux tombés (${standing} restants).`;
   }
   if (state.hero.hp <= 0) {
     state.gameOver = true;
@@ -1107,29 +1064,24 @@ export function endNight(state: GameState): void {
     }
   }
 
-  // Clear demons from living locations
+  // Clear demons from ALL locations (including fallen — demons don't stay)
   for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {
-    const loc = getLocation(state, locId);
-    if (!loc.fallen) {
-      state.demonsAtLocations[locId] = [];
-    }
+    state.demonsAtLocations[locId] = [];
   }
 
-  // Check victory (Quick Mode — 3 nights)
-  if (state.mode === 'quick' && !state.gameOver) {
-    const standing = state.locations.filter(l => !l.fallen).length;
-    const nightsPlayed = state.turnNumber; // turnNumber increments each day/night cycle
+  // Check victory (Quick Mode AND Campaign)
+  if (!state.gameOver) {
+    const standing = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).length;
+    const nightsPlayed = state.turnNumber;
 
-    if (standing < 3) {
-      // Too many locations fell
+    if (standing < state.minStandingLocations) {
       state.gameOver = true;
       state.victory = false;
-      state.defeatReason = `${4 - standing} lieux tombés.`;
-    } else if (nightsPlayed >= 3) {
-      // Survived 3 nights!
+      state.defeatReason = `Trop de lieux tombés (${standing} restants).`;
+    } else if (nightsPlayed >= state.maxNights) {
       state.gameOver = true;
       state.victory = true;
-      addLog(state, 'L\'aube se lève pour la dernière fois — vous avez survécu 3 nuits!', true);
+      addLog(state, `L'aube se lève — vous avez survécu ${state.maxNights} nuit${state.maxNights > 1 ? 's' : ''}!`, true);
     } else {
       // Continue to next day — LEVEL UP
       state.nightNumber++;
