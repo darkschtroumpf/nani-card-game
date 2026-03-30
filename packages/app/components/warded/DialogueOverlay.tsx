@@ -13,6 +13,10 @@ const SCENE_IMAGES: Record<string, any> = {
   ward_book: require('../../assets/images/scene_ward_book.png'),
   dawn_victory: require('../../assets/images/scene_dawn_victory.png'),
   village_burning: require('../../assets/images/scene_village_burning.png'),
+  maze: require('../../assets/images/scene_maze.png'),
+  forest_village: require('../../assets/images/scene_forest_village.png'),
+  inn: require('../../assets/images/scene_inn.png'),
+  krasia: require('../../assets/images/scene_krasia.png'),
 };
 
 // Character sprites (half-body, VN style)
@@ -22,6 +26,9 @@ const SPRITES: Record<string, any> = {
   silvy: require('../../assets/images/sprite_silvy.png'),
   ragen: require('../../assets/images/sprite_ragen.png'),
   refugee: require('../../assets/images/sprite_refugee.png'),
+  bruna: require('../../assets/images/sprite_bruna.png'),
+  drillmaster: require('../../assets/images/sprite_drillmaster.png'),
+  arrick: require('../../assets/images/sprite_arrick.png'),
   // Fallbacks to hero portraits for characters without sprites
   arlen: require('../../assets/images/hero_arlen.png'),
   jardir: require('../../assets/images/hero_jardir.png'),

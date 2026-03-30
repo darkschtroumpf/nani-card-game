@@ -280,7 +280,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'intro_1', background: 'village_sunset',
+      id: 'intro_1', background: 'forest_village',
       lines: [
         { speaker: 'narrator', text: "Cutter's Hollow. Un village de bûcherons au cœur de la forêt. Ici, on coupe le bois le jour et on prie la nuit." },
         { speaker: 'narrator', text: "Leesha Paper, fille du propriétaire du papetier, est apprentie chez Bruna, la vieille herboriste du village." },
@@ -289,7 +289,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
       nextNodeId: 'intro_2',
     },
     {
-      id: 'intro_2', background: 'village_sunset',
+      id: 'intro_2', background: 'forest_village',
       lines: [
         { speaker: 'leesha', text: "Bruna, les wards de la place du marché sont usés. Le bois est pourri par la pluie.", emotion: 'scared' },
         { speaker: 'bruna', text: "Je sais, petite. Mais ces idiots de bûcherons refusent de les refaire. Trop occupés à couper du bois.", emotion: 'angry' },
@@ -336,7 +336,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'l_day2', background: 'refugees',
+        id: 'l_day2', background: 'forest_village',
         lines: [
           { speaker: 'narrator', text: "Des blessés arrivent de fermes voisines. La nuit dernière a été terrible." },
           { speaker: 'leesha', text: "Bruna ! Il y a au moins dix blessés. Je n'ai pas assez de cataplasmes.", emotion: 'scared' },
@@ -366,7 +366,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 3,
       dialogueNodes: [{
-        id: 'l_day3', background: 'village_burning',
+        id: 'l_day3', background: 'forest_village',
         lines: [
           { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse du sang mais refuse de se coucher." },
           { speaker: 'bruna', text: "Leesha... écoute-moi. Cette nuit sera la pire. Je le sens dans mes os.", emotion: 'sad' },
@@ -400,7 +400,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
   ],
 
   victoryDialogue: [{
-    id: 'l_victory', background: 'dawn_victory',
+    id: 'l_victory', background: 'forest_village',
     lines: [
       { speaker: 'narrator', text: "L'aube se lève sur Cutter's Hollow. Le village respire encore." },
       { speaker: 'bruna', text: "Tu as bien fait, petite. Mieux que je ne l'aurais cru.", emotion: 'hopeful' },
@@ -449,7 +449,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'intro_1', background: 'village_sunset',
+      id: 'intro_1', background: 'krasia',
       lines: [
         { speaker: 'narrator', text: "Fort Krasia. La cité du désert. Ici, les hommes ne se cachent pas des démons. Ils les combattent." },
         { speaker: 'narrator', text: "Chaque nuit, les guerriers Sharum descendent dans le Maze — un labyrinthe de tunnels sous la ville, piégé de wards." },
@@ -458,7 +458,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
       nextNodeId: 'intro_2',
     },
     {
-      id: 'intro_2', background: 'village_sunset',
+      id: 'intro_2', background: 'maze',
       lines: [
         { speaker: 'narrator', text: "Ahmann Jardir, fils de rien, orphelin des rues de Krasia. Aujourd'hui, c'est sa première nuit en tant que Sharum." },
         { speaker: 'jardir', text: "Je suis prêt, Drillmaster.", emotion: 'determined' },
@@ -473,7 +473,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'j_day1', background: 'messenger',
+        id: 'j_day1', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "Entre les nuits de combat, les Sharum réparent les wards du Maze et aiguisent leurs lances." },
           { speaker: 'jardir', text: "Les wards du couloir sud sont faibles. Si les corelings percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
@@ -503,7 +503,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'j_day2', background: 'village_sunset',
+        id: 'j_day2', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "La deuxième nuit a coûté cher. Trois Sharum sont tombés. Jardir a survécu, de justesse." },
           { speaker: 'jardir', text: "Hasik est blessé. Il ne peut plus tenir sa lance.", emotion: 'sad' },
@@ -536,7 +536,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
     {
       dayNumber: 3,
       dialogueNodes: [{
-        id: 'j_day3', background: 'village_burning',
+        id: 'j_day3', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "La troisième nuit approche. Les tunnels grondent. Quelque chose de gros monte des profondeurs." },
           { speaker: 'drillmaster', text: "Un démon de roche. Peut-être un prince. Bande de lâches, qui va descendre le premier ?", emotion: 'angry' },
@@ -571,7 +571,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
   ],
 
   victoryDialogue: [{
-    id: 'j_victory', background: 'dawn_victory',
+    id: 'j_victory', background: 'krasia',
     lines: [
       { speaker: 'narrator', text: "L'aube. Les corelings se retirent dans les profondeurs. Le Maze tient." },
       { speaker: 'drillmaster', text: "Trois nuits. Et le gamin des rues est toujours debout.", emotion: 'neutral' },
@@ -582,7 +582,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
   }],
 
   defeatDialogue: [{
-    id: 'j_defeat', background: 'village_burning',
+    id: 'j_defeat', background: 'maze',
     lines: [
       { speaker: 'narrator', text: "Le Maze cède. Les corelings remontent vers la surface." },
       { speaker: 'drillmaster', text: "REPLI ! TOUS EN HAUT !", emotion: 'angry' },
@@ -620,7 +620,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'intro_1', background: 'village_sunset',
+      id: 'intro_1', background: 'inn',
       lines: [
         { speaker: 'narrator', text: "Riverbridge. Un village de passage entre Fort Miln et les plaines du sud." },
         { speaker: 'narrator', text: "Rojer Inn a trois ans. Il ne comprend pas pourquoi sa mère pleure chaque soir quand le soleil se couche." },
@@ -629,7 +629,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       nextNodeId: 'intro_2',
     },
     {
-      id: 'intro_2', background: 'village_sunset',
+      id: 'intro_2', background: 'inn',
       lines: [
         { speaker: 'narrator', text: "Mais cette nuit, les wards de l'auberge ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
         { speaker: 'rojer', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
@@ -643,7 +643,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'r_day1', background: 'ward_book',
+        id: 'r_day1', background: 'inn',
         lines: [
           { speaker: 'narrator', text: "Rojer a grandi. Il a quinze ans maintenant, apprenti jongleur, orphelin depuis cette nuit à Riverbridge." },
           { speaker: 'narrator', text: "Son maître Arrick lui a appris le violon, mais aussi l'art de survivre dans un monde de monstres." },
@@ -675,7 +675,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'r_day2', background: 'refugees',
+        id: 'r_day2', background: 'inn',
         lines: [
           { speaker: 'narrator', text: "La nuit dernière, Rojer a joué du violon pendant l'attaque. Et quelque chose d'étrange s'est passé." },
           { speaker: 'rojer', text: "Arrick... quand je jouais, les démons... ils se sont arrêtés. Juste un instant.", emotion: 'hopeful' },
@@ -707,7 +707,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       dayNumber: 3,
       dialogueNodes: [{
-        id: 'r_day3', background: 'village_burning',
+        id: 'r_day3', background: 'inn',
         lines: [
           { speaker: 'narrator', text: "L'avant-dernière nuit. Arrick est ivre. Les wards craquent." },
           { speaker: 'arrick', text: "On va mourir ici, gamin. Comme tes parents.", emotion: 'scared' },
@@ -739,7 +739,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
   ],
 
   victoryDialogue: [{
-    id: 'r_victory', background: 'dawn_victory',
+    id: 'r_victory', background: 'inn',
     lines: [
       { speaker: 'narrator', text: "L'aube. Rojer a les doigts en sang, mais le village tient." },
       { speaker: 'narrator', text: "Les villageois le regardent avec un mélange de crainte et d'admiration. Un garçon qui chante aux démons." },
@@ -751,6 +751,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
 
   defeatDialogue: [{
     id: 'r_defeat', background: 'village_burning',
+
     lines: [
       { speaker: 'narrator', text: "Le violon se brise. Les wards cèdent. Le charme est rompu." },
       { speaker: 'arrick', text: "COURS, ROJER !", emotion: 'scared' },
