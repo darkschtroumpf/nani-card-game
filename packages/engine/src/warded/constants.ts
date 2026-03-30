@@ -243,6 +243,57 @@ export const QUICK_MODE_STARTING_RESOURCES = 9; // distributed by player
 
 export const CAMPAIGN_CHAPTERS = 12;
 
+// --- Random Day Events ---
+
+export const RANDOM_DAY_EVENTS: {
+  id: string;
+  title: string;
+  description: string;
+  scene: string; // background image key
+  choices: {
+    label: string;
+    hint: string;
+    effects: { type: string; [key: string]: any }[];
+  }[];
+}[] = [
+  {
+    id: 'merchant', title: 'Marchand Itinérant',
+    description: 'Un marchand voyageur arrive avec des fournitures de ward rares.',
+    scene: 'merchant',
+    choices: [
+      { label: 'Acheter de l\'encre rare', hint: '+3 Encre au lieu principal', effects: [{ type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 3 }] },
+      { label: 'Acheter du bois traité', hint: '+3 Bois au lieu principal', effects: [{ type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 }] },
+    ],
+  },
+  {
+    id: 'storm', title: 'Tempête',
+    description: 'Une tempête violente frappe le village. Les wards sont mis à rude épreuve.',
+    scene: 'storm',
+    choices: [
+      { label: 'Renforcer les wards en urgence', hint: '-1 AP mais aucun ward ne perd de durabilité cette nuit', effects: [{ type: 'hero_ap_change', delta: -1 }, { type: 'set_flag', flag: 'storm_protected', value: true }] },
+      { label: 'Laisser faire', hint: 'Tous les wards -1 durabilité', effects: [{ type: 'set_flag', flag: 'storm_damage', value: true }] },
+    ],
+  },
+  {
+    id: 'volunteer', title: 'Villageois Courageux',
+    description: 'Un villageois se porte volontaire pour aider aux défenses.',
+    scene: 'village_sunset',
+    choices: [
+      { label: 'Accepter son aide', hint: '+1 AP aujourd\'hui', effects: [{ type: 'hero_ap_change', delta: 1 }] },
+      { label: 'L\'envoyer protéger les enfants', hint: '+2 Population au lieu le plus faible', effects: [{ type: 'modify_population', locationId: 'miln', delta: 2 }] },
+    ],
+  },
+  {
+    id: 'discovery', title: 'Découverte',
+    description: 'En réparant un ward, tu découvres un ancien symbole caché sous la surface.',
+    scene: 'ward_book',
+    choices: [
+      { label: 'Étudier le symbole', hint: '+1 Ward en réserve (aléatoire)', effects: [{ type: 'bonus_reserve_ward', wardType: 'fire' }] },
+      { label: 'Le laisser tranquille', hint: '+2 HP (repos)', effects: [{ type: 'hero_hp_change', delta: 2 }] },
+    ],
+  },
+];
+
 // --- Swarm threshold ---
 
 export const SWARM_THRESHOLD = 3; // 3+ demons = +1 str each

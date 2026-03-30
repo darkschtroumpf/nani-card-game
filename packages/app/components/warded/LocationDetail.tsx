@@ -104,6 +104,7 @@ export default function LocationDetail({
                   <Image source={WARD_IMAGES[ws.ward]} style={styles.wardSlotImage} />
                   <Text style={[styles.wardName, { color: wardColor(ws.ward) }]}>{ws.ward.toUpperCase()}</Text>
                   {ws.isTemporary && <Text style={styles.tempBadge}>TEMP</Text>}
+                  {ws.enhanced && <Text style={[styles.tempBadge, { color: '#FFD740' }]}>★ AMÉLIORÉ</Text>}
                   {!ws.isTemporary && ws.durability < 3 && (
                     <Text style={[styles.tempBadge, { color: ws.durability <= 1 ? '#F44336' : '#FF9800' }]}>
                       {'●'.repeat(ws.durability)}{'○'.repeat(3 - ws.durability)}

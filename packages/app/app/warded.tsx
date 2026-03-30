@@ -8,6 +8,7 @@ import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS } from '../the
 const BG_DAY = require('../assets/images/bg_day.png');
 const BG_NIGHT = require('../assets/images/bg_night.png');
 const BG_NIGHTFALL = require('../assets/images/scene_nightfall.png');
+const BG_DEMONS_RISING = require('../assets/images/scene_demons_rising.png');
 const HERO_ARLEN = require('../assets/images/hero_arlen.png');
 
 // Hero images
@@ -65,7 +66,7 @@ import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS } from '../../engine/src/warded/constants';
+import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS, RANDOM_DAY_EVENTS } from '../../engine/src/warded/constants';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campaign-types';
 
@@ -310,7 +311,9 @@ export default function WardedGameScreen() {
   const [campaignEffectMessages, setCampaignEffectMessages] = useState<string[]>([]);
   const [showCampaignEffects, setShowCampaignEffects] = useState(false);
   const [showCampaignTransition, setShowCampaignTransition] = useState(!!campaignChapter);
-  const [tensionText, setTensionText] = useState<string | null>(null); // fade in on campaign start
+  const [tensionText, setTensionText] = useState<string | null>(null);
+  const [randomEvent, setRandomEvent] = useState<typeof RANDOM_DAY_EVENTS[0] | null>(null);
+  const [randomEventShownDays, setRandomEventShownDays] = useState<Record<number, boolean>>({}); // fade in on campaign start
   const campaignTransitionAnim = useRef(new Animated.Value(campaignChapter ? 1 : 0)).current;
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -383,6 +386,22 @@ export default function WardedGameScreen() {
       setCampaignDayEvent(event);
     }
   }, [campaignChapter, state?.phase, state?.turnNumber, campaignDaysProcessed]);
+
+  // Random day event trigger (after campaign events)
+  useEffect(() => {
+    if (!state || state.phase !== 'day') return;
+    if (campaignDayEvent) return; // wait for campaign event first
+    const dayNum = state.turnNumber;
+    if (randomEventShownDays[dayNum] || dayNum <= 1) return; // skip day 1
+    // 50% chance of random event
+    if (Math.random() < 0.5) {
+      const event = RANDOM_DAY_EVENTS[Math.floor(Math.random() * RANDOM_DAY_EVENTS.length)];
+      setRandomEvent(event);
+      setRandomEventShownDays(prev => ({ ...prev, [dayNum]: true }));
+    } else {
+      setRandomEventShownDays(prev => ({ ...prev, [dayNum]: true }));
+    }
+  }, [state?.phase, state?.turnNumber, campaignDayEvent]);
 
   // Campaign: handle day event choice
   const handleCampaignChoice = useCallback((choiceId: string) => {
@@ -1209,6 +1228,7 @@ export default function WardedGameScreen() {
           {isNight && state.waveNumber === 0 && (
             <View style={styles.nightActions}>
               <View style={styles.positioningBanner}>
+                <Image source={BG_DEMONS_RISING} style={{ width: 60, height: 60, borderRadius: 8, alignSelf: 'center', marginBottom: 6, opacity: 0.8 }} />
                 <Text style={styles.positioningTitle}>🌙 PHASE DE NUIT</Text>
                 <Text style={styles.positioningHint}>
                   {state.presenceMoveUsed
@@ -1485,6 +1505,41 @@ export default function WardedGameScreen() {
             onPress={() => { audio.stopMusic(); router.replace('/'); }}>
             <Text style={[styles.phaseBtnText, { color: warded.danger }]}>Quitter</Text>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Random day event */}
+      {randomEvent && (
+        <View style={styles.transitionOverlay}>
+          <Text style={[styles.transitionText, { fontSize: 18 }]}>{randomEvent.title}</Text>
+          <Text style={[styles.transitionSub, { marginBottom: 12 }]}>{randomEvent.description}</Text>
+          {randomEvent.choices.map((choice, i) => (
+            <TouchableOpacity key={i}
+              style={[styles.phaseBtn, { borderColor: warded.accent, width: '80%', marginBottom: 8 }]}
+              onPress={() => {
+                // Apply effects
+                for (const eff of choice.effects) {
+                  if (eff.type === 'add_resources' && state) {
+                    const loc = state.locations.find(l => l.id === eff.locationId) ?? state.locations.find(l => !l.fallen);
+                    if (loc) loc.stockpile[eff.resource as 'wood'|'ink'|'food'] = Math.min(6, (loc.stockpile[eff.resource as 'wood'|'ink'|'food'] ?? 0) + eff.amount);
+                  } else if (eff.type === 'hero_ap_change' && state) {
+                    state.hero.ap = Math.max(0, state.hero.ap + eff.delta);
+                  } else if (eff.type === 'hero_hp_change' && state) {
+                    state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + eff.delta);
+                  } else if (eff.type === 'modify_population' && state) {
+                    const loc = state.locations.find(l => l.id === eff.locationId) ?? state.locations.find(l => !l.fallen);
+                    if (loc) loc.population = Math.min(loc.maxPopulation, loc.population + eff.delta);
+                  } else if (eff.type === 'bonus_reserve_ward' && state) {
+                    state.wardReserves.push(eff.wardType);
+                  }
+                }
+                audio.playSfx('choice');
+                setRandomEvent(null);
+              }}>
+              <Text style={[styles.phaseBtnText, { color: warded.accent }]}>{choice.label}</Text>
+              <Text style={{ color: warded.textDim, fontSize: 10, textAlign: 'center' }}>{choice.hint}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
 

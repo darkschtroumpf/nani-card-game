@@ -49,13 +49,13 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
 
   // Clear default wards, place chapter-specific ones
   for (const loc of state.locations) {
-    loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0 }));
+    loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
   }
   for (const pw of chapter.preplacedWards) {
     const loc = state.locations.find(l => l.id === pw.locationId);
     if (loc) {
       const emptySlot = loc.wards.findIndex(ws => !ws.ward);
-      if (emptySlot >= 0) loc.wards[emptySlot] = { ward: pw.ward, isTemporary: false, durability: 3 };
+      if (emptySlot >= 0) loc.wards[emptySlot] = { ward: pw.ward, isTemporary: false, durability: 3, xp: 0, enhanced: false };
     }
   }
 
@@ -124,7 +124,7 @@ export function applyCampaignEffects(state: GameState, effects: CampaignEffect[]
         if (loc) {
           const emptySlot = loc.wards.findIndex(ws => !ws.ward);
           if (emptySlot >= 0) {
-            loc.wards[emptySlot] = { ward: effect.wardType, isTemporary: false, durability: 3 };
+            loc.wards[emptySlot] = { ward: effect.wardType, isTemporary: false, durability: 3, xp: 0, enhanced: false };
             messages.push(`Ward de ${effect.wardType} placé à ${loc.name}`);
           }
         }

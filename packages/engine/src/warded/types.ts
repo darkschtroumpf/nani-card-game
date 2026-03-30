@@ -28,6 +28,8 @@ export interface WardSlot {
   ward: WardType | null;
   isTemporary: boolean; // removed at dawn
   durability: number;   // 3 = fresh, 0 = broken. Decreases each night.
+  xp: number;           // activations count. At 3 → enhanced.
+  enhanced: boolean;    // enhanced wards deal +1 damage and have bonus effects
 }
 
 // --- Resources ---
@@ -142,6 +144,9 @@ export interface GameState {
     apModifier: number;
   };
   campaignFlags?: Record<string, boolean | number>;
+
+  // Ward usage tracking (for adaptive demons)
+  wardUsageStats: Record<WardType, number>;
 
   // Victory condition
   maxNights: number;          // survive this many nights to win

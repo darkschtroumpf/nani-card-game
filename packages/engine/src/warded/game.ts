@@ -85,7 +85,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     maxPopulation: l.startPop,
     primaryResource: l.primaryResource,
     secondaryFoodTurn: l.secondaryFoodTurn,
-    wards: [{ ward: null, isTemporary: false, durability: 0 }, { ward: null, isTemporary: false, durability: 0 }, { ward: null, isTemporary: false, durability: 0 }],
+    wards: [{ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }, { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }, { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }],
     fallen: false,
     fallenNightsAgo: 0,
     stockpile: { wood: 0, ink: 0, food: 0 },
@@ -95,7 +95,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
   if (mode === 'quick') {
     for (const sw of QUICK_MODE_STARTING_WARDS) {
       const loc = locations.find(l => l.id === sw.locationId)!;
-      loc.wards[0] = { ward: sw.ward, isTemporary: false, durability: 3 };
+      loc.wards[0] = { ward: sw.ward, isTemporary: false, durability: 3, xp: 0, enhanced: false };
     }
   }
 
@@ -139,6 +139,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     chapter: 1,
     skillPoints: 0,
     questsCompleted: [],
+    wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0 },
     maxNights: 3,
     minStandingLocations: mode === 'quick' ? 3 : 1,
     gameOver: false,
@@ -198,7 +199,7 @@ export function processDawn(state: GameState): void {
   for (const loc of state.locations) {
     for (let i = 0; i < loc.wards.length; i++) {
       if (loc.wards[i].isTemporary) {
-        loc.wards[i] = { ward: null, isTemporary: false, durability: 0 };
+        loc.wards[i] = { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false };
       }
     }
   }
@@ -257,7 +258,7 @@ export function fortifyLocation(state: GameState, wardType: WardType, targetLoca
   const slotIdx = loc.wards.findIndex(w => !w.ward);
   if (slotIdx < 0) return false; // both slots full
 
-  loc.wards[slotIdx] = { ward: wardType, isTemporary: false, durability: 3 };
+  loc.wards[slotIdx] = { ward: wardType, isTemporary: false, durability: 3, xp: 0, enhanced: false };
   state.wardReserves.splice(idx, 1);
   state.hero.ap--;
 
@@ -356,6 +357,13 @@ function spawnDemons(state: GameState): void {
   // Campaign modifiers
   if (state.campaignModifiers?.extraDemonsPerWave) count += state.campaignModifiers.extraDemonsPerWave;
 
+  // Adaptive demons: find most-used ward type → spawn resistant demons
+  const mostUsedWard = Object.entries(state.wardUsageStats)
+    .sort(([, a], [, b]) => b - a)[0];
+  const adaptiveType: DemonType | null = mostUsedWard && mostUsedWard[1] >= 3
+    ? ({ fire: 'flame', stone: 'rock', wind: 'wind', light: 'mind', bone: 'water' } as Record<string, DemonType>)[mostUsedWard[0]] ?? null
+    : null;
+
   // Terrain-based demon spawning — each location attracts demons matching its terrain
   const living = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
   const availableChapter = state.mode === 'campaign' ? state.chapter : state.nightNumber;
@@ -365,9 +373,10 @@ function spawnDemons(state: GameState): void {
     const target = living[i % living.length];
     const targetId = target.id;
 
-    // Pick demon type based on terrain affinity
+    // Pick demon type: 25% chance adaptive, 75% terrain-based
     const affinity = TERRAIN_DEMON_AFFINITY[target.terrain] ?? TERRAIN_DEMON_AFFINITY.plains;
-    const pool = Math.random() < 0.7 ? affinity.primary : affinity.secondary;
+    const useAdaptive = adaptiveType && Math.random() < 0.25;
+    const pool = useAdaptive ? [adaptiveType!] : (Math.random() < 0.7 ? affinity.primary : affinity.secondary);
     // Filter by what's available at this chapter/night
     const available = pool.filter(dt => DEMON_TYPES.find(d => d.type === dt && d.introducedChapter <= availableChapter));
     const demonType = available.length > 0
@@ -602,7 +611,7 @@ export function arlenWardedFlesh(state: GameState, wardType: WardType, targetLoc
   // Find a slot (prefer empty, or use temp slot)
   const emptySlot = loc.wards.findIndex(w => !w.ward);
   if (emptySlot >= 0) {
-    loc.wards[emptySlot] = { ward: wardType, isTemporary: true, durability: 1 };
+    loc.wards[emptySlot] = { ward: wardType, isTemporary: true, durability: 1, xp: 0, enhanced: false };
   } else {
     // Both slots full — can't place temp ward
     return false;
@@ -645,7 +654,7 @@ export function removeWard(state: GameState, locationId: LocationId, slotIndex: 
 
   // Return ward to reserves
   state.wardReserves.push(ws.ward);
-  loc.wards[slotIndex] = { ward: null, isTemporary: false, durability: 0 };
+  loc.wards[slotIndex] = { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false };
   addLog(state, `Ward de ${ws.ward} retiré de ${loc.name} → réserves.`);
   return true;
 }
@@ -695,19 +704,36 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
 
   state.activationsRemaining--;
   state.activationsUsedAt.push(locationId);
+
+  // Ward XP gain + evolution check
+  for (const ws of loc.wards) {
+    if (ws.ward && !ws.isTemporary) {
+      ws.xp++;
+      state.wardUsageStats[ws.ward] = (state.wardUsageStats[ws.ward] ?? 0) + 1;
+      if (ws.xp >= 3 && !ws.enhanced) {
+        ws.enhanced = true;
+        events.push(`✨ Ward de ${ws.ward} à ${loc.name} est devenu AMÉLIORÉ ! (+1 dégât, effet bonus)`);
+        addLog(state, `Ward de ${ws.ward} amélioré à ${loc.name}!`, true);
+      }
+    }
+  }
+
   return events;
 }
 
 function applyWardActive(state: GameState, locId: LocationId, ward: WardType, presenceBonus: number, events: string[]) {
   const demons = state.demonsAtLocations[locId];
   const powerBonus = state.hero.wardPowerBonus ?? 0;
+  // Enhanced ward bonus
+  const loc = getLocation(state, locId);
+  const enhancedBonus = loc.wards.some(ws => ws.ward === ward && ws.enhanced) ? 1 : 0;
 
   switch (ward) {
     case 'fire': {
-      // Blaze: 3 + level bonus damage to 1 demon
+      // Blaze: 3 + level bonus + enhanced damage to 1 demon
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
-        const dmg = 3 + presenceBonus + powerBonus;
+        const dmg = 3 + presenceBonus + powerBonus + enhancedBonus;
         strongest.currentStrength -= dmg;
         events.push(`Blaze inflige ${dmg} dégâts à ${strongest.demon.type} (str ${strongest.currentStrength}).`);
         if (strongest.currentStrength <= 0) {
@@ -1004,7 +1030,7 @@ export function resolveDamage(state: GameState): string[] {
         loc.fallen = true;
         loc.fallenNightsAgo = 0;
         // Destroy wards
-        loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0 }));
+        loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
         events.push(`${loc.name} est TOMBÉ!`);
         addLog(state, `${loc.name} est tombé!`, true);
       }
@@ -1059,7 +1085,7 @@ export function endNight(state: GameState): void {
         ws.durability--;
         if (ws.durability <= 0) {
           addLog(state, `⚠ Ward de ${ws.ward} à ${loc.name} s'est brisé ! (usure)`, true);
-          loc.wards[i] = { ward: null, isTemporary: false, durability: 0 };
+          loc.wards[i] = { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false };
         }
       }
     }
@@ -1567,7 +1593,7 @@ export function leesha_greaterWardCircle(state: GameState): string[] {
     const emptyIdx = loc.wards.findIndex(ws => !ws.ward);
     if (emptyIdx >= 0) {
       const wardType: WardType = loc.wards.some(w => w.ward === 'fire') ? 'stone' : 'fire';
-      loc.wards[emptyIdx] = { ward: wardType, isTemporary: true, durability: 1 };
+      loc.wards[emptyIdx] = { ward: wardType, isTemporary: true, durability: 1, xp: 0, enhanced: false };
     }
   }
 
@@ -1612,7 +1638,7 @@ export function arlenBloodWard(state: GameState, wardType: WardType, targetLocat
   const emptySlot = loc.wards.findIndex(w => !w.ward);
   if (emptySlot < 0) return ['Pas d\'emplacement libre.'];
 
-  loc.wards[emptySlot] = { ward: wardType, isTemporary: false, durability: 3 };
+  loc.wards[emptySlot] = { ward: wardType, isTemporary: false, durability: 3, xp: 0, enhanced: false };
   state.hero.hp -= 3;
 
   addLog(state, `Blood Ward! ${wardType} permanent à ${loc.name} (-3 HP).`, true);
