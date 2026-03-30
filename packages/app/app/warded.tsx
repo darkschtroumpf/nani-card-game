@@ -896,7 +896,7 @@ export default function WardedGameScreen() {
       )}
 
       {/* Action bar */}
-      <View style={styles.actionBar}>
+      <ScrollView style={styles.actionBar} contentContainerStyle={styles.actionBarContent} showsVerticalScrollIndicator={true}>
           {/* Day ONLY: craft wards */}
           {isDay && (
             <View style={styles.actionSection}>
@@ -1353,7 +1353,7 @@ export default function WardedGameScreen() {
               )}
             </View>
           )}
-        </View>
+        </ScrollView>
 
       {/* FIX 3: Event log — hidden by default, toggleable */}
       {events.length > 0 && (
@@ -1514,7 +1514,8 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { paddingHorizontal: 14, gap: 8, paddingBottom: 8, marginTop: 12 },
+  actionBar: { maxHeight: '40%', paddingHorizontal: 14, marginTop: 12 },
+  actionBarContent: { gap: 8, paddingBottom: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
 
