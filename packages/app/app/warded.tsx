@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated, ImageBackground, Image, Dimensions, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS } from '../theme-warded';
@@ -333,6 +333,12 @@ export default function WardedGameScreen() {
 
   // FIX 5: Damage report overlay
   const [damageReport, setDamageReport] = useState<string[] | null>(null);
+
+  // Block Android back button
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => handler.remove();
+  }, []);
 
   // Game starts when hero is selected (or campaign auto-starts)
   const handleStartGame = useCallback((heroId: HeroId) => {
@@ -805,6 +811,8 @@ export default function WardedGameScreen() {
               onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
                 ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
                 : undefined}
+              onRemoveWard={isDay ? (slotIndex: number) => { ctrl.doRemoveWard(selectedLoc.id, slotIndex); } : undefined}
+              onSwapWards={isDay ? (a: number, b: number) => { ctrl.doSwapWards(selectedLoc.id, a, b); } : undefined}
             />
           </ScrollView>
         </View>

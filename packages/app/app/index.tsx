@@ -30,7 +30,7 @@ export default function HomeScreen() {
       <View style={styles.menu}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/warded')}
+          onPress={() => router.replace('/warded')}
         >
           <Text style={styles.buttonText}>Jouer</Text>
           <Text style={styles.buttonDesc}>Mode rapide — Arlen Bales</Text>
@@ -38,7 +38,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={[styles.button, { borderColor: warded.wardFire }]}
-          onPress={() => router.push('/campaign')}
+          onPress={() => router.replace('/campaign')}
         >
           <Text style={styles.buttonText}>Campagne</Text>
           <Text style={styles.buttonDesc}>Chapitre 1 — Le Garçon de Tibbet's Brook</Text>

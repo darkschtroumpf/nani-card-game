@@ -39,6 +39,9 @@ interface Props {
   canActivate?: boolean;
   // CRITICAL 1: Warded Flesh
   onWardedFlesh?: (wardType: WardType) => void;
+  // Ward management
+  onRemoveWard?: (slotIndex: number) => void;
+  onSwapWards?: (slotA: number, slotB: number) => void;
   // MAJOR 2: Activation indicator
   isActivated?: boolean;
 }
@@ -47,7 +50,7 @@ export default function LocationDetail({
   location, demons, isPresence, isNight, onClose,
   onCraft, onFortify, onGather, onActivateWard,
   availableWardReserves, canCraft, canFortify, canGather, canActivate,
-  onWardedFlesh, isActivated,
+  onWardedFlesh, onRemoveWard, onSwapWards, isActivated,
 }: Props) {
   const combo = getCombo(location);
 
@@ -111,6 +114,26 @@ export default function LocationDetail({
           <View style={[styles.comboBanner, { borderColor: warded.accent }]}>
             <Text style={styles.comboName}>{combo.name}</Text>
             <Text style={styles.comboEffect}>{combo.passiveEffect}</Text>
+          </View>
+        )}
+        {/* Ward management (day only) */}
+        {!isNight && !location.fallen && (onRemoveWard || onSwapWards) && (
+          <View style={styles.wardManageRow}>
+            {location.wards.map((ws, i) => ws.ward && !ws.isTemporary ? (
+              <TouchableOpacity key={`rm${i}`} style={styles.wardRemoveBtn}
+                onPress={() => onRemoveWard?.(i)}>
+                <Text style={styles.wardRemoveText}>✕ Retirer {ws.ward}</Text>
+              </TouchableOpacity>
+            ) : null)}
+            {location.wards.filter(ws => ws.ward).length >= 2 && onSwapWards && (
+              <TouchableOpacity style={styles.wardSwapBtn}
+                onPress={() => {
+                  const filled = location.wards.map((ws, i) => ws.ward ? i : -1).filter(i => i >= 0);
+                  if (filled.length >= 2) onSwapWards(filled[0], filled[1]);
+                }}>
+                <Text style={styles.wardSwapText}>⇄ Intervertir</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </View>
@@ -483,5 +506,35 @@ const styles = StyleSheet.create({
     color: warded.success,
     fontSize: wardedFonts.sm,
     fontWeight: 'bold',
+  },
+  wardManageRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+    marginTop: 6,
+  },
+  wardRemoveBtn: {
+    borderWidth: 1,
+    borderColor: warded.danger + '60',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  wardRemoveText: {
+    color: warded.danger,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  wardSwapBtn: {
+    borderWidth: 1,
+    borderColor: warded.wardLight + '60',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  wardSwapText: {
+    color: warded.wardLight,
+    fontSize: 10,
+    fontWeight: '600',
   },
 });

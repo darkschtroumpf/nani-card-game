@@ -653,6 +653,39 @@ export function arlenWardedFlesh(state: GameState, wardType: WardType, targetLoc
 }
 
 // ============================================================
+// Ward Management (remove / swap)
+// ============================================================
+
+export function removeWard(state: GameState, locationId: LocationId, slotIndex: number): boolean {
+  if (state.phase !== 'day') return false;
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return false;
+  const ws = loc.wards[slotIndex];
+  if (!ws || !ws.ward) return false;
+  if (ws.isTemporary) return false; // can't recover temp wards
+
+  // Return ward to reserves
+  state.wardReserves.push(ws.ward);
+  loc.wards[slotIndex] = { ward: null, isTemporary: false };
+  addLog(state, `Ward de ${ws.ward} retiré de ${loc.name} → réserves.`);
+  return true;
+}
+
+export function swapWards(state: GameState, locationId: LocationId, slotA: number, slotB: number): boolean {
+  if (state.phase !== 'day') return false;
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return false;
+  if (slotA === slotB) return false;
+  if (slotA < 0 || slotA >= loc.wards.length || slotB < 0 || slotB >= loc.wards.length) return false;
+
+  const temp = loc.wards[slotA];
+  loc.wards[slotA] = loc.wards[slotB];
+  loc.wards[slotB] = temp;
+  addLog(state, `Wards intervertis à ${loc.name}.`);
+  return true;
+}
+
+// ============================================================
 // Ward Activation
 // ============================================================
 

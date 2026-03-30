@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,6 +43,12 @@ export default function CampaignScreen() {
 
   useEffect(() => { loadSave(); }, []);
 
+  // Block Android back button (only allow explicit back via UI)
+  useEffect(() => {
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => true);
+    return () => handler.remove();
+  }, []);
+
   const loadSave = async () => {
     try {
       const raw = await AsyncStorage.getItem(SAVE_KEY);
@@ -60,7 +66,7 @@ export default function CampaignScreen() {
 
   const handleIntroComplete = useCallback(() => {
     if (!currentChapter) return;
-    router.push(`/warded?chapter=${currentChapter.id}`);
+    router.replace(`/warded?chapter=${currentChapter.id}`);
   }, [currentChapter, router]);
 
   if (phase === 'loading') {

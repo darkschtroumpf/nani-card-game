@@ -7,7 +7,7 @@ import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warde
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, removeWard, swapWards,
   getThreatForecast, resolveWardPassives,
   jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, jardir_sacrifice, resolveWarriorCombat,
   rojer_rehearse, rojer_symphony, rojer_minorCharm, rojer_desperateMelody, resolveSongs,
@@ -29,6 +29,8 @@ export interface WardedGameController {
   doCraft: (wardType: WardType, fromLocationId: LocationId) => void;
   doFortify: (wardType: WardType, targetLocationId: LocationId) => void;
   doGather: (locationId: LocationId) => void;
+  doRemoveWard: (locationId: LocationId, slotIndex: number) => void;
+  doSwapWards: (locationId: LocationId, slotA: number, slotB: number) => void;
   endDay: () => void;
 
   // Transition
@@ -136,6 +138,20 @@ export function useWardedGame(): WardedGameController {
     const s = stateRef.current;
     if (!s) return;
     gather(s, locationId);
+    sync(s);
+  }, [sync]);
+
+  const doRemoveWard = useCallback((locationId: LocationId, slotIndex: number) => {
+    const s = stateRef.current;
+    if (!s) return;
+    removeWard(s, locationId, slotIndex);
+    sync(s);
+  }, [sync]);
+
+  const doSwapWards = useCallback((locationId: LocationId, slotA: number, slotB: number) => {
+    const s = stateRef.current;
+    if (!s) return;
+    swapWards(s, locationId, slotA, slotB);
     sync(s);
   }, [sync]);
 
@@ -415,7 +431,7 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame, startCampaignGame: startCampaignGameFn, applyCampaignEffects: applyCampaignEffectsFn, startNewDay,
-    doCraft, doFortify, doGather, endDay,
+    doCraft, doFortify, doGather, doRemoveWard, doSwapWards, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
     // Jardir
