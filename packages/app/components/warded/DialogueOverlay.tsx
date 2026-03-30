@@ -40,6 +40,9 @@ const SPEAKER_COLORS: Record<string, string> = {
   ragen: '#42A5F5',
   narrator: '#90A4AE',
   refugee: '#A1887F',
+  bruna: '#8E24AA',
+  drillmaster: '#D84315',
+  arrick: '#FFA726',
 };
 
 const SPEAKER_NAMES: Record<string, string> = {
@@ -53,6 +56,9 @@ const SPEAKER_NAMES: Record<string, string> = {
   ragen: 'Ragen',
   narrator: '',
   refugee: 'Réfugié',
+  bruna: 'Bruna',
+  drillmaster: 'Drillmaster',
+  arrick: 'Arrick',
 };
 
 const EMOTION_ICONS: Record<string, string> = {

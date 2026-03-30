@@ -8,6 +8,7 @@ import DialogueOverlay from '../components/warded/DialogueOverlay';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import { createNewSave } from '../../engine/src/warded/campaign-engine';
 import type { ChapterDefinition, CampaignSaveState } from '../../engine/src/warded/campaign-types';
+import type { HeroId } from '../../engine/src/warded/types';
 
 const BG_NIGHT = require('../assets/images/bg_night.png');
 
@@ -19,13 +20,20 @@ const HERO_IMAGES: Record<string, any> = {
   leesha: require('../assets/images/hero_leesha.png'),
 };
 
-const CHAPTER_HERO_PORTRAITS: Record<number, string> = {
-  1: 'arlen_young',
+const CHAPTER_PORTRAITS: Record<number, string> = {
+  1: 'arlen_young', 2: 'leesha', 3: 'jardir', 4: 'rojer',
+};
+
+const CHARACTER_INFO: Record<string, { name: string; color: string; subtitle: string }> = {
+  arlen_young: { name: 'Arlen Bales', color: '#FFD740', subtitle: "Le garçon qui refuse d'avoir peur" },
+  leesha: { name: 'Leesha Paper', color: '#69F0AE', subtitle: "L'herboriste qui soigne et protège" },
+  jardir: { name: 'Ahmann Jardir', color: '#FF5252', subtitle: "Le guerrier du désert" },
+  rojer: { name: 'Rojer Inn', color: '#7C4DFF', subtitle: "Le jongleur dont la musique charme les démons" },
 };
 
 const SAVE_KEY = '@warded_campaign_save';
 
-type Phase = 'loading' | 'chapter_select' | 'intro';
+type Phase = 'loading' | 'character_select' | 'intro';
 
 export default function CampaignScreen() {
   const router = useRouter();
@@ -42,7 +50,7 @@ export default function CampaignScreen() {
     } catch {
       setSave(createNewSave());
     }
-    setPhase('chapter_select');
+    setPhase('character_select');
   };
 
   const startChapter = useCallback((chapter: ChapterDefinition) => {
@@ -52,11 +60,9 @@ export default function CampaignScreen() {
 
   const handleIntroComplete = useCallback(() => {
     if (!currentChapter) return;
-    // Navigate to warded screen with campaign chapter param
     router.push(`/warded?chapter=${currentChapter.id}`);
   }, [currentChapter, router]);
 
-  // Loading
   if (phase === 'loading') {
     return (
       <SafeAreaView style={styles.container}>
@@ -65,7 +71,6 @@ export default function CampaignScreen() {
     );
   }
 
-  // Intro dialogue
   if (phase === 'intro' && currentChapter) {
     return (
       <SafeAreaView style={styles.container}>
@@ -81,7 +86,9 @@ export default function CampaignScreen() {
     );
   }
 
-  // Chapter Select
+  // Character selection — group chapters by hero
+  const heroIds = ['arlen_young', 'leesha', 'jardir', 'rojer'];
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground source={BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={{ opacity: 0.25 }}>
@@ -89,27 +96,32 @@ export default function CampaignScreen() {
       </ImageBackground>
       <ScrollView contentContainerStyle={styles.selectContainer}>
         <Text style={styles.title}>CAMPAGNE</Text>
-        <Text style={styles.sub}>The Demon's Cycle</Text>
+        <Text style={styles.sub}>Choisis ton destin</Text>
 
-        {CHAPTERS.map(chapter => {
+        {heroIds.map(heroKey => {
+          const info = CHARACTER_INFO[heroKey];
+          const chapter = CHAPTERS.find(c => {
+            const portrait = CHAPTER_PORTRAITS[c.id];
+            return portrait === heroKey || c.heroId === heroKey;
+          });
+          if (!chapter || !info) return null;
           const isCompleted = save?.completedChapters.includes(chapter.id);
-          const isUnlocked = chapter.id <= (save?.currentChapter ?? 1);
+
           return (
             <TouchableOpacity
-              key={chapter.id}
-              style={[styles.card, !isUnlocked && styles.cardLocked]}
-              disabled={!isUnlocked}
+              key={heroKey}
+              style={[styles.card, { borderColor: info.color + '60' }]}
               onPress={() => startChapter(chapter)}
+              activeOpacity={0.8}
             >
               <View style={styles.cardHeader}>
-                <Image source={HERO_IMAGES[CHAPTER_HERO_PORTRAITS[chapter.id] ?? chapter.heroId]} style={styles.cardAvatar} />
+                <Image source={HERO_IMAGES[heroKey]} style={[styles.cardAvatar, { borderColor: info.color }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.cardNum}>Chapitre {chapter.id}</Text>
-                  <Text style={styles.cardTitle}>{chapter.title}</Text>
-                  <Text style={styles.cardSub}>{chapter.subtitle}</Text>
+                  <Text style={[styles.cardName, { color: info.color }]}>{info.name}</Text>
+                  <Text style={styles.cardSub}>{info.subtitle}</Text>
+                  <Text style={styles.cardChapter}>{chapter.title}</Text>
                 </View>
                 {isCompleted && <Text style={styles.check}>✓</Text>}
-                {!isUnlocked && <Text style={styles.lock}>🔒</Text>}
               </View>
             </TouchableOpacity>
           );
@@ -127,18 +139,22 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a14' },
   bgOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)' },
   loadingText: { color: warded.text, fontSize: wardedFonts.xl, textAlign: 'center', marginTop: 100 },
-  selectContainer: { paddingHorizontal: 20, paddingTop: 40, paddingBottom: 40, gap: 16, alignItems: 'center' },
-  title: { color: warded.accent, fontSize: 28, fontWeight: 'bold', letterSpacing: 4, textShadowColor: warded.accent, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 12 },
-  sub: { color: warded.textDim, fontSize: wardedFonts.md, marginBottom: 12 },
-  card: { width: '100%', backgroundColor: warded.bgCard, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: warded.border },
-  cardLocked: { opacity: 0.4 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardAvatar: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: warded.accent },
-  cardNum: { color: warded.accent, fontSize: wardedFonts.xs, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
-  cardTitle: { color: warded.text, fontSize: wardedFonts.lg, fontWeight: 'bold' },
-  cardSub: { color: warded.textDim, fontSize: wardedFonts.sm, marginTop: 2 },
+  selectContainer: { paddingHorizontal: 20, paddingTop: 40, paddingBottom: 40, gap: 14, alignItems: 'center' },
+  title: {
+    color: warded.accent, fontSize: 28, fontWeight: 'bold', letterSpacing: 4,
+    textShadowColor: warded.accent, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 12,
+  },
+  sub: { color: warded.textDim, fontSize: wardedFonts.md, marginBottom: 8 },
+  card: {
+    width: '100%', backgroundColor: warded.bgCard, borderRadius: 14, padding: 14,
+    borderWidth: 1,
+  },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  cardAvatar: { width: 56, height: 56, borderRadius: 28, borderWidth: 2 },
+  cardName: { fontSize: wardedFonts.lg, fontWeight: 'bold' },
+  cardSub: { color: warded.textDim, fontSize: wardedFonts.xs, marginTop: 1 },
+  cardChapter: { color: warded.text, fontSize: wardedFonts.sm, marginTop: 4, fontStyle: 'italic' },
   check: { color: warded.success, fontSize: 24 },
-  lock: { fontSize: 20 },
-  backBtn: { marginTop: 12, paddingVertical: 10 },
+  backBtn: { marginTop: 16, paddingVertical: 10 },
   backText: { color: warded.textDim, fontSize: wardedFonts.md },
 });

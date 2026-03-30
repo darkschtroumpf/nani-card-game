@@ -312,6 +312,8 @@ export default function WardedGameScreen() {
   const [campaignDaysProcessed, setCampaignDaysProcessed] = useState<Record<number, boolean>>({});
   const [campaignEffectMessages, setCampaignEffectMessages] = useState<string[]>([]);
   const [showCampaignEffects, setShowCampaignEffects] = useState(false);
+  const [showCampaignTransition, setShowCampaignTransition] = useState(!!campaignChapter); // fade in on campaign start
+  const campaignTransitionAnim = useRef(new Animated.Value(campaignChapter ? 1 : 0)).current;
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [combatToast, setCombatToast] = useState<string | null>(null);
@@ -338,12 +340,18 @@ export default function WardedGameScreen() {
     ctrl.startGame(heroId, 'waning');
   }, [ctrl]);
 
-  // Campaign auto-start
+  // Campaign auto-start with smooth transition
   useEffect(() => {
     if (campaignChapter && !initialized) {
       setInitialized(true);
-      setTutorialStep(-1); // skip tutorial in campaign
+      setTutorialStep(-1);
       ctrl.startCampaignGame(campaignChapter);
+      // Fade out the black overlay after a brief moment
+      setTimeout(() => {
+        Animated.timing(campaignTransitionAnim, { toValue: 0, duration: 1200, useNativeDriver: true }).start(() => {
+          setShowCampaignTransition(false);
+        });
+      }, 800);
     }
   }, [campaignChapter, initialized]);
 
@@ -368,7 +376,13 @@ export default function WardedGameScreen() {
         setCampaignEffectMessages(msgs);
         setShowCampaignEffects(true);
         setCampaignDaysProcessed(prev => ({ ...prev, [campaignDayEvent.dayNumber]: true }));
+        // Show effects, then smooth fade back to gameplay
         setTimeout(() => {
+          setShowCampaignTransition(true);
+          campaignTransitionAnim.setValue(1);
+          Animated.timing(campaignTransitionAnim, { toValue: 0, duration: 800, useNativeDriver: true }).start(() => {
+            setShowCampaignTransition(false);
+          });
           setShowCampaignEffects(false);
           setCampaignDayEvent(null);
           setCampaignEffectMessages([]);
@@ -415,7 +429,7 @@ export default function WardedGameScreen() {
           <Text style={styles.heroSelectTitle}>CHOISIS TON CHAMPION</Text>
           <Text style={styles.heroSelectSub}>Quick Mode — 3 nuits de survie</Text>
 
-          {HEROES.map(h => {
+          {HEROES.filter(h => HERO_LORE[h.id]).map(h => {
             const info = HERO_LORE[h.id];
             const isSelected = selectedHero === h.id;
             return (
@@ -1398,6 +1412,11 @@ export default function WardedGameScreen() {
       )}
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
+
+      {/* Campaign transition overlay (fade in/out) */}
+      {showCampaignTransition && (
+        <Animated.View style={[styles.transitionOverlay, { opacity: campaignTransitionAnim, backgroundColor: 'rgba(5,5,15,0.95)' }]} pointerEvents="none" />
+      )}
 
       {/* Campaign day event dialogue */}
       {campaignDayEvent && !showCampaignEffects && (

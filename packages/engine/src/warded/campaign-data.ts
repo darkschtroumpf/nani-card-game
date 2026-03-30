@@ -253,4 +253,512 @@ export const CHAPTER_1: ChapterDefinition = {
   ],
 };
 
-export const CHAPTERS: ChapterDefinition[] = [CHAPTER_1];
+// ============================================================
+// Chapter 2: Leesha — L'Herboriste de Cutter's Hollow
+// ============================================================
+
+export const CHAPTER_LEESHA: ChapterDefinition = {
+  id: 2,
+  title: "L'Herboriste de Cutter's Hollow",
+  subtitle: "Leesha apprend que soigner est aussi un combat.",
+  heroId: 'leesha',
+  nightCount: 3,
+  startingNightNumber: 2,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['desert_spear'] as any,
+  locationOverrides: {
+    cutters_hollow: { name: "Cutter's Hollow", startPop: 7 },
+    miln: { name: 'Maison de Bruna', startPop: 4 },
+    lakton: { name: 'Place du Marché', startPop: 5 },
+    desert_spear: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'miln', ward: 'bone' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'intro_1', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Cutter's Hollow. Un village de bûcherons au cœur de la forêt. Ici, on coupe le bois le jour et on prie la nuit." },
+        { speaker: 'narrator', text: "Leesha Paper, fille du propriétaire du papetier, est apprentie chez Bruna, la vieille herboriste du village." },
+        { speaker: 'narrator', text: "Bruna est la dernière à connaître les secrets des herbes et des onguents de ward. À sa mort, ce savoir disparaîtra." },
+      ],
+      nextNodeId: 'intro_2',
+    },
+    {
+      id: 'intro_2', background: 'village_sunset',
+      lines: [
+        { speaker: 'leesha', text: "Bruna, les wards de la place du marché sont usés. Le bois est pourri par la pluie.", emotion: 'scared' },
+        { speaker: 'bruna', text: "Je sais, petite. Mais ces idiots de bûcherons refusent de les refaire. Trop occupés à couper du bois.", emotion: 'angry' },
+        { speaker: 'leesha', text: "Et si je préparais des onguents de renforcement ? Ça pourrait tenir quelques nuits de plus.", emotion: 'determined' },
+        { speaker: 'bruna', text: "Ha ! Tu apprends vite. Fais-le. Et prépare aussi des cataplasmes — on en aura besoin.", emotion: 'neutral' },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'l_day1', background: 'ward_book',
+        lines: [
+          { speaker: 'bruna', text: "Leesha, j'ai quelque chose à te montrer. Viens.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Bruna ouvre un coffre poussiéreux. À l'intérieur, des fioles et des poudres d'une époque oubliée." },
+          { speaker: 'bruna', text: "Des hora. De la poudre de demon. Mélangée aux bons ingrédients, ça renforce n'importe quel ward.", emotion: 'neutral' },
+          { speaker: 'leesha', text: "C'est... incroyable. Pourquoi vous ne les avez jamais utilisés ?", emotion: 'hopeful' },
+          { speaker: 'bruna', text: "Parce que les gens ont peur de tout ce qui touche aux démons, même pour se défendre. Tu veux les utiliser ?", emotion: 'neutral' },
+        ],
+        choices: [
+          {
+            id: 'use_hora',
+            label: "Utiliser la poudre de hora",
+            hint: "+1 Ward de Lumière à la Maison de Bruna, -2 HP (manipulation dangereuse)",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+              { type: 'hero_hp_change', delta: -2 },
+            ],
+          },
+          {
+            id: 'stay_traditional',
+            label: "Rester aux méthodes traditionnelles",
+            hint: "+2 Encre et +2 Nourriture à Cutter's Hollow",
+            effects: [
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 2 },
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'food', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'l_day2', background: 'refugees',
+        lines: [
+          { speaker: 'narrator', text: "Des blessés arrivent de fermes voisines. La nuit dernière a été terrible." },
+          { speaker: 'leesha', text: "Bruna ! Il y a au moins dix blessés. Je n'ai pas assez de cataplasmes.", emotion: 'scared' },
+          { speaker: 'bruna', text: "Alors tu choisis, petite. Soigner les blessés ou renforcer les wards. On ne peut pas tout faire.", emotion: 'sad' },
+        ],
+        choices: [
+          {
+            id: 'heal_wounded',
+            label: "Soigner les blessés",
+            hint: "+3 Population à la Place du Marché, mais -1 AP",
+            effects: [
+              { type: 'modify_population', locationId: 'lakton', delta: 3 },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'reinforce_wards',
+            label: "Renforcer les wards en priorité",
+            hint: "+1 Ward de Pierre à la Place du Marché",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'l_day3', background: 'village_burning',
+        lines: [
+          { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse du sang mais refuse de se coucher." },
+          { speaker: 'bruna', text: "Leesha... écoute-moi. Cette nuit sera la pire. Je le sens dans mes os.", emotion: 'sad' },
+          { speaker: 'leesha', text: "Bruna, vous devez vous reposer—", emotion: 'scared' },
+          { speaker: 'bruna', text: "Tais-toi et écoute ! J'ai un dernier secret. Un ward de protection majeur. Mais il faut mon sang pour l'activer.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'blood_ward',
+            label: "Laisser Bruna activer le ward",
+            hint: "+1 Ward de Feu à CHAQUE lieu, mais Bruna s'affaiblit (-1 démon force)",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+              { type: 'demon_strength_bonus', bonus: -1 },
+            ],
+          },
+          {
+            id: 'protect_bruna',
+            label: "Refuser — protéger Bruna",
+            hint: "+4 HP héros, +2 Nourriture partout",
+            effects: [
+              { type: 'hero_hp_change', delta: 4 },
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'food', amount: 2 },
+              { type: 'add_resources', locationId: 'lakton', resource: 'food', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [{
+    id: 'l_victory', background: 'dawn_victory',
+    lines: [
+      { speaker: 'narrator', text: "L'aube se lève sur Cutter's Hollow. Le village respire encore." },
+      { speaker: 'bruna', text: "Tu as bien fait, petite. Mieux que je ne l'aurais cru.", emotion: 'hopeful' },
+      { speaker: 'leesha', text: "J'ai tellement à apprendre encore...", emotion: 'determined' },
+      { speaker: 'bruna', text: "Tu apprendras. Tu es l'herboriste maintenant. Ce village dépend de toi.", emotion: 'neutral' },
+      { speaker: 'narrator', text: "Leesha Paper accepte son destin. Elle sera le bouclier de Cutter's Hollow." },
+    ],
+  }],
+
+  defeatDialogue: [{
+    id: 'l_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Les wards cèdent. Cutter's Hollow est submergé." },
+      { speaker: 'bruna', text: "Fuis, Leesha. Fuis et emporte ce que je t'ai appris.", emotion: 'sad' },
+      { speaker: 'leesha', text: "Je ne vous abandonnerai pas !", emotion: 'determined' },
+      { speaker: 'narrator', text: "Mais Bruna la pousse dehors et referme la porte. Le dernier acte d'une vieille femme courage." },
+      { speaker: 'narrator', text: "Chapitre 2 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 3: Jardir — Le Labyrinthe de Krasia
+// ============================================================
+
+export const CHAPTER_JARDIR: ChapterDefinition = {
+  id: 3,
+  title: 'Le Labyrinthe de Krasia',
+  subtitle: "La première nuit de Jardir dans le Maze.",
+  heroId: 'jardir',
+  nightCount: 3,
+  startingNightNumber: 2,
+  startingPresence: 'desert_spear',
+  hiddenLocations: ['lakton'] as any,
+  locationOverrides: {
+    desert_spear: { name: 'Entrée du Maze', startPop: 6 },
+    cutters_hollow: { name: 'Couloir des Sharum', startPop: 5 },
+    miln: { name: 'Salle du Puits', startPop: 4 },
+    lakton: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'desert_spear', ward: 'fire' },
+    { locationId: 'desert_spear', ward: 'stone' },
+    { locationId: 'cutters_hollow', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'intro_1', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Fort Krasia. La cité du désert. Ici, les hommes ne se cachent pas des démons. Ils les combattent." },
+        { speaker: 'narrator', text: "Chaque nuit, les guerriers Sharum descendent dans le Maze — un labyrinthe de tunnels sous la ville, piégé de wards." },
+        { speaker: 'narrator', text: "C'est dans le Maze que les corelings montent. C'est dans le Maze qu'on les tue." },
+      ],
+      nextNodeId: 'intro_2',
+    },
+    {
+      id: 'intro_2', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Ahmann Jardir, fils de rien, orphelin des rues de Krasia. Aujourd'hui, c'est sa première nuit en tant que Sharum." },
+        { speaker: 'jardir', text: "Je suis prêt, Drillmaster.", emotion: 'determined' },
+        { speaker: 'drillmaster', text: "Prêt ? Ha ! On verra si tu es toujours vivant demain. Prends ta lance et descends.", emotion: 'angry' },
+        { speaker: 'jardir', text: "Everam me protège.", emotion: 'determined' },
+        { speaker: 'drillmaster', text: "Everam aide ceux qui se battent. Les lâches, il les laisse mourir.", emotion: 'neutral' },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'j_day1', background: 'messenger',
+        lines: [
+          { speaker: 'narrator', text: "Entre les nuits de combat, les Sharum réparent les wards du Maze et aiguisent leurs lances." },
+          { speaker: 'jardir', text: "Les wards du couloir sud sont faibles. Si les corelings percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
+          { speaker: 'drillmaster', text: "Tu veux dépenser nos guerriers à renforcer les wards, ou garder tes forces pour le combat ?", emotion: 'neutral' },
+        ],
+        choices: [
+          {
+            id: 'reinforce_maze',
+            label: "Renforcer les wards du Maze",
+            hint: "+1 Ward de Vent au Couloir, -1 AP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'wind', locationId: 'cutters_hollow' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'save_strength',
+            label: "Garder ses forces pour le combat",
+            hint: "+2 HP, les guerriers se reposent",
+            effects: [
+              { type: 'hero_hp_change', delta: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'j_day2', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "La deuxième nuit a coûté cher. Trois Sharum sont tombés. Jardir a survécu, de justesse." },
+          { speaker: 'jardir', text: "Hasik est blessé. Il ne peut plus tenir sa lance.", emotion: 'sad' },
+          { speaker: 'drillmaster', text: "Alors il est inutile. Laisse-le.", emotion: 'angry' },
+          { speaker: 'jardir', text: "C'est mon frère d'armes !", emotion: 'angry' },
+        ],
+        choices: [
+          {
+            id: 'carry_hasik',
+            label: "Porter Hasik vers la surface",
+            hint: "+2 Pop à l'Entrée (Hasik rallie d'autres blessés), mais -2 AP",
+            effects: [
+              { type: 'modify_population', locationId: 'desert_spear', delta: 2 },
+              { type: 'hero_ap_change', delta: -2 },
+              { type: 'set_flag', flag: 'saved_hasik', value: true },
+            ],
+          },
+          {
+            id: 'leave_hasik',
+            label: "Obéir au Drillmaster — le laisser",
+            hint: "+1 Ward de Pierre à la Salle du Puits",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
+              { type: 'set_flag', flag: 'saved_hasik', value: false },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'j_day3', background: 'village_burning',
+        lines: [
+          { speaker: 'narrator', text: "La troisième nuit approche. Les tunnels grondent. Quelque chose de gros monte des profondeurs." },
+          { speaker: 'drillmaster', text: "Un démon de roche. Peut-être un prince. Bande de lâches, qui va descendre le premier ?", emotion: 'angry' },
+          { speaker: 'narrator', text: "Les Sharum reculent. Même les vétérans hésitent." },
+          { speaker: 'jardir', text: "J'irai.", emotion: 'determined' },
+          { speaker: 'drillmaster', text: "Toi ? Le gamin des rues ?", emotion: 'neutral' },
+          { speaker: 'jardir', text: "Everam m'a mis sur cette terre pour combattre les démons. Pas pour fuir.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'lead_charge',
+            label: "Mener la charge en premier",
+            hint: "-3 HP (blessures), mais force des démons -1 (panique dans leurs rangs)",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'set_flag', flag: 'led_charge', value: true },
+            ],
+          },
+          {
+            id: 'strategic_defense',
+            label: "Défense stratégique derrière les wards",
+            hint: "+1 Ward de Feu à chaque lieu",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'desert_spear' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'cutters_hollow' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [{
+    id: 'j_victory', background: 'dawn_victory',
+    lines: [
+      { speaker: 'narrator', text: "L'aube. Les corelings se retirent dans les profondeurs. Le Maze tient." },
+      { speaker: 'drillmaster', text: "Trois nuits. Et le gamin des rues est toujours debout.", emotion: 'neutral' },
+      { speaker: 'jardir', text: "Je ne suis plus un gamin.", emotion: 'determined' },
+      { speaker: 'narrator', text: "Le Drillmaster hoche la tête. Pour la première fois, il regarde Jardir avec respect." },
+      { speaker: 'narrator', text: "Ahmann Jardir. Un jour, ils l'appelleront Shar'Dama Ka — Celui Qui Voit dans la Nuit." },
+    ],
+  }],
+
+  defeatDialogue: [{
+    id: 'j_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Le Maze cède. Les corelings remontent vers la surface." },
+      { speaker: 'drillmaster', text: "REPLI ! TOUS EN HAUT !", emotion: 'angry' },
+      { speaker: 'narrator', text: "Jardir est le dernier à remonter. Derrière lui, les tunnels résonnent de hurlements." },
+      { speaker: 'jardir', text: "Un jour, je reviendrai. Et ce jour-là, les démons trembleront.", emotion: 'angry' },
+      { speaker: 'narrator', text: "Chapitre 3 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 4: Rojer — Le Jongleur de Riverbridge
+// ============================================================
+
+export const CHAPTER_ROJER: ChapterDefinition = {
+  id: 4,
+  title: 'Le Jongleur de Riverbridge',
+  subtitle: "La nuit où Rojer a découvert le pouvoir de la musique.",
+  heroId: 'rojer',
+  nightCount: 3,
+  startingNightNumber: 1,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['desert_spear', 'lakton'] as any,
+  locationOverrides: {
+    cutters_hollow: { name: 'Auberge de Riverbridge', startPop: 5 },
+    miln: { name: 'Pont du Village', startPop: 4 },
+    desert_spear: { name: '', startPop: 0 },
+    lakton: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'miln', ward: 'wind' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'intro_1', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Riverbridge. Un village de passage entre Fort Miln et les plaines du sud." },
+        { speaker: 'narrator', text: "Rojer Inn a trois ans. Il ne comprend pas pourquoi sa mère pleure chaque soir quand le soleil se couche." },
+        { speaker: 'narrator', text: "Son père, Jessum, est jongleur. Il joue du violon pour distraire les voyageurs — et pour garder le courage quand la nuit tombe." },
+      ],
+      nextNodeId: 'intro_2',
+    },
+    {
+      id: 'intro_2', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Mais cette nuit, les wards de l'auberge ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
+        { speaker: 'rojer', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
+        { speaker: 'narrator', text: "Jessum sourit à son fils, mais ses yeux sont terrifiés." },
+        { speaker: 'narrator', text: "Et puis la nuit tombe." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'r_day1', background: 'ward_book',
+        lines: [
+          { speaker: 'narrator', text: "Rojer a grandi. Il a quinze ans maintenant, apprenti jongleur, orphelin depuis cette nuit à Riverbridge." },
+          { speaker: 'narrator', text: "Son maître Arrick lui a appris le violon, mais aussi l'art de survivre dans un monde de monstres." },
+          { speaker: 'rojer', text: "Arrick, les wards du pont sont fissurés.", emotion: 'scared' },
+          { speaker: 'arrick', text: "Et alors ? C'est pas notre problème. On joue ce soir, on part demain.", emotion: 'neutral' },
+          { speaker: 'rojer', text: "On ne peut pas juste... partir ?", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'fix_bridge_wards',
+            label: "Réparer les wards du pont",
+            hint: "+1 Ward de Pierre au Pont, -1 AP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'play_music',
+            label: "Jouer du violon pour le moral du village",
+            hint: "+2 Pop à l'Auberge (les gens restent protégés ensemble)",
+            effects: [
+              { type: 'modify_population', locationId: 'cutters_hollow', delta: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'r_day2', background: 'refugees',
+        lines: [
+          { speaker: 'narrator', text: "La nuit dernière, Rojer a joué du violon pendant l'attaque. Et quelque chose d'étrange s'est passé." },
+          { speaker: 'rojer', text: "Arrick... quand je jouais, les démons... ils se sont arrêtés. Juste un instant.", emotion: 'hopeful' },
+          { speaker: 'arrick', text: "Tu délires, gamin. La musique n'arrête pas les corelings.", emotion: 'angry' },
+          { speaker: 'rojer', text: "Je sais ce que j'ai vu.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'practice_charm',
+            label: "S'entraîner à la mélodie qui calme les démons",
+            hint: "Force des démons -1 cette nuit (l'effet du charme)",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'set_flag', flag: 'discovered_charm', value: true },
+            ],
+          },
+          {
+            id: 'help_village',
+            label: "Aider le village à renforcer les défenses",
+            hint: "+3 Bois et +2 Encre à l'Auberge",
+            effects: [
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 },
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'r_day3', background: 'village_burning',
+        lines: [
+          { speaker: 'narrator', text: "L'avant-dernière nuit. Arrick est ivre. Les wards craquent." },
+          { speaker: 'arrick', text: "On va mourir ici, gamin. Comme tes parents.", emotion: 'scared' },
+          { speaker: 'rojer', text: "Taisez-vous !", emotion: 'angry' },
+          { speaker: 'narrator', text: "Rojer prend le violon de son père. Celui que Jessum jouait la nuit de Riverbridge. Les cordes vibrent sous ses doigts." },
+          { speaker: 'rojer', text: "Si la musique peut les ralentir... alors je jouerai toute la nuit s'il le faut.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'play_all_night',
+            label: "Jouer toute la nuit (le charme du violon)",
+            hint: "-3 HP (épuisement), mais -1 démon par vague",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'extra_demons', count: -1 },
+            ],
+          },
+          {
+            id: 'stay_behind_wards',
+            label: "Rester derrière les wards, jouer prudemment",
+            hint: "+1 Ward de Feu en réserve",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'fire' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [{
+    id: 'r_victory', background: 'dawn_victory',
+    lines: [
+      { speaker: 'narrator', text: "L'aube. Rojer a les doigts en sang, mais le village tient." },
+      { speaker: 'narrator', text: "Les villageois le regardent avec un mélange de crainte et d'admiration. Un garçon qui chante aux démons." },
+      { speaker: 'arrick', text: "Ce que tu as fait cette nuit... c'est impossible.", emotion: 'scared' },
+      { speaker: 'rojer', text: "Et pourtant.", emotion: 'determined' },
+      { speaker: 'narrator', text: "Rojer Inn. Le Jongleur de Fidèle. L'homme dont la musique fait trembler les corelings." },
+    ],
+  }],
+
+  defeatDialogue: [{
+    id: 'r_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Le violon se brise. Les wards cèdent. Le charme est rompu." },
+      { speaker: 'arrick', text: "COURS, ROJER !", emotion: 'scared' },
+      { speaker: 'narrator', text: "Rojer fuit dans la nuit, serrant contre lui les morceaux du violon de son père." },
+      { speaker: 'rojer', text: "Un jour, je jouerai assez fort pour que tous les démons m'entendent.", emotion: 'angry' },
+      { speaker: 'narrator', text: "Chapitre 4 — Échec" },
+    ],
+  }],
+};
+
+export const CHAPTERS: ChapterDefinition[] = [CHAPTER_1, CHAPTER_LEESHA, CHAPTER_JARDIR, CHAPTER_ROJER];
