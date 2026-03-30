@@ -11,12 +11,9 @@ import { LOCATIONS } from './constants';
 export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSaveState): GameState {
   const state = createGame(chapter.heroId, 'campaign', 'midnight');
 
-  // Override night count and victory conditions
+  // Override night count
   state.nightNumber = chapter.startingNightNumber;
   state.maxNights = chapter.nightCount;
-  // Campaign: need at least 1 non-hidden location standing
-  const activeLocations = state.locations.filter(l => !l.fallen).length;
-  state.minStandingLocations = Math.max(1, activeLocations - 1);
 
   // Apply location overrides
   if (chapter.locationOverrides) {
@@ -43,6 +40,10 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
       }
     }
   }
+
+  // Victory conditions — calculated AFTER hiding locations
+  const activeLocations = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).length;
+  state.minStandingLocations = Math.max(1, activeLocations - 1);
 
   // Starting presence
   state.presenceLocation = chapter.startingPresence;

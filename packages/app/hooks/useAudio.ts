@@ -71,16 +71,19 @@ export function useAudio() {
     if (!MUSIC_TRACKS[track]) return;
 
     try {
-      // Fade out current
-      if (musicRef.current) {
-        await musicRef.current.setVolumeAsync(0);
-        await musicRef.current.unloadAsync();
+      // Stop and unload current track completely before starting new one
+      const prev = musicRef.current;
+      musicRef.current = null;
+      currentTrackRef.current = null;
+      if (prev) {
+        try { await prev.stopAsync(); } catch {}
+        try { await prev.unloadAsync(); } catch {}
       }
 
       // Load and play new track
       const { sound } = await Audio.Sound.createAsync(
         MUSIC_TRACKS[track],
-        { isLooping: true, volume: 0.4 }
+        { isLooping: true, volume: 0.3 }
       );
       musicRef.current = sound;
       currentTrackRef.current = track;
