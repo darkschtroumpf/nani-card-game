@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated, Dimensions } from 'react-native';
 import { warded, wardedFonts } from '../../theme-warded';
 import type { DialogueNode, DialogueChoice } from '../../../engine/src/warded/campaign-types';
 
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+
+// Scene backgrounds
 const SCENE_IMAGES: Record<string, any> = {
   village_sunset: require('../../assets/images/scene_village_sunset.png'),
   messenger: require('../../assets/images/scene_messenger.png'),
@@ -12,9 +15,15 @@ const SCENE_IMAGES: Record<string, any> = {
   village_burning: require('../../assets/images/scene_village_burning.png'),
 };
 
-const HERO_PORTRAITS: Record<string, any> = {
+// Character sprites (half-body, VN style)
+const SPRITES: Record<string, any> = {
+  arlen_young: require('../../assets/images/sprite_arlen_young.png'),
+  jeph: require('../../assets/images/sprite_jeph.png'),
+  silvy: require('../../assets/images/sprite_silvy.png'),
+  ragen: require('../../assets/images/sprite_ragen.png'),
+  refugee: require('../../assets/images/sprite_refugee.png'),
+  // Fallbacks to hero portraits for characters without sprites
   arlen: require('../../assets/images/hero_arlen.png'),
-  arlen_young: require('../../assets/images/hero_arlen_young.png'),
   jardir: require('../../assets/images/hero_jardir.png'),
   rojer: require('../../assets/images/hero_rojer.png'),
   leesha: require('../../assets/images/hero_leesha.png'),
@@ -61,7 +70,7 @@ interface Props {
   onComplete: () => void;
 }
 
-const TYPEWRITER_SPEED = 25; // ms per character
+const TYPEWRITER_SPEED = 22;
 
 export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) {
   const [nodeIndex, setNodeIndex] = useState(0);
@@ -69,6 +78,7 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const [displayedChars, setDisplayedChars] = useState(0);
   const [showChoices, setShowChoices] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const spriteAnim = useRef(new Animated.Value(0)).current;
 
   const node = nodes[nodeIndex];
   const line = node?.lines[lineIndex];
@@ -78,15 +88,19 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const isTyping = displayedChars < fullText.length;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
   }, []);
 
-  // Typewriter effect
+  // Typewriter reset on new line
   useEffect(() => {
     setDisplayedChars(0);
     setShowChoices(false);
+    // Animate sprite entrance
+    spriteAnim.setValue(0);
+    Animated.spring(spriteAnim, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }).start();
   }, [nodeIndex, lineIndex]);
 
+  // Typewriter tick
   useEffect(() => {
     if (displayedChars < fullText.length) {
       const timer = setTimeout(() => setDisplayedChars(prev => prev + 1), TYPEWRITER_SPEED);
@@ -97,28 +111,16 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   }, [displayedChars, fullText.length]);
 
   const handleTap = () => {
-    if (isTyping) {
-      // Skip to full text
-      setDisplayedChars(fullText.length);
-      return;
-    }
-
-    if (showChoices) return; // wait for choice
+    if (isTyping) { setDisplayedChars(fullText.length); return; }
+    if (showChoices) return;
 
     if (!isLastLine) {
-      // Next line
       setLineIndex(prev => prev + 1);
     } else if (node?.nextNodeId) {
-      // Jump to linked node
       const nextIdx = nodes.findIndex(n => n.id === node.nextNodeId);
-      if (nextIdx >= 0) {
-        setNodeIndex(nextIdx);
-        setLineIndex(0);
-      } else {
-        onComplete();
-      }
+      if (nextIdx >= 0) { setNodeIndex(nextIdx); setLineIndex(0); }
+      else onComplete();
     } else if (!isLastNode) {
-      // Next node
       setNodeIndex(prev => prev + 1);
       setLineIndex(0);
     } else {
@@ -126,64 +128,84 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
     }
   };
 
-  const handleChoice = (choice: DialogueChoice) => {
-    onChoice(choice.id);
-  };
-
   if (!node || !line) return null;
 
   const speakerColor = SPEAKER_COLORS[line.speaker] ?? warded.text;
   const speakerName = SPEAKER_NAMES[line.speaker] ?? line.speaker;
   const emotionIcon = line.emotion ? EMOTION_ICONS[line.emotion] ?? '' : '';
-  const portrait = HERO_PORTRAITS[line.speaker];
+  const sprite = SPRITES[line.speaker];
   const isNarrator = line.speaker === 'narrator';
-
   const sceneImage = node.background ? SCENE_IMAGES[node.background] : null;
+
+  // Find other characters present in this node (for background sprites)
+  const otherSpeakers = [...new Set(node.lines.map(l => l.speaker))]
+    .filter(s => s !== 'narrator' && s !== line.speaker && SPRITES[s]);
 
   return (
     <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
       <TouchableOpacity style={styles.tapArea} activeOpacity={1} onPress={handleTap}>
-        {/* Scene background image */}
+        {/* Full-screen scene background */}
         {sceneImage ? (
-          <ImageBackground source={sceneImage} style={styles.sceneBackground} imageStyle={styles.sceneImage}>
+          <ImageBackground source={sceneImage} style={StyleSheet.absoluteFillObject} imageStyle={{ resizeMode: 'cover' }}>
             <View style={styles.sceneOverlay} />
           </ImageBackground>
         ) : (
           <View style={styles.backdrop} />
         )}
 
-        {/* Dialogue box */}
-        <View style={styles.dialogueBox}>
-          {/* Portrait + speaker */}
-          {!isNarrator && (
-            <View style={styles.speakerRow}>
-              {portrait && (
-                <Image source={portrait} style={[styles.portrait, { borderColor: speakerColor }]} />
-              )}
-              {!portrait && (
-                <View style={[styles.portraitPlaceholder, { backgroundColor: speakerColor + '30', borderColor: speakerColor }]}>
-                  <Text style={[styles.portraitInitial, { color: speakerColor }]}>
-                    {speakerName.charAt(0)}
-                  </Text>
-                </View>
-              )}
-              <View>
-                <Text style={[styles.speakerName, { color: speakerColor }]}>
-                  {emotionIcon} {speakerName}
-                </Text>
+        {/* Character sprites area (above text box) */}
+        {!isNarrator && (
+          <View style={styles.spriteArea}>
+            {/* Other characters (dimmed, smaller, in background) */}
+            {otherSpeakers.map((s, i) => (
+              <View key={s} style={[styles.bgSpriteContainer, i === 0 ? styles.bgSpriteLeft : styles.bgSpriteRight]}>
+                <Image source={SPRITES[s]} style={styles.bgSprite} />
               </View>
+            ))}
+
+            {/* Active speaker sprite (centered, larger, animated) */}
+            {sprite && (
+              <Animated.View style={[
+                styles.activeSpriteContainer,
+                {
+                  transform: [
+                    { translateY: spriteAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
+                    { scale: spriteAnim.interpolate({ inputRange: [0, 1], outputRange: [0.95, 1] }) },
+                  ],
+                  opacity: spriteAnim,
+                },
+              ]}>
+                <Image source={sprite} style={styles.activeSprite} />
+                {/* Glow behind active speaker */}
+                <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
+              </Animated.View>
+            )}
+          </View>
+        )}
+
+        {/* Narrator: just show the scene, no sprites */}
+        {isNarrator && <View style={styles.spriteArea} />}
+
+        {/* Text box (bottom) */}
+        <View style={styles.dialogueBox}>
+          {/* Speaker name tag */}
+          {!isNarrator && (
+            <View style={[styles.nameTag, { borderColor: speakerColor, backgroundColor: speakerColor + '15' }]}>
+              <Text style={[styles.nameText, { color: speakerColor }]}>
+                {emotionIcon ? `${emotionIcon} ` : ''}{speakerName}
+              </Text>
             </View>
           )}
 
-          {/* Text */}
+          {/* Dialogue text */}
           <Text style={[styles.dialogueText, isNarrator && styles.narratorText]}>
             {fullText.substring(0, displayedChars)}
-            {isTyping && <Text style={styles.cursor}>▌</Text>}
+            {isTyping && <Text style={styles.cursor}>|</Text>}
           </Text>
 
           {/* Tap hint */}
           {!isTyping && !showChoices && (
-            <Text style={styles.tapHint}>Tape pour continuer ▶</Text>
+            <Text style={styles.tapHint}>▶</Text>
           )}
 
           {/* Choices */}
@@ -193,7 +215,7 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                 <TouchableOpacity
                   key={choice.id}
                   style={styles.choiceBtn}
-                  onPress={() => handleChoice(choice)}
+                  onPress={() => onChoice(choice.id)}
                 >
                   <Text style={styles.choiceLabel}>{choice.label}</Text>
                   <Text style={styles.choiceHint}>{choice.hint}</Text>
@@ -207,83 +229,115 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   );
 }
 
+const SPRITE_HEIGHT = SCREEN_H * 0.42;
+const TEXTBOX_HEIGHT = SCREEN_H * 0.32;
+
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 100,
-    justifyContent: 'flex-end',
   },
   tapArea: {
     flex: 1,
-    justifyContent: 'flex-end',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.85)',
-  },
-  sceneBackground: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  sceneImage: {
-    resizeMode: 'cover',
+    backgroundColor: 'rgba(5,5,15,0.92)',
   },
   sceneOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
+
+  // --- Sprite area (top 55% of screen) ---
+  spriteArea: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 0,
+  },
+  activeSpriteContainer: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    zIndex: 10,
+  },
+  activeSprite: {
+    width: SCREEN_W * 0.55,
+    height: SPRITE_HEIGHT,
+    resizeMode: 'contain',
+  },
+  spriteGlow: {
+    position: 'absolute',
+    bottom: 0,
+    width: SCREEN_W * 0.6,
+    height: SPRITE_HEIGHT * 0.5,
+    borderRadius: SCREEN_W * 0.3,
+    opacity: 0.3,
+    zIndex: -1,
+  },
+  bgSpriteContainer: {
+    position: 'absolute',
+    bottom: 0,
+    zIndex: 5,
+    opacity: 0.35,
+  },
+  bgSpriteLeft: {
+    left: -10,
+  },
+  bgSpriteRight: {
+    right: -10,
+  },
+  bgSprite: {
+    width: SCREEN_W * 0.35,
+    height: SPRITE_HEIGHT * 0.75,
+    resizeMode: 'contain',
+  },
+
+  // --- Text box (bottom 32%) ---
   dialogueBox: {
-    backgroundColor: warded.bgCard,
+    backgroundColor: 'rgba(10,10,20,0.92)',
     borderTopWidth: 2,
-    borderTopColor: warded.accent,
+    borderTopColor: warded.accent + '60',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 10,
-    minHeight: 180,
+    paddingVertical: 14,
+    paddingTop: 18,
+    minHeight: TEXTBOX_HEIGHT,
+    gap: 8,
   },
-  speakerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  nameTag: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    marginBottom: 2,
   },
-  portrait: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-  },
-  portraitPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  portraitInitial: {
-    fontSize: 20,
+  nameText: {
+    fontSize: wardedFonts.sm,
     fontWeight: 'bold',
-  },
-  speakerName: {
-    fontSize: wardedFonts.md,
-    fontWeight: 'bold',
+    letterSpacing: 1,
   },
   dialogueText: {
-    color: warded.text,
-    fontSize: wardedFonts.md,
+    color: '#E8E8F0',
+    fontSize: 15,
     lineHeight: 24,
+    letterSpacing: 0.3,
   },
   narratorText: {
     fontStyle: 'italic',
-    color: '#90A4AE',
+    color: '#9AA0B0',
+    textAlign: 'center',
+    paddingTop: 20,
   },
   cursor: {
     color: warded.accent,
-    fontSize: wardedFonts.md,
+    fontSize: 15,
   },
   tapHint: {
     color: warded.textDim,
-    fontSize: wardedFonts.xs,
+    fontSize: 14,
     textAlign: 'right',
+    opacity: 0.5,
   },
   choicesContainer: {
     gap: 8,
@@ -291,11 +345,11 @@ const styles = StyleSheet.create({
   },
   choiceBtn: {
     borderWidth: 1,
-    borderColor: warded.accent,
+    borderColor: warded.accent + '80',
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: warded.accent + '10',
+    backgroundColor: 'rgba(255,215,64,0.06)',
     gap: 2,
   },
   choiceLabel: {
