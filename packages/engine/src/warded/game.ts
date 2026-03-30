@@ -106,7 +106,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     ap: heroTemplate.ap,
     level: 1,
     wardPowerBonus: 0,
-    arlenCharge: heroId === 'arlen' ? 1 : undefined,
+    arlenCharge: heroId === 'arlen' ? 1 : (heroId === 'arlen_young' ? undefined : undefined),
     jardir_warriors: heroId === 'jardir' ? [] : undefined,
     rojer_songs: heroId === 'rojer' ? [null, null, null] : undefined,
     leesha_consumables: heroId === 'leesha' ? [] : undefined,
@@ -1151,6 +1151,31 @@ export function arlenMistWalk(state: GameState, targetLocationId: LocationId): b
   state.hero.arlenCharge = 0;
   addLog(state, `Mist Walk! Arlen se téléporte à ${getLocation(state, targetLocationId).name}. Charge reset à 0.`, true);
   return true;
+}
+
+// ============================================================
+// Arlen Young — Leurre (lure demon to presence)
+// ============================================================
+
+export function arlenYoung_leurre(state: GameState): string[] {
+  if (state.hero.id !== 'arlen_young') return ['Arlen jeune uniquement.'];
+  if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+
+  const adjacentIds = getAdjacentIds(state.presenceLocation);
+  for (const adjId of adjacentIds) {
+    const demons = state.demonsAtLocations[adjId];
+    const idx = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss);
+    if (idx >= 0) {
+      const [demon] = demons.splice(idx, 1);
+      state.demonsAtLocations[state.presenceLocation].push(demon);
+      state.heroWaveAbilityUsed = true;
+      const fromName = getLocation(state, adjId).name;
+      const toName = getLocation(state, state.presenceLocation).name;
+      addLog(state, `Leurre! Arlen attire un ${demon.demon.type} de ${fromName} vers ${toName}.`, true);
+      return [`🏃 Leurre: ${demon.demon.type} attiré de ${fromName} vers ${toName}!`];
+    }
+  }
+  return ['Aucun démon à attirer des lieux adjacents.'];
 }
 
 // ============================================================

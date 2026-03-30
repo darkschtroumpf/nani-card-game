@@ -5,7 +5,7 @@ import type {
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre,
   getThreatForecast, resolveWardPassives,
   jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, jardir_sacrifice, resolveWarriorCombat,
   rojer_rehearse, rojer_symphony, rojer_minorCharm, rojer_desperateMelody, resolveSongs,
@@ -34,6 +34,9 @@ export interface WardedGameController {
   doWardedFlesh: (wardType: WardType, locationId: LocationId) => void;
   doWardedFist: () => void;
   doMistWalk: (locationId: LocationId) => void;
+
+  // Arlen Young
+  doLeurre: () => void;
 
   // Jardir
   doDeployWarrior: (locationId: LocationId) => void;
@@ -228,6 +231,16 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync, addEvents]);
 
+  // --- Arlen Young ---
+
+  const doLeurre = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = arlenYoung_leurre(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
   // --- HP-Cost Abilities ---
 
   const doSurgeOfWill = useCallback(() => {
@@ -384,7 +397,7 @@ export function useWardedGame(): WardedGameController {
     startGame, startNewDay,
     doCraft, doFortify, doGather, endDay,
     // Arlen
-    doWardedFlesh, doWardedFist, doMistWalk,
+    doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
     // Jardir
     doDeployWarrior, doCrownOfKaji, doRally,
     // Rojer

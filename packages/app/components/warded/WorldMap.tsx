@@ -62,20 +62,26 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
 export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt }: Props) {
   return (
     <View style={[styles.mapContainer, { width: MAP_SIZE, height: MAP_SIZE }]}>
-      {/* Connection lines */}
-      <View style={styles.linesLayer}>
-        {/* N-W */}
-        <View style={[styles.line, { top: MAP_SIZE * 0.25, left: MAP_SIZE * 0.15, width: MAP_SIZE * 0.35, transform: [{ rotate: '45deg' }] }]} />
-        {/* N-E */}
-        <View style={[styles.line, { top: MAP_SIZE * 0.25, left: MAP_SIZE * 0.5, width: MAP_SIZE * 0.35, transform: [{ rotate: '-45deg' }] }]} />
-        {/* W-S */}
-        <View style={[styles.line, { top: MAP_SIZE * 0.65, left: MAP_SIZE * 0.15, width: MAP_SIZE * 0.35, transform: [{ rotate: '-45deg' }] }]} />
-        {/* E-S */}
-        <View style={[styles.line, { top: MAP_SIZE * 0.65, left: MAP_SIZE * 0.5, width: MAP_SIZE * 0.35, transform: [{ rotate: '45deg' }] }]} />
-      </View>
+      {/* Connection lines (hide if endpoint is hidden) */}
+      {(() => {
+        const visible = new Set(locations.filter(l => !(l.fallen && l.maxPopulation === 0)).map(l => l.position as string));
+        const lines: { positions: [string, string]; top: number; left: number; width: number; rotate: string }[] = [
+          { positions: ['north', 'west'], top: 0.25, left: 0.15, width: 0.35, rotate: '45deg' },
+          { positions: ['north', 'east'], top: 0.25, left: 0.5, width: 0.35, rotate: '-45deg' },
+          { positions: ['west', 'south'], top: 0.65, left: 0.15, width: 0.35, rotate: '-45deg' },
+          { positions: ['east', 'south'], top: 0.65, left: 0.5, width: 0.35, rotate: '45deg' },
+        ];
+        return (
+          <View style={styles.linesLayer}>
+            {lines.filter(l => visible.has(l.positions[0]) && visible.has(l.positions[1])).map((l, i) => (
+              <View key={i} style={[styles.line, { top: MAP_SIZE * l.top, left: MAP_SIZE * l.left, width: MAP_SIZE * l.width, transform: [{ rotate: l.rotate }] }]} />
+            ))}
+          </View>
+        );
+      })()}
 
       {/* Location nodes */}
-      {locations.map((loc) => {
+      {locations.filter(l => !(l.fallen && l.maxPopulation === 0)).map((loc) => {
         const pos = POSITIONS[loc.position];
         const isPresence = loc.id === presenceLocation;
         const isActivated = activationsUsedAt?.includes(loc.id) ?? false;

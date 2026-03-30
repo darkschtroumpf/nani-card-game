@@ -8,15 +8,18 @@ export const CHAPTER_1: ChapterDefinition = {
   id: 1,
   title: "Le Garçon de Tibbet's Brook",
   subtitle: "Arlen découvre les wards et affronte sa première nuit.",
-  heroId: 'arlen',
+  heroId: 'arlen_young',
   nightCount: 3,
   startingNightNumber: 1,
   startingPresence: 'cutters_hollow',
+  // Only 2 active locations — the others are "hidden" (fallen at start)
+  hiddenLocations: ['lakton', 'desert_spear'] as any,
   locationOverrides: {
-    cutters_hollow: { name: "Tibbet's Brook", startPop: 6 },
-    desert_spear: { name: 'Ferme des Bales', startPop: 4 },
-    lakton: { name: "Cabane de l'Herboriste", startPop: 3 },
+    cutters_hollow: { name: 'Maison des Bales', startPop: 6 },
     miln: { name: 'Place du Village', startPop: 5 },
+    // These two are hidden/disabled for chapter 1
+    lakton: { name: 'Forêt', startPop: 0 },
+    desert_spear: { name: 'Route du Nord', startPop: 0 },
   },
   preplacedWards: [
     { locationId: 'cutters_hollow', ward: 'fire' },
@@ -85,10 +88,10 @@ export const CHAPTER_1: ChapterDefinition = {
             },
             {
               id: 'stay_farm',
-              label: "Rester à la ferme des Bales",
-              hint: "+3 Bois à la Ferme des Bales",
+              label: "Rester à la maison renforcer les wards",
+              hint: "+3 Bois à la Maison des Bales",
               effects: [
-                { type: 'add_resources', locationId: 'desert_spear', resource: 'wood', amount: 3 },
+                { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 },
               ],
             },
           ],
@@ -123,12 +126,10 @@ export const CHAPTER_1: ChapterDefinition = {
             {
               id: 'refuse_refugees',
               label: "Les refuser — on ne peut pas se le permettre",
-              hint: "+1 Nourriture partout, pas de démons supplémentaires",
+              hint: "+2 Nourriture à chaque lieu, pas de démons supplémentaires",
               effects: [
-                { type: 'add_resources', locationId: 'cutters_hollow', resource: 'food', amount: 1 },
-                { type: 'add_resources', locationId: 'desert_spear', resource: 'food', amount: 1 },
-                { type: 'add_resources', locationId: 'lakton', resource: 'food', amount: 1 },
-                { type: 'add_resources', locationId: 'miln', resource: 'food', amount: 1 },
+                { type: 'add_resources', locationId: 'cutters_hollow', resource: 'food', amount: 2 },
+                { type: 'add_resources', locationId: 'miln', resource: 'food', amount: 2 },
                 { type: 'set_flag', flag: 'refugees_accepted', value: false },
               ],
             },

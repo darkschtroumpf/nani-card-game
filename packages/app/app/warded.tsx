@@ -1161,6 +1161,11 @@ export default function WardedGameScreen() {
                       <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
                     </TouchableOpacity>
                   )}
+                  {state.hero.id === 'arlen_young' && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FFD740', backgroundColor: '#FFD74015' }]} onPress={ctrl.doLeurre}>
+                      <Text style={[styles.phaseBtnText, { color: '#FFD740' }]}>🏃 Leurre — attirer un démon ici</Text>
+                    </TouchableOpacity>
+                  )}
                   {state.hero.id === 'jardir' && (state.hero.jardir_warriors ?? []).some(w => w.locationId === state.presenceLocation) && (
                     <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FF5252', backgroundColor: '#FF525215' }]} onPress={ctrl.doRally}>
                       <Text style={[styles.phaseBtnText, { color: '#FF5252' }]}>👑 Rally — renforcer guerrier</Text>

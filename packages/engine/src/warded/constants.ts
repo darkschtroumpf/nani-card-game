@@ -123,6 +123,15 @@ export const HEROES: {
   waveAbility: string;
 }[] = [
   {
+    id: 'arlen_young', name: 'Arlen (jeune)', title: 'Le Garçon de Tibbet\'s Brook',
+    ap: 4, hp: 8,
+    passive: 'Témérité: Arlen est jeune et faible, mais courageux. Il peut attirer les démons pour protéger les autres.',
+    signatureName: 'Leurre',
+    signatureEffect: 'Attire 1 démon non-boss d\'un lieu adjacent vers la Présence. Peut être utilisé 1 fois par vague.',
+    signatureCost: {},
+    waveAbility: 'Cri de défi: Attire 1 démon supplémentaire vers la Présence, réduisant la pression sur les autres lieux.',
+  },
+  {
     id: 'arlen', name: 'Arlen Bales', title: 'The Warded Man',
     ap: 6, hp: 10,
     passive: 'Warded Flesh: Starts each night at Ward Charge 1. Gains +1 Charge per demon killed at Presence. Gains +1 Charge when taking overflow damage.',

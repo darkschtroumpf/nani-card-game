@@ -58,6 +58,7 @@ export interface ChapterDefinition {
   startingNightNumber: number;
   locationOverrides?: Partial<Record<LocationId, { name: string; startPop?: number }>>;
   startingPresence: LocationId;
+  hiddenLocations?: LocationId[];  // locations disabled for this chapter (marked fallen)
   preplacedWards: { locationId: LocationId; ward: WardType }[];
   introDialogue: DialogueNode[];
   dayEvents: DayEvent[];

@@ -27,6 +27,18 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
     }
   }
 
+  // Hide locations (mark as fallen with 0 pop, won't appear on map)
+  if (chapter.hiddenLocations) {
+    for (const locId of chapter.hiddenLocations) {
+      const loc = state.locations.find(l => l.id === locId);
+      if (loc) {
+        loc.fallen = true;
+        loc.population = 0;
+        loc.maxPopulation = 0;
+      }
+    }
+  }
+
   // Starting presence
   state.presenceLocation = chapter.startingPresence;
 
@@ -157,8 +169,8 @@ export function createNewSave(): CampaignSaveState {
     completedChapters: [],
     flags: {},
     choiceHistory: {},
-    heroLevels: { arlen: 1, jardir: 1, rojer: 1, leesha: 1 },
-    heroMaxHp: { arlen: 10, jardir: 10, rojer: 10, leesha: 10 },
+    heroLevels: { arlen: 1, arlen_young: 1, jardir: 1, rojer: 1, leesha: 1 },
+    heroMaxHp: { arlen: 10, arlen_young: 8, jardir: 10, rojer: 10, leesha: 10 },
     wardPowerBonus: 0,
   };
 }
