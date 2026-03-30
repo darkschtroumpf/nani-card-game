@@ -50,6 +50,7 @@ export type SfxTrack = keyof typeof SFX_TRACKS;
 export function useAudio() {
   const musicRef = useRef<Audio.Sound | null>(null);
   const currentTrackRef = useRef<string | null>(null);
+  const isTransitioning = useRef(false);
   const [muted, setMuted] = useState(false);
 
   // Initialize audio mode
@@ -64,21 +65,27 @@ export function useAudio() {
     };
   }, []);
 
-  // Play background music (crossfade)
+  // Play background music (with lock to prevent overlap)
   const playMusic = useCallback(async (track: string) => {
     if (!tracksLoaded || muted) return;
     if (currentTrackRef.current === track) return;
     if (!MUSIC_TRACKS[track]) return;
+    if (isTransitioning.current) return; // prevent concurrent transitions
+
+    isTransitioning.current = true;
+    currentTrackRef.current = track; // set immediately to block duplicates
 
     try {
-      // Stop and unload current track completely before starting new one
+      // Stop and unload ALL previous sounds
       const prev = musicRef.current;
       musicRef.current = null;
-      currentTrackRef.current = null;
       if (prev) {
         try { await prev.stopAsync(); } catch {}
         try { await prev.unloadAsync(); } catch {}
       }
+
+      // Small delay to ensure previous track is fully released
+      await new Promise(r => setTimeout(r, 100));
 
       // Load and play new track
       const { sound } = await Audio.Sound.createAsync(
@@ -86,10 +93,11 @@ export function useAudio() {
         { isLooping: true, volume: 0.3 }
       );
       musicRef.current = sound;
-      currentTrackRef.current = track;
       await sound.playAsync();
     } catch {
-      // Silently fail if audio loading fails
+      // Silently fail
+    } finally {
+      isTransitioning.current = false;
     }
   }, [muted]);
 

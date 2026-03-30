@@ -151,9 +151,15 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
                   styles.wardDot,
                   isNight && styles.wardDotNight,
                   ws.ward ? { backgroundColor: wardColor(ws.ward) } : styles.wardEmpty,
+                  ws.ward && ws.enhanced && { borderWidth: 1, borderColor: '#FFD740' },
                 ]}>
                   {ws.ward && WARD_IMAGES[ws.ward] && (
                     <Image source={WARD_IMAGES[ws.ward]} style={[styles.wardImage, isNight && styles.wardImageNight]} />
+                  )}
+                  {ws.ward && !ws.isTemporary && ws.durability < 3 && (
+                    <View style={{ position: 'absolute', bottom: -3, width: 14, height: 3, borderRadius: 1, backgroundColor: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                      <View style={{ width: `${(ws.durability / 3) * 100}%`, height: '100%', backgroundColor: ws.durability <= 1 ? '#F44336' : '#FF9800', borderRadius: 1 } as any} />
+                    </View>
                   )}
                 </View>
               ))}

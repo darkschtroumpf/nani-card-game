@@ -1061,20 +1061,25 @@ export default function WardedGameScreen() {
                 </TouchableOpacity>
                 {showComboPanel && (
                   <View style={styles.comboPanelBody}>
+                    {advisor.active.length > 0 && (
+                      <Text style={{ color: warded.success, fontSize: 10, fontWeight: 'bold', letterSpacing: 1, marginBottom: 2 }}>ACTIFS</Text>
+                    )}
                     {advisor.active.map((a, i) => (
-                      <View key={`a${i}`} style={[styles.comboRow, { borderColor: warded.accent }]}>
-                        <Text style={[styles.comboRowName, { color: warded.accent }]}>✓ {a.combo.name}</Text>
-                        <Text style={styles.comboRowLoc}>{a.locName}</Text>
+                      <View key={`a${i}`} style={[styles.comboRow, { borderColor: warded.success, backgroundColor: warded.success + '10' }]}>
+                        <Text style={[styles.comboRowName, { color: warded.success }]}>✅ {a.combo.name}</Text>
+                        <Text style={styles.comboRowLoc}>📍 {a.locName}</Text>
                         <Text style={styles.comboRowEffect}>Passif: {a.combo.passiveEffect}</Text>
-                        <Text style={styles.comboRowEffect}>Actif: {a.combo.activeEffect}</Text>
+                        <Text style={[styles.comboRowEffect, { color: warded.accent }]}>Actif: {a.combo.activeEffect}</Text>
                       </View>
                     ))}
+                    {advisor.possible.length > 0 && (
+                      <Text style={{ color: warded.warning, fontSize: 10, fontWeight: 'bold', letterSpacing: 1, marginTop: 4, marginBottom: 2 }}>POSSIBLES (place les runes manquantes)</Text>
+                    )}
                     {advisor.possible.map((p, i) => (
-                      <View key={`p${i}`} style={[styles.comboRow, { borderColor: warded.warning }]}>
-                        <Text style={[styles.comboRowName, { color: warded.warning }]}>→ {p.combo.name}</Text>
-                        <Text style={styles.comboRowLoc}>{p.locName} — place {p.missing.map(m => m.toUpperCase()).join(' + ')}</Text>
-                        <Text style={styles.comboRowEffect}>Passif: {p.combo.passiveEffect}</Text>
-                        <Text style={styles.comboRowEffect}>Actif: {p.combo.activeEffect}</Text>
+                      <View key={`p${i}`} style={[styles.comboRow, { borderColor: warded.warning + '60', borderStyle: 'dashed' as any }]}>
+                        <Text style={[styles.comboRowName, { color: warded.warning }]}>💡 {p.combo.name}</Text>
+                        <Text style={styles.comboRowLoc}>📍 {p.locName} — manque : {p.missing.map(m => m.toUpperCase()).join(' + ')}</Text>
+                        <Text style={styles.comboRowEffect}>{p.combo.passiveEffect}</Text>
                       </View>
                     ))}
                   </View>
