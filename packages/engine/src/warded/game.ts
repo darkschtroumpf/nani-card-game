@@ -292,9 +292,14 @@ export function startNight(state: GameState): void {
     delete (state as any)._symphonyActive;
   }
 
-  // Draw surge
-  const surgePool = state.mode === 'quick' ? QUICK_MODE_SURGES : CAMPAIGN_SURGES;
-  state.currentSurge = surgePool[Math.floor(Math.random() * surgePool.length)];
+  // Draw surge (campaign can force a specific surge)
+  if (state.campaignModifiers?.forcedSurge) {
+    state.currentSurge = state.campaignModifiers.forcedSurge;
+    state.campaignModifiers.forcedSurge = undefined;
+  } else {
+    const surgePool = state.mode === 'quick' ? QUICK_MODE_SURGES : CAMPAIGN_SURGES;
+    state.currentSurge = surgePool[Math.floor(Math.random() * surgePool.length)];
+  }
 
   addLog(state, `Nuit ${state.nightNumber} commence!`, true);
   if (state.currentSurge !== 'night_of_courage') {
@@ -342,7 +347,10 @@ function spawnDemons(state: GameState): void {
 
   // Surge modifiers
   if (state.currentSurge === 'swarming_dark') count += 2;
-  if (state.currentSurge === 'rising_tide') count += 1; // extra water demon
+  if (state.currentSurge === 'rising_tide') count += 1;
+
+  // Campaign modifiers
+  if (state.campaignModifiers?.extraDemonsPerWave) count += state.campaignModifiers.extraDemonsPerWave;
 
   // Build demon pool based on night/chapter
   const availableTypes = DEMON_TYPES.filter(d => d.introducedChapter <= (state.mode === 'campaign' ? state.chapter : state.nightNumber));
@@ -355,6 +363,8 @@ function spawnDemons(state: GameState): void {
 
     // Blood Moon surge
     if (state.currentSurge === 'blood_moon') strength += 1;
+    // Campaign strength bonus
+    if (state.campaignModifiers?.demonStrengthBonus) strength += state.campaignModifiers.demonStrengthBonus;
 
     // Wind demons: group of 2, SPREAD across locations instead of stacking
     if (demonDef.type === 'wind') {

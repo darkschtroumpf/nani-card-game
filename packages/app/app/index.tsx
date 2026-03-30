@@ -36,15 +36,16 @@ export default function HomeScreen() {
           <Text style={styles.buttonDesc}>Mode rapide — Arlen Bales</Text>
         </TouchableOpacity>
 
-        <View
-          style={[styles.button, styles.buttonDisabled]}
+        <TouchableOpacity
+          style={[styles.button, { borderColor: warded.wardFire }]}
+          onPress={() => router.push('/campaign')}
         >
-          <Text style={styles.buttonTextDisabled}>Campagne</Text>
-          <Text style={styles.buttonDesc}>Bientot disponible</Text>
-        </View>
+          <Text style={styles.buttonText}>Campagne</Text>
+          <Text style={styles.buttonDesc}>Chapitre 1 — Le Garçon de Tibbet's Brook</Text>
+        </TouchableOpacity>
       </View>
 
-      <Text style={styles.version}>v2.3.0 — The Demon's Cycle</Text>
+      <Text style={styles.version}>v0.7.0 — The Demon's Cycle</Text>
     </ImageBackground>
   );
 }

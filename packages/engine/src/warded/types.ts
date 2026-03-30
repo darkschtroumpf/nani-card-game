@@ -131,6 +131,13 @@ export interface GameState {
   chapter: number;
   skillPoints: number;
   questsCompleted: string[];
+  campaignModifiers?: {
+    extraDemonsPerWave: number;
+    demonStrengthBonus: number;
+    forcedSurge?: DemonSurgeType;
+    apModifier: number;
+  };
+  campaignFlags?: Record<string, boolean | number>;
 
   // Game over
   gameOver: boolean;

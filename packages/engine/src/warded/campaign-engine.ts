@@ -1,0 +1,176 @@
+// ============================================================
+// Campaign Engine — creates games from chapter data, applies effects
+// ============================================================
+
+import type { GameState, LocationId, WardType } from './types';
+import type { ChapterDefinition, CampaignEffect, CampaignModifiers, CampaignSaveState } from './campaign-types';
+import { createGame, processDawn } from './game';
+import { LOCATIONS } from './constants';
+
+/** Create a game state from a chapter definition */
+export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSaveState): GameState {
+  const state = createGame(chapter.heroId, 'campaign', 'midnight');
+
+  // Override night count
+  state.nightNumber = chapter.startingNightNumber;
+
+  // Apply location overrides
+  if (chapter.locationOverrides) {
+    for (const [locId, override] of Object.entries(chapter.locationOverrides)) {
+      const loc = state.locations.find(l => l.id === locId);
+      if (!loc) continue;
+      if (override.name) loc.name = override.name;
+      if (override.startPop !== undefined) {
+        loc.population = override.startPop;
+        loc.maxPopulation = override.startPop;
+      }
+    }
+  }
+
+  // Starting presence
+  state.presenceLocation = chapter.startingPresence;
+
+  // Clear default wards, place chapter-specific ones
+  for (const loc of state.locations) {
+    loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false }));
+  }
+  for (const pw of chapter.preplacedWards) {
+    const loc = state.locations.find(l => l.id === pw.locationId);
+    if (loc) {
+      const emptySlot = loc.wards.findIndex(ws => !ws.ward);
+      if (emptySlot >= 0) loc.wards[emptySlot] = { ward: pw.ward, isTemporary: false };
+    }
+  }
+
+  // Apply save progression
+  if (save) {
+    const heroLevel = save.heroLevels[chapter.heroId] ?? 1;
+    const heroMaxHp = save.heroMaxHp[chapter.heroId] ?? 10;
+    state.hero.level = heroLevel;
+    state.hero.maxHp = heroMaxHp;
+    state.hero.hp = heroMaxHp;
+    state.hero.wardPowerBonus = save.wardPowerBonus ?? 0;
+  }
+
+  // Initialize campaign modifiers
+  state.campaignModifiers = {
+    extraDemonsPerWave: 0,
+    demonStrengthBonus: 0,
+    apModifier: 0,
+  };
+
+  // Re-distribute resources
+  processDawn(state);
+
+  return state;
+}
+
+/** Apply campaign effects to the game state */
+export function applyCampaignEffects(state: GameState, effects: CampaignEffect[]): string[] {
+  const messages: string[] = [];
+
+  for (const effect of effects) {
+    switch (effect.type) {
+      case 'modify_population': {
+        const loc = state.locations.find(l => l.id === effect.locationId);
+        if (loc) {
+          loc.population = Math.max(0, loc.population + effect.delta);
+          loc.maxPopulation = Math.max(loc.maxPopulation, loc.population);
+          messages.push(`${loc.name}: ${effect.delta > 0 ? '+' : ''}${effect.delta} population`);
+        }
+        break;
+      }
+      case 'add_resources': {
+        const loc = state.locations.find(l => l.id === effect.locationId);
+        if (loc) {
+          loc.stockpile[effect.resource] = Math.min(6, loc.stockpile[effect.resource] + effect.amount);
+          messages.push(`${loc.name}: +${effect.amount} ${effect.resource}`);
+        }
+        break;
+      }
+      case 'extra_demons': {
+        if (state.campaignModifiers) {
+          state.campaignModifiers.extraDemonsPerWave += effect.count;
+          messages.push(`+${effect.count} démon(s) par vague cette nuit`);
+        }
+        break;
+      }
+      case 'demon_strength_bonus': {
+        if (state.campaignModifiers) {
+          state.campaignModifiers.demonStrengthBonus += effect.bonus;
+          messages.push(`Démons +${effect.bonus} force`);
+        }
+        break;
+      }
+      case 'bonus_ward': {
+        const loc = state.locations.find(l => l.id === effect.locationId);
+        if (loc) {
+          const emptySlot = loc.wards.findIndex(ws => !ws.ward);
+          if (emptySlot >= 0) {
+            loc.wards[emptySlot] = { ward: effect.wardType, isTemporary: false };
+            messages.push(`Ward de ${effect.wardType} placé à ${loc.name}`);
+          }
+        }
+        break;
+      }
+      case 'bonus_reserve_ward': {
+        state.wardReserves.push(effect.wardType);
+        messages.push(`Ward de ${effect.wardType} ajouté en réserve`);
+        break;
+      }
+      case 'hero_hp_change': {
+        state.hero.hp = Math.max(1, Math.min(state.hero.maxHp, state.hero.hp + effect.delta));
+        messages.push(`${effect.delta > 0 ? '+' : ''}${effect.delta} HP héros`);
+        break;
+      }
+      case 'hero_ap_change': {
+        if (state.campaignModifiers) {
+          state.campaignModifiers.apModifier += effect.delta;
+          state.hero.ap = Math.max(0, state.hero.ap + effect.delta);
+          messages.push(`${effect.delta > 0 ? '+' : ''}${effect.delta} AP`);
+        }
+        break;
+      }
+      case 'force_surge': {
+        if (state.campaignModifiers) {
+          state.campaignModifiers.forcedSurge = effect.surge;
+          messages.push(`Surge forcé: ${effect.surge}`);
+        }
+        break;
+      }
+      case 'set_flag': {
+        // Flags stored on state for campaign tracking
+        if (!state.campaignFlags) state.campaignFlags = {};
+        state.campaignFlags[effect.flag] = effect.value;
+        break;
+      }
+    }
+  }
+
+  return messages;
+}
+
+/** Create initial save state */
+export function createNewSave(): CampaignSaveState {
+  return {
+    currentChapter: 1,
+    completedChapters: [],
+    flags: {},
+    choiceHistory: {},
+    heroLevels: { arlen: 1, jardir: 1, rojer: 1, leesha: 1 },
+    heroMaxHp: { arlen: 10, jardir: 10, rojer: 10, leesha: 10 },
+    wardPowerBonus: 0,
+  };
+}
+
+/** Update save after completing a chapter */
+export function updateSaveAfterChapter(save: CampaignSaveState, state: GameState, chapterId: number): CampaignSaveState {
+  return {
+    ...save,
+    currentChapter: chapterId + 1,
+    completedChapters: [...save.completedChapters, chapterId],
+    heroLevels: { ...save.heroLevels, [state.hero.id]: state.hero.level },
+    heroMaxHp: { ...save.heroMaxHp, [state.hero.id]: state.hero.maxHp },
+    wardPowerBonus: state.hero.wardPowerBonus,
+  };
+}
