@@ -58,6 +58,7 @@ const WARD_IMAGES: Record<string, any> = {
 };
 
 import { useWardedGame } from '../hooks/useWardedGame';
+import { useAudio } from '../hooks/useAudio';
 import { useLocalSearchParams } from 'expo-router';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
@@ -153,13 +154,7 @@ function TutorialOverlay({ step, onNext, onSkip }: { step: number; onNext: () =>
     Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
   }, [step]);
 
-  // Step 0 auto-advances after 3s
-  useEffect(() => {
-    if (step === 0) {
-      const timer = setTimeout(onNext, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
+  // Step 0: no auto-advance, player taps to continue
 
   if (!data) return null;
 
@@ -303,6 +298,7 @@ export default function WardedGameScreen() {
 
   const ctrl = useWardedGame();
   const { state, events, forecast } = ctrl;
+  const audio = useAudio();
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [selectedHero, setSelectedHero] = useState<HeroId | null>(null);
@@ -322,7 +318,7 @@ export default function WardedGameScreen() {
   const [tutorialStep, setTutorialStep] = useState(0); // 0-6 active, -1 = done
   const [mistWalkMode, setMistWalkMode] = useState(false);
   const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
-  const [showComboPanel, setShowComboPanel] = useState(false);
+  const [showComboPanel, setShowComboPanel] = useState(true);
   const firstNightSeen = useRef(false);
 
   // FIX 3: Game stats tracking
@@ -331,12 +327,26 @@ export default function WardedGameScreen() {
   // FIX 4: Action flash feedback
   const [actionFlash, setActionFlash] = useState<string | null>(null);
 
+  // Audio: auto-play music based on game phase
+  useEffect(() => {
+    if (!state) { audio.playMusic('menu'); return; }
+    if (state.gameOver) { audio.playMusic(state.victory ? 'victory' : 'defeat'); return; }
+    if (campaignDayEvent) { audio.playMusic('vn_dramatic'); return; }
+    if (state.phase === 'day') audio.playMusic('day_calm');
+    else if (state.waveNumber > 0) audio.playMusic('night_intense');
+    else audio.playMusic('night_combat');
+  }, [state?.phase, state?.waveNumber, state?.gameOver, campaignDayEvent]);
+
   // FIX 5: Damage report overlay
   const [damageReport, setDamageReport] = useState<string[] | null>(null);
 
-  // Block Android back button
+  // Pause menu on Android back button
+  const [showPauseMenu, setShowPauseMenu] = useState(false);
   useEffect(() => {
-    const handler = BackHandler.addEventListener('hardwareBackPress', () => true);
+    const handler = BackHandler.addEventListener('hardwareBackPress', () => {
+      setShowPauseMenu(prev => !prev);
+      return true;
+    });
     return () => handler.remove();
   }, []);
 
@@ -589,6 +599,7 @@ export default function WardedGameScreen() {
   // Wrapped doCraft to advance tutorial
   const handleCraft = (w: WardType, locId: LocationId) => {
     ctrl.doCraft(w, locId);
+    audio.playSfx('ward_place');
     gameStats.current.wardsCrafted++;
     // FIX 4: gold flash on craft
     setActionFlash('#FFD700');
@@ -619,6 +630,7 @@ export default function WardedGameScreen() {
     state.locations.forEach(l => { beforePop[l.id] = l.population; });
 
     ctrl.doResolveDamage();
+    audio.playSfx('damage');
     setDamageResolved(true);
     setActionFlash('#FF3333');
     setTimeout(() => setActionFlash(null), 400);
@@ -654,6 +666,7 @@ export default function WardedGameScreen() {
   const handleEndDay = () => {
     if (tutorialStep === 4) setTutorialStep(5);
     gameStats.current.nightsSurvived++;
+    audio.playSfx('night_fall');
     setShowNightTransition(true);
     setTimeout(() => {
       setShowNightTransition(false);
@@ -1435,6 +1448,25 @@ export default function WardedGameScreen() {
       )}
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
+
+      {/* Pause menu */}
+      {showPauseMenu && (
+        <View style={styles.transitionOverlay}>
+          <Text style={styles.transitionText}>PAUSE</Text>
+          <TouchableOpacity style={[styles.phaseBtn, { marginTop: 20, borderColor: warded.accent, width: 200 }]}
+            onPress={() => setShowPauseMenu(false)}>
+            <Text style={[styles.phaseBtnText, { color: warded.accent }]}>Reprendre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.textDim, width: 200 }]}
+            onPress={() => audio.toggleMute()}>
+            <Text style={[styles.phaseBtnText, { color: warded.textDim }]}>{audio.muted ? '🔇 Son désactivé' : '🔊 Son activé'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.danger, width: 200 }]}
+            onPress={() => { audio.stopMusic(); router.replace('/'); }}>
+            <Text style={[styles.phaseBtnText, { color: warded.danger }]}>Quitter</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Campaign transition overlay (fade in/out) */}
       {showCampaignTransition && (
