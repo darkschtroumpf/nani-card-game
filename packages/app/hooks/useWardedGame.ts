@@ -2,6 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import type {
   GameState, LocationId, WardType, HeroId, Difficulty, SongType, Consumable,
 } from '../../engine/src/warded/types';
+import type { ChapterDefinition, CampaignSaveState, CampaignEffect } from '../../engine/src/warded/campaign-types';
+import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warded/campaign-engine';
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
@@ -20,6 +22,8 @@ export interface WardedGameController {
 
   // Setup
   startGame: (heroId: HeroId, difficulty: Difficulty) => void;
+  startCampaignGame: (chapter: ChapterDefinition, save?: CampaignSaveState) => void;
+  applyCampaignEffects: (effects: CampaignEffect[]) => string[];
 
   // Day actions
   doCraft: (wardType: WardType, fromLocationId: LocationId) => void;
@@ -94,6 +98,22 @@ export function useWardedGame(): WardedGameController {
     setEvents([]);
     setForecast(getThreatForecast(s));
     sync(s);
+  }, [sync]);
+
+  const startCampaignGameFn = useCallback((chapter: ChapterDefinition, save?: CampaignSaveState) => {
+    const s = createCampaignGame(chapter, save);
+    stateRef.current = s;
+    setEvents([]);
+    setForecast(getThreatForecast(s));
+    sync(s);
+  }, [sync]);
+
+  const applyCampaignEffectsFn = useCallback((effects: CampaignEffect[]): string[] => {
+    const s = stateRef.current;
+    if (!s) return [];
+    const msgs = applyCampaignEffects(s, effects);
+    sync(s);
+    return msgs;
   }, [sync]);
 
   // --- Day Actions ---
@@ -394,7 +414,7 @@ export function useWardedGame(): WardedGameController {
 
   return {
     state, events, forecast,
-    startGame, startNewDay,
+    startGame, startCampaignGame: startCampaignGameFn, applyCampaignEffects: applyCampaignEffectsFn, startNewDay,
     doCraft, doFortify, doGather, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,

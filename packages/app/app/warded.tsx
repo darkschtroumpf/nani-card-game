@@ -58,10 +58,14 @@ const WARD_IMAGES: Record<string, any> = {
 };
 
 import { useWardedGame } from '../hooks/useWardedGame';
+import { useLocalSearchParams } from 'expo-router';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
+import DialogueOverlay from '../components/warded/DialogueOverlay';
 import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
 import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS } from '../../engine/src/warded/constants';
+import { CHAPTERS } from '../../engine/src/warded/campaign-data';
+import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campaign-types';
 
 // FIX 4: Short effect descriptions for ward craft cards (French)
 const WARD_EFFECTS: Record<string, string> = {
@@ -293,11 +297,21 @@ const tutStyles = StyleSheet.create({
 
 export default function WardedGameScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ chapter?: string }>();
+  const campaignChapterId = params.chapter ? parseInt(params.chapter) : null;
+  const campaignChapter = campaignChapterId ? CHAPTERS.find(c => c.id === campaignChapterId) ?? null : null;
+
   const ctrl = useWardedGame();
   const { state, events, forecast } = ctrl;
   const [selectedLocation, setSelectedLocation] = useState<LocationId | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [selectedHero, setSelectedHero] = useState<HeroId | null>(null);
+
+  // Campaign state
+  const [campaignDayEvent, setCampaignDayEvent] = useState<DayEvent | null>(null);
+  const [campaignDaysProcessed, setCampaignDaysProcessed] = useState<Record<number, boolean>>({});
+  const [campaignEffectMessages, setCampaignEffectMessages] = useState<string[]>([]);
+  const [showCampaignEffects, setShowCampaignEffects] = useState(false);
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [combatToast, setCombatToast] = useState<string | null>(null);
@@ -318,11 +332,51 @@ export default function WardedGameScreen() {
   // FIX 5: Damage report overlay
   const [damageReport, setDamageReport] = useState<string[] | null>(null);
 
-  // Game starts when hero is selected (no more auto-start)
+  // Game starts when hero is selected (or campaign auto-starts)
   const handleStartGame = useCallback((heroId: HeroId) => {
     setInitialized(true);
     ctrl.startGame(heroId, 'waning');
   }, [ctrl]);
+
+  // Campaign auto-start
+  useEffect(() => {
+    if (campaignChapter && !initialized) {
+      setInitialized(true);
+      setTutorialStep(-1); // skip tutorial in campaign
+      ctrl.startCampaignGame(campaignChapter);
+    }
+  }, [campaignChapter, initialized]);
+
+  // Campaign: trigger day events when day starts
+  useEffect(() => {
+    if (!campaignChapter || !state || state.phase !== 'day') return;
+    const dayNum = state.turnNumber;
+    if (campaignDaysProcessed[dayNum]) return;
+    const event = campaignChapter.dayEvents.find(e => e.dayNumber === dayNum);
+    if (event) {
+      setCampaignDayEvent(event);
+    }
+  }, [campaignChapter, state?.phase, state?.turnNumber, campaignDaysProcessed]);
+
+  // Campaign: handle day event choice
+  const handleCampaignChoice = useCallback((choiceId: string) => {
+    if (!campaignDayEvent || !state) return;
+    for (const node of campaignDayEvent.dialogueNodes) {
+      const choice = node.choices?.find(c => c.id === choiceId);
+      if (choice) {
+        const msgs = ctrl.applyCampaignEffects(choice.effects);
+        setCampaignEffectMessages(msgs);
+        setShowCampaignEffects(true);
+        setCampaignDaysProcessed(prev => ({ ...prev, [campaignDayEvent.dayNumber]: true }));
+        setTimeout(() => {
+          setShowCampaignEffects(false);
+          setCampaignDayEvent(null);
+          setCampaignEffectMessages([]);
+        }, 2500);
+        return;
+      }
+    }
+  }, [campaignDayEvent, state, ctrl]);
 
   // FIX 3: Combat toast from events
   useEffect(() => {
@@ -343,7 +397,15 @@ export default function WardedGameScreen() {
   }, [state?.phase]);
 
   if (!state) {
-    // Hero selection screen
+    // Campaign mode: show loading while game initializes
+    if (campaignChapter) {
+      return (
+        <SafeAreaView style={styles.container}>
+          <Text style={styles.loadingText}>Préparation du chapitre...</Text>
+        </SafeAreaView>
+      );
+    }
+    // Hero selection screen (Quick Mode)
     return (
       <SafeAreaView style={styles.container}>
         <ImageBackground source={BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={{ opacity: 0.3 }}>
@@ -1336,6 +1398,44 @@ export default function WardedGameScreen() {
       )}
 
       {/* FIX 3: Forecast row removed — threat levels now shown as colored borders on map nodes */}
+
+      {/* Campaign day event dialogue */}
+      {campaignDayEvent && !showCampaignEffects && (
+        <DialogueOverlay
+          nodes={campaignDayEvent.dialogueNodes}
+          onChoice={handleCampaignChoice}
+          onComplete={() => {
+            setCampaignDayEvent(null);
+            setCampaignDaysProcessed(prev => ({ ...prev, [campaignDayEvent.dayNumber]: true }));
+          }}
+        />
+      )}
+
+      {/* Campaign effect results */}
+      {showCampaignEffects && (
+        <View style={styles.transitionOverlay}>
+          <Text style={[styles.transitionText, { fontSize: 18 }]}>Conséquences</Text>
+          {campaignEffectMessages.map((m, i) => (
+            <Text key={i} style={[styles.transitionSub, { color: warded.warning }]}>• {m}</Text>
+          ))}
+        </View>
+      )}
+
+      {/* Campaign victory/defeat dialogue */}
+      {campaignChapter && state.gameOver && state.victory && (
+        <DialogueOverlay
+          nodes={campaignChapter.victoryDialogue}
+          onChoice={() => {}}
+          onComplete={() => router.replace('/campaign')}
+        />
+      )}
+      {campaignChapter && state.gameOver && !state.victory && (
+        <DialogueOverlay
+          nodes={campaignChapter.defeatDialogue}
+          onChoice={() => {}}
+          onComplete={() => router.replace('/campaign')}
+        />
+      )}
 
       {/* Tutorial overlay */}
       {tutorialStep >= 0 && tutorialStep <= 4 && !showNightTransition && (
