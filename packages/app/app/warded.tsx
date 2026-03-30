@@ -9,12 +9,16 @@ const BG_DAY = require('../assets/images/bg_day.png');
 const BG_NIGHT = require('../assets/images/bg_night.png');
 const HERO_ARLEN = require('../assets/images/hero_arlen.png');
 
-// Hero images (fallback to Arlen for now)
+// Hero images
+const HERO_JARDIR = require('../assets/images/hero_jardir.png');
+const HERO_ROJER = require('../assets/images/hero_rojer.png');
+const HERO_LEESHA = require('../assets/images/hero_leesha.png');
+
 const HERO_IMAGES: Record<string, any> = {
   arlen: HERO_ARLEN,
-  jardir: HERO_ARLEN, // TODO: generate
-  rojer: HERO_ARLEN,  // TODO: generate
-  leesha: HERO_ARLEN, // TODO: generate
+  jardir: HERO_JARDIR,
+  rojer: HERO_ROJER,
+  leesha: HERO_LEESHA,
 };
 
 // Hero selection lore & gameplay descriptions
@@ -1049,6 +1053,34 @@ export default function WardedGameScreen() {
             </View>
           )}
 
+          {/* HP-cost abilities (day) */}
+          {isDay && state.hero.hp > 4 && (
+            <View style={styles.hpCostSection}>
+              <Text style={styles.hpCostTitle}>🩸 SACRIFICE (coûte des HP)</Text>
+              {state.hero.hp > 3 && ((state as any)._surgeOfWillUsed ?? 0) < 2 && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336' }]}
+                  onPress={() => { ctrl.doSurgeOfWill(); setActionFlash('#F44336'); setTimeout(() => setActionFlash(null), 400); }}>
+                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>💉 Surge of Will (-2 HP → +1 AP)</Text>
+                </TouchableOpacity>
+              )}
+              {state.hero.id === 'arlen' && state.hero.hp > 4 && state.locations.some(l => !l.fallen && l.wards.some(ws => !ws.ward)) && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336' }]}
+                  onPress={() => {
+                    const target = state.locations.find(l => !l.fallen && l.wards.some(ws => !ws.ward));
+                    if (target) { ctrl.doBloodWard('fire', target.id); setActionFlash('#F44336'); setTimeout(() => setActionFlash(null), 400); }
+                  }}>
+                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Blood Ward (-3 HP → ward permanent)</Text>
+                </TouchableOpacity>
+              )}
+              {state.hero.id === 'leesha' && state.hero.hp > 5 && (
+                <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336' }]}
+                  onPress={() => { ctrl.doBloodPotion(); setActionFlash('#F44336'); setTimeout(() => setActionFlash(null), 400); }}>
+                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Blood Potion (-4 HP → 2 objets gratuits)</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           {/* Day: end day button */}
           {isDay && (
             <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.nightBg, borderColor: warded.wardLight }]} onPress={handleEndDay}>
@@ -1143,6 +1175,23 @@ export default function WardedGameScreen() {
                     <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#69F0AE', backgroundColor: '#69F0AE15' }]}
                       onPress={() => ctrl.doTriage(0, state.presenceLocation)}>
                       <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🧪 Triage — utiliser {(state.hero.leesha_consumables ?? [])[0]?.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {/* Night HP-cost abilities */}
+                  {state.hero.id === 'jardir' && state.hero.hp > 3 && (state.hero.jardir_warriors ?? []).length > 0 && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336', backgroundColor: '#F4433615' }]}
+                      onPress={() => {
+                        const w = (state.hero.jardir_warriors ?? []).find(w => w.locationId === state.presenceLocation)
+                          ?? (state.hero.jardir_warriors ?? [])[0];
+                        if (w) ctrl.doSacrifice(w.locationId);
+                      }}>
+                      <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Sacrifice Sharum (-2 HP → dégâts x2)</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'rojer' && state.hero.hp > 4 && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336', backgroundColor: '#F4433615' }]}
+                      onPress={() => ctrl.doDesperateMelody('lullaby')}>
+                      <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Desperate Melody (-3 HP → chanson bonus)</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1957,6 +2006,22 @@ const styles = StyleSheet.create({
     color: warded.text,
     fontSize: 10,
     lineHeight: 14,
+  },
+
+  // --- HP Cost Section ---
+  hpCostSection: {
+    backgroundColor: 'rgba(244, 67, 54, 0.06)',
+    borderWidth: 1,
+    borderColor: '#F4433630',
+    borderRadius: 10,
+    padding: 10,
+    gap: 6,
+  },
+  hpCostTitle: {
+    color: '#F44336',
+    fontSize: wardedFonts.xs,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 
   // --- Wind Redirect ---

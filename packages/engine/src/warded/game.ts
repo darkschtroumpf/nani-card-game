@@ -204,8 +204,9 @@ export function processDawn(state: GameState): void {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 2);
   }
 
-  // Reset AP
+  // Reset AP and surge of will
   state.hero.ap = HEROES.find(h => h.id === state.hero.id)!.ap;
+  delete (state as any)._surgeOfWillUsed;
 
   addLog(state, 'Aube — ressources produites, wards temporaires retirés.');
 }
@@ -1453,4 +1454,153 @@ export function leesha_triage(state: GameState, consumableIndex: number, targetL
   const result = leesha_useConsumable(state, consumableIndex, targetLocationId);
   state.heroWaveAbilityUsed = true;
   return result;
+}
+
+// ============================================================
+// HP-Cost Abilities (all heroes)
+// ============================================================
+
+/** Surge of Will: spend 2 HP to recover 1 AP (max 2/day) */
+export function surgeOfWill(state: GameState): string[] {
+  if (state.phase !== 'day') return ['Uniquement le jour.'];
+  if (state.hero.hp <= 3) return ['Trop peu de HP (min 4).'];
+  const used = (state as any)._surgeOfWillUsed ?? 0;
+  if (used >= 2) return ['Maximum 2 Surge of Will par jour.'];
+
+  state.hero.hp -= 2;
+  state.hero.ap += 1;
+  (state as any)._surgeOfWillUsed = used + 1;
+
+  addLog(state, `Surge of Will! -2 HP → +1 AP (HP: ${state.hero.hp})`, true);
+  return [`💉 Surge of Will: -2 HP, +1 AP (HP: ${state.hero.hp})`];
+}
+
+/** Arlen — Blood Ward: spend 3 HP to place a PERMANENT ward (no AP cost) */
+export function arlenBloodWard(state: GameState, wardType: WardType, targetLocationId: LocationId): string[] {
+  if (state.hero.id !== 'arlen') return ['Arlen uniquement.'];
+  if (state.hero.hp <= 4) return ['Trop peu de HP (min 5).'];
+
+  const loc = getLocation(state, targetLocationId);
+  if (loc.fallen) return ['Lieu tombé.'];
+  const emptySlot = loc.wards.findIndex(w => !w.ward);
+  if (emptySlot < 0) return ['Pas d\'emplacement libre.'];
+
+  loc.wards[emptySlot] = { ward: wardType, isTemporary: false };
+  state.hero.hp -= 3;
+
+  addLog(state, `Blood Ward! ${wardType} permanent à ${loc.name} (-3 HP).`, true);
+  return [`🩸 Blood Ward: ${wardType} permanent placé à ${loc.name} (-3 HP, HP: ${state.hero.hp})`];
+}
+
+/** Jardir — Sacrifice Sharum: destroy a warrior, deal its str x2 damage to all demons at location */
+export function jardir_sacrifice(state: GameState, locationId: LocationId): string[] {
+  if (state.hero.id !== 'jardir') return ['Jardir uniquement.'];
+  if (state.hero.hp <= 3) return ['Trop peu de HP (min 4).'];
+  const warriors = state.hero.jardir_warriors ?? [];
+  const wIdx = warriors.findIndex(w => w.locationId === locationId);
+  if (wIdx < 0) return ['Pas de guerrier à ce lieu.'];
+
+  const warrior = warriors[wIdx];
+  const dmg = warrior.strength * 2;
+  warriors.splice(wIdx, 1);
+  state.hero.hp -= 2;
+
+  const demons = state.demonsAtLocations[locationId];
+  const events: string[] = [`🩸 Sacrifice Sharum: guerrier (force ${warrior.strength}) explose! ${dmg} dégâts à tous les démons (-2 HP)`];
+
+  for (let i = demons.length - 1; i >= 0; i--) {
+    demons[i].currentStrength -= dmg;
+    if (demons[i].currentStrength <= 0) {
+      events.push(`${demons[i].demon.type} détruit par le sacrifice!`);
+      onDemonKilled(state, locationId);
+      demons.splice(i, 1);
+    }
+  }
+
+  addLog(state, `Sacrifice Sharum à ${getLocation(state, locationId).name}: ${dmg} dégâts à tous! (-2 HP)`, true);
+  return events;
+}
+
+/** Rojer — Desperate Melody: spend 3 HP to play an extra song this wave */
+export function rojer_desperateMelody(state: GameState, songType: SongType): string[] {
+  if (state.hero.id !== 'rojer') return ['Rojer uniquement.'];
+  if (state.hero.hp <= 4) return ['Trop peu de HP (min 5).'];
+  if (state.phase !== 'night' || state.waveNumber === 0) return ['Uniquement pendant une vague.'];
+
+  state.hero.hp -= 3;
+
+  // Apply the song immediately at presence + adjacent
+  const isSymphony = !!(state as any)._symphonyActive;
+  const targetLocations = isSymphony
+    ? state.locations.filter(l => !l.fallen).map(l => l.id)
+    : [state.presenceLocation, ...getAdjacentIds(state.presenceLocation)];
+
+  const events: string[] = [`🩸 Desperate Melody: ${SONGS.find(s => s.type === songType)?.name ?? songType} (-3 HP)`];
+
+  for (const locId of targetLocations) {
+    const demons = state.demonsAtLocations[locId];
+    if (!demons || demons.length === 0) continue;
+    switch (songType) {
+      case 'lullaby':
+        for (const d of demons) (d as any)._lullaby = true;
+        events.push(`Lullaby à ${getLocation(state, locId).name}: ${demons.length} démon(s) endormis.`);
+        break;
+      case 'frenzy':
+        for (let i = demons.length - 1; i >= 0; i--) {
+          demons[i].currentStrength -= 1;
+          if (demons[i].currentStrength <= 0) {
+            events.push(`${demons[i].demon.type} détruit par Frenzy!`);
+            onDemonKilled(state, locId);
+            demons.splice(i, 1);
+          }
+        }
+        break;
+      case 'dissipation': {
+        let removed = 0;
+        for (let i = demons.length - 1; i >= 0 && removed < 2; i--) {
+          if (demons[i].currentStrength <= 2) {
+            events.push(`${demons[i].demon.type} dissipé!`);
+            onDemonKilled(state, locId);
+            demons.splice(i, 1);
+            removed++;
+          }
+        }
+        break;
+      }
+      case 'the_call': {
+        // Move demons to presence only
+        if (locId !== state.presenceLocation) break;
+        let moved = 0;
+        for (const adjId of getAdjacentIds(locId)) {
+          const adj = state.demonsAtLocations[adjId];
+          for (let i = adj.length - 1; i >= 0 && moved < 2; i--) {
+            if (!adj[i].demon.isLocked && !adj[i].demon.isBoss) {
+              state.demonsAtLocations[locId].push(adj[i]);
+              adj.splice(i, 1);
+              moved++;
+            }
+          }
+        }
+        if (moved > 0) events.push(`The Call: ${moved} démon(s) attirés.`);
+        break;
+      }
+    }
+  }
+
+  addLog(state, `Desperate Melody: ${songType} (-3 HP)`, true);
+  return events;
+}
+
+/** Leesha — Blood Potion: spend 4 HP to create 2 free consumables */
+export function leesha_bloodPotion(state: GameState): string[] {
+  if (state.hero.id !== 'leesha') return ['Leesha uniquement.'];
+  if (state.hero.hp <= 5) return ['Trop peu de HP (min 6).'];
+
+  state.hero.hp -= 4;
+  state.hero.leesha_consumables = state.hero.leesha_consumables ?? [];
+  state.hero.leesha_consumables.push({ type: 'healing_potion', name: 'Healing Potion' });
+  state.hero.leesha_consumables.push({ type: 'firespit', name: 'Firespit' });
+
+  addLog(state, 'Blood Potion! 2 consommables gratuits (-4 HP).', true);
+  return [`🩸 Blood Potion: +1 Healing Potion + 1 Firespit (-4 HP, HP: ${state.hero.hp})`];
 }

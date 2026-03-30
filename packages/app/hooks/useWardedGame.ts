@@ -5,11 +5,12 @@ import type {
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard,
   getThreatForecast, resolveWardPassives,
-  jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, resolveWarriorCombat,
-  rojer_rehearse, rojer_symphony, rojer_minorCharm, resolveSongs,
-  leesha_craftConsumable, leesha_useConsumable, leesha_greaterWardCircle, leesha_triage,
+  jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, jardir_sacrifice, resolveWarriorCombat,
+  rojer_rehearse, rojer_symphony, rojer_minorCharm, rojer_desperateMelody, resolveSongs,
+  leesha_craftConsumable, leesha_useConsumable, leesha_greaterWardCircle, leesha_triage, leesha_bloodPotion,
+  surgeOfWill,
 } from '../../engine/src/warded/game';
 
 export interface WardedGameController {
@@ -49,6 +50,13 @@ export interface WardedGameController {
   doUseConsumable: (index: number, targetLocationId?: LocationId) => void;
   doGreaterWardCircle: () => void;
   doTriage: (consumableIndex: number, targetLocationId?: LocationId) => void;
+
+  // HP-cost abilities
+  doSurgeOfWill: () => void;
+  doBloodWard: (wardType: WardType, locationId: LocationId) => void;
+  doSacrifice: (locationId: LocationId) => void;
+  doDesperateMelody: (songType: SongType) => void;
+  doBloodPotion: () => void;
 
   // Wind redirect (interactive)
   doWindRedirect: (fromLocationId: LocationId, demonIndex: number, toLocationId: LocationId) => void;
@@ -220,6 +228,48 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync, addEvents]);
 
+  // --- HP-Cost Abilities ---
+
+  const doSurgeOfWill = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = surgeOfWill(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doBloodWard = useCallback((wardType: WardType, locationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = arlenBloodWard(s, wardType, locationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doSacrifice = useCallback((locationId: LocationId) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = jardir_sacrifice(s, locationId);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doDesperateMelody = useCallback((songType: SongType) => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = rojer_desperateMelody(s, songType);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doBloodPotion = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leesha_bloodPotion(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
   // --- Wind Redirect ---
 
   const doWindRedirect = useCallback((fromLocationId: LocationId, demonIndex: number, toLocationId: LocationId) => {
@@ -341,6 +391,8 @@ export function useWardedGame(): WardedGameController {
     doRehearse, doSymphony, doMinorCharm,
     // Leesha
     doCraftConsumable, doUseConsumable, doGreaterWardCircle, doTriage,
+    // HP-cost
+    doSurgeOfWill, doBloodWard, doSacrifice, doDesperateMelody, doBloodPotion,
     // Wind redirect
     doWindRedirect,
     // Night
