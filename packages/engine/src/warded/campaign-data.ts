@@ -291,9 +291,9 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       id: 'intro_2', background: 'forest_village',
       lines: [
-        { speaker: 'leesha', text: "Bruna, les wards de la place du marché sont usés. Le bois est pourri par la pluie.", emotion: 'scared' },
+        { speaker: 'leesha_young', text: "Bruna, les wards de la place du marché sont usés. Le bois est pourri par la pluie.", emotion: 'scared' },
         { speaker: 'bruna', text: "Je sais, petite. Mais ces idiots de bûcherons refusent de les refaire. Trop occupés à couper du bois.", emotion: 'angry' },
-        { speaker: 'leesha', text: "Et si je préparais des onguents de renforcement ? Ça pourrait tenir quelques nuits de plus.", emotion: 'determined' },
+        { speaker: 'leesha_young', text: "Et si je préparais des onguents de renforcement ? Ça pourrait tenir quelques nuits de plus.", emotion: 'determined' },
         { speaker: 'bruna', text: "Ha ! Tu apprends vite. Fais-le. Et prépare aussi des cataplasmes — on en aura besoin.", emotion: 'neutral' },
       ],
     },
@@ -308,7 +308,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
           { speaker: 'bruna', text: "Leesha, viens ici. Il est temps que tu apprennes à préparer l'encre de ward.", emotion: 'neutral' },
           { speaker: 'narrator', text: "Bruna sort des bocaux d'herbes séchées, un mortier, et une fiole d'encre noire épaisse." },
           { speaker: 'bruna', text: "L'encre ordinaire s'efface en quelques semaines. Celle-ci, faite avec les bonnes herbes, tient des mois. La différence entre la vie et la mort.", emotion: 'determined' },
-          { speaker: 'leesha', text: "Et les cataplasmes ? On en a presque plus.", emotion: 'scared' },
+          { speaker: 'leesha_young', text: "Et les cataplasmes ? On en a presque plus.", emotion: 'scared' },
           { speaker: 'bruna', text: "C'est le choix que tu dois faire, petite. On a assez d'herbes pour préparer l'encre ou les cataplasmes. Pas les deux.", emotion: 'neutral' },
         ],
         choices: [
@@ -339,7 +339,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
         id: 'l_day2', background: 'refugees',
         lines: [
           { speaker: 'narrator', text: "Des blessés arrivent de fermes voisines. La nuit dernière a été terrible." },
-          { speaker: 'leesha', text: "Bruna ! Il y a au moins dix blessés. Je n'ai pas assez de cataplasmes.", emotion: 'scared' },
+          { speaker: 'leesha_young', text: "Bruna ! Il y a au moins dix blessés. Je n'ai pas assez de cataplasmes.", emotion: 'scared' },
           { speaker: 'bruna', text: "Alors tu choisis, petite. Soigner les blessés ou renforcer les wards. On ne peut pas tout faire.", emotion: 'sad' },
         ],
         choices: [
@@ -370,9 +370,9 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse, mais refuse de se coucher." },
           { speaker: 'bruna', text: "Leesha... écoute-moi. Cette nuit sera la pire. Je le sens dans mes os.", emotion: 'sad' },
-          { speaker: 'leesha', text: "Bruna, vous devez vous reposer—", emotion: 'scared' },
+          { speaker: 'leesha_young', text: "Bruna, vous devez vous reposer—", emotion: 'scared' },
           { speaker: 'bruna', text: "Tais-toi et écoute ! On a assez d'encre pour renforcer tous les wards du village. Mais je suis trop faible. C'est toi qui devras le faire seule.", emotion: 'determined' },
-          { speaker: 'leesha', text: "Moi ? Toute seule ? Je n'ai pas votre expérience...", emotion: 'scared' },
+          { speaker: 'leesha_young', text: "Moi ? Toute seule ? Je n'ai pas votre expérience...", emotion: 'scared' },
           { speaker: 'bruna', text: "Tu sais tracer un ward, oui ou non ? Alors choisis : passer l'après-midi à renforcer les wards, ou rester ici à me soigner.", emotion: 'angry' },
         ],
         choices: [
@@ -406,7 +406,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     lines: [
       { speaker: 'narrator', text: "L'aube se lève sur Cutter's Hollow. Le village respire encore." },
       { speaker: 'bruna', text: "Tu as bien fait, petite. Mieux que je ne l'aurais cru.", emotion: 'hopeful' },
-      { speaker: 'leesha', text: "J'ai tellement à apprendre encore...", emotion: 'determined' },
+      { speaker: 'leesha_young', text: "J'ai tellement à apprendre encore...", emotion: 'determined' },
       { speaker: 'bruna', text: "Tu apprendras. Tu es l'herboriste maintenant. Ce village dépend de toi.", emotion: 'neutral' },
       { speaker: 'narrator', text: "Leesha Paper accepte son destin. Elle sera le bouclier de Cutter's Hollow." },
     ],
@@ -417,7 +417,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     lines: [
       { speaker: 'narrator', text: "Les wards cèdent. Cutter's Hollow est submergé." },
       { speaker: 'bruna', text: "Fuis, Leesha. Fuis et emporte ce que je t'ai appris.", emotion: 'sad' },
-      { speaker: 'leesha', text: "Je ne vous abandonnerai pas !", emotion: 'determined' },
+      { speaker: 'leesha_young', text: "Je ne vous abandonnerai pas !", emotion: 'determined' },
       { speaker: 'narrator', text: "Mais Bruna la pousse dehors et referme la porte. Le dernier acte d'une vieille femme courage." },
       { speaker: 'narrator', text: "Chapitre 2 — Échec" },
     ],
@@ -463,9 +463,9 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
       id: 'intro_2', background: 'maze',
       lines: [
         { speaker: 'narrator', text: "Ahmann Jardir, fils de rien, orphelin des rues de Krasia. Aujourd'hui, c'est sa première nuit en tant que Sharum." },
-        { speaker: 'jardir', text: "Je suis prêt, Drillmaster.", emotion: 'determined' },
+        { speaker: 'jardir_young', text: "Je suis prêt, Drillmaster.", emotion: 'determined' },
         { speaker: 'drillmaster', text: "Prêt ? Ha ! On verra si tu es toujours vivant demain. Prends ta lance et descends.", emotion: 'angry' },
-        { speaker: 'jardir', text: "Everam me protège.", emotion: 'determined' },
+        { speaker: 'jardir_young', text: "Everam me protège.", emotion: 'determined' },
         { speaker: 'drillmaster', text: "Everam aide ceux qui se battent. Les lâches, il les laisse mourir.", emotion: 'neutral' },
       ],
     },
@@ -478,7 +478,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
         id: 'j_day1', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "Entre les nuits de combat, les Sharum réparent les wards du Maze et aiguisent leurs lances." },
-          { speaker: 'jardir', text: "Les wards du couloir sud sont faibles. Si les corelings percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "Les wards du couloir sud sont faibles. Si les corelings percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
           { speaker: 'drillmaster', text: "Tu veux dépenser nos guerriers à renforcer les wards, ou garder tes forces pour le combat ?", emotion: 'neutral' },
         ],
         choices: [
@@ -508,9 +508,9 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
         id: 'j_day2', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "La deuxième nuit a coûté cher. Trois Sharum sont tombés. Jardir a survécu, de justesse." },
-          { speaker: 'jardir', text: "Hasik est blessé. Il ne peut plus tenir sa lance.", emotion: 'sad' },
+          { speaker: 'jardir_young', text: "Hasik est blessé. Il ne peut plus tenir sa lance.", emotion: 'sad' },
           { speaker: 'drillmaster', text: "Alors il est inutile. Laisse-le.", emotion: 'angry' },
-          { speaker: 'jardir', text: "C'est mon frère d'armes !", emotion: 'angry' },
+          { speaker: 'jardir_young', text: "C'est mon frère d'armes !", emotion: 'angry' },
         ],
         choices: [
           {
@@ -543,9 +543,9 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
           { speaker: 'narrator', text: "La troisième nuit approche. Les tunnels grondent. Quelque chose de gros monte des profondeurs." },
           { speaker: 'drillmaster', text: "Un démon de roche. Peut-être un prince. Bande de lâches, qui va descendre le premier ?", emotion: 'angry' },
           { speaker: 'narrator', text: "Les Sharum reculent. Même les vétérans hésitent." },
-          { speaker: 'jardir', text: "J'irai.", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "J'irai.", emotion: 'determined' },
           { speaker: 'drillmaster', text: "Toi ? Le gamin des rues ?", emotion: 'neutral' },
-          { speaker: 'jardir', text: "Everam m'a mis sur cette terre pour combattre les démons. Pas pour fuir.", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "Everam m'a mis sur cette terre pour combattre les démons. Pas pour fuir.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -577,7 +577,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
     lines: [
       { speaker: 'narrator', text: "L'aube. Les corelings se retirent dans les profondeurs. Le Maze tient." },
       { speaker: 'drillmaster', text: "Trois nuits. Et le gamin des rues est toujours debout.", emotion: 'neutral' },
-      { speaker: 'jardir', text: "Je ne suis plus un gamin.", emotion: 'determined' },
+      { speaker: 'jardir_young', text: "Je ne suis plus un gamin.", emotion: 'determined' },
       { speaker: 'narrator', text: "Le Drillmaster hoche la tête. Pour la première fois, il regarde Jardir avec respect." },
       { speaker: 'narrator', text: "Ahmann Jardir. Un jour, ils l'appelleront Shar'Dama Ka — Celui Qui Voit dans la Nuit." },
     ],
@@ -589,7 +589,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
       { speaker: 'narrator', text: "Le Maze cède. Les corelings remontent vers la surface." },
       { speaker: 'drillmaster', text: "REPLI ! TOUS EN HAUT !", emotion: 'angry' },
       { speaker: 'narrator', text: "Jardir est le dernier à remonter. Derrière lui, les tunnels résonnent de hurlements." },
-      { speaker: 'jardir', text: "Un jour, je reviendrai. Et ce jour-là, les démons trembleront.", emotion: 'angry' },
+      { speaker: 'jardir_young', text: "Un jour, je reviendrai. Et ce jour-là, les démons trembleront.", emotion: 'angry' },
       { speaker: 'narrator', text: "Chapitre 3 — Échec" },
     ],
   }],
@@ -634,7 +634,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       id: 'intro_2', background: 'inn',
       lines: [
         { speaker: 'narrator', text: "Mais cette nuit, les wards de l'auberge ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
-        { speaker: 'rojer', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
+        { speaker: 'rojer_young', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
         { speaker: 'narrator', text: "Jessum sourit à son fils, mais ses yeux sont terrifiés." },
         { speaker: 'narrator', text: "Et puis la nuit tombe." },
       ],
@@ -649,9 +649,9 @@ export const CHAPTER_ROJER: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Rojer a grandi. Il a quinze ans maintenant, apprenti jongleur, orphelin depuis cette nuit à Riverbridge." },
           { speaker: 'narrator', text: "Son maître Arrick lui a appris le violon, mais aussi l'art de survivre dans un monde de monstres." },
-          { speaker: 'rojer', text: "Arrick, les wards du pont sont fissurés.", emotion: 'scared' },
+          { speaker: 'rojer_young', text: "Arrick, les wards du pont sont fissurés.", emotion: 'scared' },
           { speaker: 'arrick', text: "Et alors ? C'est pas notre problème. On joue ce soir, on part demain.", emotion: 'neutral' },
-          { speaker: 'rojer', text: "On ne peut pas juste... partir ?", emotion: 'determined' },
+          { speaker: 'rojer_young', text: "On ne peut pas juste... partir ?", emotion: 'determined' },
         ],
         choices: [
           {
@@ -680,9 +680,9 @@ export const CHAPTER_ROJER: ChapterDefinition = {
         id: 'r_day2', background: 'inn',
         lines: [
           { speaker: 'narrator', text: "La nuit dernière, Rojer a joué du violon pendant l'attaque. Et quelque chose d'étrange s'est passé." },
-          { speaker: 'rojer', text: "Arrick... quand je jouais, les démons... ils se sont arrêtés. Juste un instant.", emotion: 'hopeful' },
+          { speaker: 'rojer_young', text: "Arrick... quand je jouais, les démons... ils se sont arrêtés. Juste un instant.", emotion: 'hopeful' },
           { speaker: 'arrick', text: "Tu délires, gamin. La musique n'arrête pas les corelings.", emotion: 'angry' },
-          { speaker: 'rojer', text: "Je sais ce que j'ai vu.", emotion: 'determined' },
+          { speaker: 'rojer_young', text: "Je sais ce que j'ai vu.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -713,9 +713,9 @@ export const CHAPTER_ROJER: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "L'avant-dernière nuit. Arrick est ivre. Les wards craquent." },
           { speaker: 'arrick', text: "On va mourir ici, gamin. Comme tes parents.", emotion: 'scared' },
-          { speaker: 'rojer', text: "Taisez-vous !", emotion: 'angry' },
+          { speaker: 'rojer_young', text: "Taisez-vous !", emotion: 'angry' },
           { speaker: 'narrator', text: "Rojer prend le violon de son père. Celui que Jessum jouait la nuit de Riverbridge. Les cordes vibrent sous ses doigts." },
-          { speaker: 'rojer', text: "Si la musique peut les ralentir... alors je jouerai toute la nuit s'il le faut.", emotion: 'determined' },
+          { speaker: 'rojer_young', text: "Si la musique peut les ralentir... alors je jouerai toute la nuit s'il le faut.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -746,7 +746,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       { speaker: 'narrator', text: "L'aube. Rojer a les doigts en sang, mais le village tient." },
       { speaker: 'narrator', text: "Les villageois le regardent avec un mélange de crainte et d'admiration. Un garçon qui chante aux démons." },
       { speaker: 'arrick', text: "Ce que tu as fait cette nuit... c'est impossible.", emotion: 'scared' },
-      { speaker: 'rojer', text: "Et pourtant.", emotion: 'determined' },
+      { speaker: 'rojer_young', text: "Et pourtant.", emotion: 'determined' },
       { speaker: 'narrator', text: "Rojer Inn. Le Jongleur de Fidèle. L'homme dont la musique fait trembler les corelings." },
     ],
   }],
@@ -758,7 +758,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       { speaker: 'narrator', text: "Le violon se brise. Les wards cèdent. Le charme est rompu." },
       { speaker: 'arrick', text: "COURS, ROJER !", emotion: 'scared' },
       { speaker: 'narrator', text: "Rojer fuit dans la nuit, serrant contre lui les morceaux du violon de son père." },
-      { speaker: 'rojer', text: "Un jour, je jouerai assez fort pour que tous les démons m'entendent.", emotion: 'angry' },
+      { speaker: 'rojer_young', text: "Un jour, je jouerai assez fort pour que tous les démons m'entendent.", emotion: 'angry' },
       { speaker: 'narrator', text: "Chapitre 4 — Échec" },
     ],
   }],

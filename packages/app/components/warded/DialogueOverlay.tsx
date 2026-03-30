@@ -36,7 +36,34 @@ const SPRITES: Record<string, any> = {
   arlen_young_determined: require('../../assets/images/sprite_arlen_young_determined.png'),
   arlen_young_hopeful: require('../../assets/images/sprite_arlen_young_hopeful.png'),
   arlen_young_sad: require('../../assets/images/sprite_arlen_young_sad.png'),
-  // Fallbacks to hero portraits for characters without sprites
+  // Jeph emotion variants
+  jeph_scared: require('../../assets/images/sprite_jeph_scared.png'),
+  jeph_angry: require('../../assets/images/sprite_jeph_angry.png'),
+  jeph_sad: require('../../assets/images/sprite_jeph_sad.png'),
+  // Silvy emotion variants
+  silvy_scared: require('../../assets/images/sprite_silvy_scared.png'),
+  silvy_sad: require('../../assets/images/sprite_silvy_sad.png'),
+  // Ragen emotion variants
+  ragen_determined: require('../../assets/images/sprite_ragen_determined.png'),
+  // Bruna emotion variants
+  bruna_angry: require('../../assets/images/sprite_bruna_angry.png'),
+  bruna_sad: require('../../assets/images/sprite_bruna_sad.png'),
+  // Arrick emotion variants
+  arrick_scared: require('../../assets/images/sprite_arrick_scared.png'),
+  // Leesha young emotion variants
+  leesha_young: require('../../assets/images/hero_leesha.png'),
+  leesha_young_determined: require('../../assets/images/sprite_leesha_determined.png'),
+  leesha_young_scared: require('../../assets/images/sprite_leesha_scared.png'),
+  // Jardir young emotion variants
+  jardir_young: require('../../assets/images/hero_jardir.png'),
+  jardir_young_determined: require('../../assets/images/sprite_jardir_determined.png'),
+  jardir_young_angry: require('../../assets/images/sprite_jardir_angry.png'),
+  // Rojer young emotion variants
+  rojer_young: require('../../assets/images/hero_rojer.png'),
+  rojer_young_scared: require('../../assets/images/sprite_rojer_scared.png'),
+  rojer_young_determined: require('../../assets/images/sprite_rojer_determined.png'),
+  rojer_young_hopeful: require('../../assets/images/sprite_rojer_hopeful.png'),
+  // Fallbacks to hero portraits
   arlen: require('../../assets/images/hero_arlen.png'),
   jardir: require('../../assets/images/hero_jardir.png'),
   rojer: require('../../assets/images/hero_rojer.png'),
@@ -49,6 +76,9 @@ const SPEAKER_COLORS: Record<string, string> = {
   jardir: '#FF5252',
   rojer: '#7C4DFF',
   leesha: '#69F0AE',
+  leesha_young: '#69F0AE',
+  jardir_young: '#FF5252',
+  rojer_young: '#7C4DFF',
   jeph: '#8D6E63',
   silvy: '#CE93D8',
   ragen: '#42A5F5',
@@ -65,6 +95,9 @@ const SPEAKER_NAMES: Record<string, string> = {
   jardir: 'Jardir',
   rojer: 'Rojer',
   leesha: 'Leesha',
+  leesha_young: 'Leesha',
+  jardir_young: 'Jardir',
+  rojer_young: 'Rojer',
   jeph: 'Jeph Bales',
   silvy: 'Silvy Bales',
   ragen: 'Ragen',
