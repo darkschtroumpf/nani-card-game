@@ -424,8 +424,9 @@ function spawnDemons(state: GameState): void {
   }
 
   // Demon Magnet: 1 demon per wave redirected to each fallen location from adjacent
+  // (only real fallen locations, not hidden ones)
   for (const loc of state.locations) {
-    if (!loc.fallen) continue;
+    if (!loc.fallen || loc.maxPopulation === 0) continue;
     const adjacentIds = getAdjacentIds(loc.id);
     for (const adjId of adjacentIds) {
       const adjDemons = state.demonsAtLocations[adjId];

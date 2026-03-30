@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated, Dimensions } from 'react-native';
 import { warded, wardedFonts } from '../../theme-warded';
 import type { DialogueNode, DialogueChoice } from '../../../engine/src/warded/campaign-types';
+import { useAudio } from '../../hooks/useAudio';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
@@ -132,6 +133,7 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const [showChoices, setShowChoices] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const spriteAnim = useRef(new Animated.Value(0)).current;
+  const audio = useAudio();
 
   const node = nodes[nodeIndex];
   const line = node?.lines[lineIndex];
@@ -166,6 +168,7 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const handleTap = () => {
     if (isTyping) { setDisplayedChars(fullText.length); return; }
     if (showChoices) return;
+    audio.playSfx('text_advance');
 
     if (!isLastLine) {
       setLineIndex(prev => prev + 1);

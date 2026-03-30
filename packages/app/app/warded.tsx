@@ -612,12 +612,14 @@ export default function WardedGameScreen() {
   // Wrapped doFortify to advance tutorial
   const handleFortify = (w: WardType, locId: LocationId) => {
     ctrl.doFortify(w, locId);
+    audio.playSfx('ward_place');
     if (tutorialStep === 3) setTutorialStep(4);
   };
 
   // Wrapped doActivateWard to advance tutorial
   const handleActivateWard = (locId: LocationId, useCombo: boolean) => {
     ctrl.doActivateWard(locId, useCombo);
+    audio.playSfx('ward_activate');
     gameStats.current.activationsUsed++;
     // FIX 4: warm yellow flash on activate
     setActionFlash('#FFAA00');
@@ -1214,7 +1216,7 @@ export default function WardedGameScreen() {
                     : `Tape un lieu pour déplacer ta Présence.\nPuis lance la vague pour affronter les démons.`}
                 </Text>
               </View>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={ctrl.doStartWave}>
+              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWave(); }}>
                 <Text style={[styles.phaseBtnText, { color: warded.danger }]}>⚔ Lancer Vague 1</Text>
               </TouchableOpacity>
             </View>

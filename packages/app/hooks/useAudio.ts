@@ -36,6 +36,7 @@ try {
   SFX_TRACKS.dawn = require('../assets/audio/sfx_dawn.mp3');
   SFX_TRACKS.choice = require('../assets/audio/sfx_choice.mp3');
   SFX_TRACKS.text_advance = require('../assets/audio/sfx_text_advance.mp3');
+  SFX_TRACKS.button = require('../assets/audio/sfx_button.mp3');
 
   tracksLoaded = true;
 } catch {
