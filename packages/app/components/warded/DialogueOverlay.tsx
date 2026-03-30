@@ -30,6 +30,12 @@ const SPRITES: Record<string, any> = {
   bruna: require('../../assets/images/sprite_bruna.png'),
   drillmaster: require('../../assets/images/sprite_drillmaster.png'),
   arrick: require('../../assets/images/sprite_arrick.png'),
+  // Arlen young emotion variants
+  arlen_young_angry: require('../../assets/images/sprite_arlen_young_angry.png'),
+  arlen_young_scared: require('../../assets/images/sprite_arlen_young_scared.png'),
+  arlen_young_determined: require('../../assets/images/sprite_arlen_young_determined.png'),
+  arlen_young_hopeful: require('../../assets/images/sprite_arlen_young_hopeful.png'),
+  arlen_young_sad: require('../../assets/images/sprite_arlen_young_sad.png'),
   // Fallbacks to hero portraits for characters without sprites
   arlen: require('../../assets/images/hero_arlen.png'),
   jardir: require('../../assets/images/hero_jardir.png'),
@@ -147,7 +153,9 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const speakerColor = SPEAKER_COLORS[line.speaker] ?? warded.text;
   const speakerName = SPEAKER_NAMES[line.speaker] ?? line.speaker;
   const emotionIcon = line.emotion ? EMOTION_ICONS[line.emotion] ?? '' : '';
-  const sprite = SPRITES[line.speaker];
+  // Use emotion-specific sprite if available, fallback to base
+  const emotionKey = line.emotion ? `${line.speaker}_${line.emotion}` : null;
+  const sprite = (emotionKey && SPRITES[emotionKey]) ? SPRITES[emotionKey] : SPRITES[line.speaker];
   const isNarrator = line.speaker === 'narrator';
   const sceneImage = node.background ? SCENE_IMAGES[node.background] : null;
 
