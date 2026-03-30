@@ -150,7 +150,7 @@ export const CHAPTER_1: ChapterDefinition = {
       dialogueNodes: [
         {
           id: 'day3_1',
-          background: 'village_burning',
+          background: 'village_sunset',
           lines: [
             { speaker: 'narrator', text: "L'aube du troisième jour. Silvy est allée chercher des herbes à l'orée du village. Le soleil est encore haut, mais les nuages s'amoncellent." },
             { speaker: 'arlen_young', text: "Mère n'est pas rentrée. Le soleil baisse.", emotion: 'scared' },
@@ -336,7 +336,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'l_day2', background: 'forest_village',
+        id: 'l_day2', background: 'refugees',
         lines: [
           { speaker: 'narrator', text: "Des blessés arrivent de fermes voisines. La nuit dernière a été terrible." },
           { speaker: 'leesha', text: "Bruna ! Il y a au moins dix blessés. Je n'ai pas assez de cataplasmes.", emotion: 'scared' },
@@ -400,7 +400,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
   ],
 
   victoryDialogue: [{
-    id: 'l_victory', background: 'forest_village',
+    id: 'l_victory', background: 'dawn_victory',
     lines: [
       { speaker: 'narrator', text: "L'aube se lève sur Cutter's Hollow. Le village respire encore." },
       { speaker: 'bruna', text: "Tu as bien fait, petite. Mieux que je ne l'aurais cru.", emotion: 'hopeful' },
@@ -739,7 +739,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
   ],
 
   victoryDialogue: [{
-    id: 'r_victory', background: 'inn',
+    id: 'r_victory', background: 'dawn_victory',
     lines: [
       { speaker: 'narrator', text: "L'aube. Rojer a les doigts en sang, mais le village tient." },
       { speaker: 'narrator', text: "Les villageois le regardent avec un mélange de crainte et d'admiration. Un garçon qui chante aux démons." },
