@@ -20,6 +20,7 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
       const loc = state.locations.find(l => l.id === locId);
       if (!loc) continue;
       if (override.name) loc.name = override.name;
+      if (override.terrain) loc.terrain = override.terrain;
       if (override.startPop !== undefined) {
         loc.population = override.startPop;
         loc.maxPopulation = override.startPop;

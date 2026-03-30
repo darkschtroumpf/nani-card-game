@@ -15,8 +15,8 @@ export const CHAPTER_1: ChapterDefinition = {
   startingPresence: 'cutters_hollow',
   hiddenLocations: ['lakton', 'desert_spear'] as any,
   locationOverrides: {
-    cutters_hollow: { name: 'Maison des Bales', startPop: 6 },
-    miln: { name: 'Place du Village', startPop: 5 },
+    cutters_hollow: { name: 'Maison des Bales', startPop: 6, terrain: 'plains' as any },
+    miln: { name: 'Place du Village', startPop: 5, terrain: 'plains' as any },
     lakton: { name: 'Forêt', startPop: 0 },
     desert_spear: { name: 'Route du Nord', startPop: 0 },
   },
@@ -267,9 +267,9 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
   startingPresence: 'cutters_hollow',
   hiddenLocations: ['desert_spear'] as any,
   locationOverrides: {
-    cutters_hollow: { name: "Cutter's Hollow", startPop: 7 },
-    miln: { name: 'Maison de Bruna', startPop: 4 },
-    lakton: { name: 'Place du Marché', startPop: 5 },
+    cutters_hollow: { name: "Cutter's Hollow", startPop: 7, terrain: 'forest' as any },
+    miln: { name: 'Maison de Bruna', startPop: 4, terrain: 'forest' as any },
+    lakton: { name: 'Place du Marché', startPop: 5, terrain: 'forest' as any },
     desert_spear: { name: '', startPop: 0 },
   },
   preplacedWards: [
@@ -438,9 +438,9 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
   startingPresence: 'desert_spear',
   hiddenLocations: ['lakton'] as any,
   locationOverrides: {
-    desert_spear: { name: 'Entrée du Maze', startPop: 6 },
-    cutters_hollow: { name: 'Couloir des Sharum', startPop: 5 },
-    miln: { name: 'Salle du Puits', startPop: 4 },
+    desert_spear: { name: 'Entrée du Maze', startPop: 6, terrain: 'underground' as any },
+    cutters_hollow: { name: 'Couloir des Sharum', startPop: 5, terrain: 'underground' as any },
+    miln: { name: 'Salle du Puits', startPop: 4, terrain: 'underground' as any },
     lakton: { name: '', startPop: 0 },
   },
   preplacedWards: [
@@ -609,8 +609,8 @@ export const CHAPTER_ROJER: ChapterDefinition = {
   startingPresence: 'cutters_hollow',
   hiddenLocations: ['desert_spear', 'lakton'] as any,
   locationOverrides: {
-    cutters_hollow: { name: 'Auberge de Riverbridge', startPop: 5 },
-    miln: { name: 'Pont du Village', startPop: 4 },
+    cutters_hollow: { name: 'Auberge de Riverbridge', startPop: 5, terrain: 'plains' as any },
+    miln: { name: 'Pont du Village', startPop: 4, terrain: 'plains' as any },
     desert_spear: { name: '', startPop: 0 },
     lakton: { name: '', startPop: 0 },
   },

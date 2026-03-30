@@ -7,10 +7,13 @@
 export type LocationId = 'desert_spear' | 'cutters_hollow' | 'lakton' | 'miln';
 export type MapPosition = 'north' | 'west' | 'east' | 'south';
 
+export type TerrainType = 'plains' | 'forest' | 'lake' | 'mountain' | 'desert' | 'underground';
+
 export interface Location {
   id: LocationId;
   name: string;
   position: MapPosition;
+  terrain: TerrainType;
   population: number;
   maxPopulation: number;
   primaryResource: ResourceType;

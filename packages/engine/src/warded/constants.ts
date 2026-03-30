@@ -3,17 +3,17 @@
 // ============================================================
 
 import type {
-  LocationId, MapPosition, WardType, WardCombo, DemonType,
+  LocationId, MapPosition, TerrainType, WardType, WardCombo, DemonType,
   DemonSurgeType, ResourceType, HeroId, SongType, Consumable,
 } from './types';
 
 // --- Map ---
 
-export const LOCATIONS: { id: LocationId; name: string; position: MapPosition; primaryResource: ResourceType; secondaryFoodTurn: 'odd' | 'even' | null; startPop: number }[] = [
-  { id: 'desert_spear', name: 'Desert Spear', position: 'north', primaryResource: 'ink', secondaryFoodTurn: null, startPop: 6 },
-  { id: 'cutters_hollow', name: "Cutter's Hollow", position: 'west', primaryResource: 'wood', secondaryFoodTurn: 'odd', startPop: 6 },
-  { id: 'lakton', name: 'Lakton', position: 'east', primaryResource: 'food', secondaryFoodTurn: null, startPop: 5 },
-  { id: 'miln', name: 'Fort Miln', position: 'south', primaryResource: 'ink', secondaryFoodTurn: 'even', startPop: 6 },
+export const LOCATIONS: { id: LocationId; name: string; position: MapPosition; terrain: TerrainType; primaryResource: ResourceType; secondaryFoodTurn: 'odd' | 'even' | null; startPop: number }[] = [
+  { id: 'desert_spear', name: 'Desert Spear', position: 'north', terrain: 'desert', primaryResource: 'ink', secondaryFoodTurn: null, startPop: 6 },
+  { id: 'cutters_hollow', name: "Cutter's Hollow", position: 'west', terrain: 'forest', primaryResource: 'wood', secondaryFoodTurn: 'odd', startPop: 6 },
+  { id: 'lakton', name: 'Lakton', position: 'east', terrain: 'lake', primaryResource: 'food', secondaryFoodTurn: null, startPop: 5 },
+  { id: 'miln', name: 'Fort Miln', position: 'south', terrain: 'mountain', primaryResource: 'ink', secondaryFoodTurn: 'even', startPop: 6 },
 ];
 
 export const ADJACENCY: Record<LocationId, LocationId[]> = {
@@ -95,6 +95,19 @@ export const DEMON_TYPES: {
 // Reduced demon counts for better balance (was: 3,4,5,6...)
 export const DEMONS_PER_WAVE: Record<number, number> = {
   1: 2, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6, 9: 6, 10: 7, 11: 8, 12: 9,
+};
+
+// Terrain → demon type affinity (which demons are attracted to which terrain)
+// Based on The Warded Man lore:
+// Flame demons: everywhere (common), Wood demons: forests, Wind demons: plains/desert
+// Water demons: lakes/rivers, Rock demons: mountains/underground, Mind demons: follow hero
+export const TERRAIN_DEMON_AFFINITY: Record<TerrainType, { primary: DemonType[]; secondary: DemonType[] }> = {
+  plains:      { primary: ['flame', 'wind'],  secondary: ['wood'] },
+  forest:      { primary: ['wood', 'flame'],  secondary: ['wind'] },
+  lake:        { primary: ['water', 'flame'], secondary: ['wind'] },
+  mountain:    { primary: ['rock', 'flame'],  secondary: ['wind'] },
+  desert:      { primary: ['flame', 'wind'],  secondary: ['rock'] },
+  underground: { primary: ['rock', 'flame'],  secondary: ['wind'] },
 };
 
 // --- Demon Surges ---

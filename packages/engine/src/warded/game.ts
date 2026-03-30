@@ -13,6 +13,7 @@ import {
   DEMON_TYPES, DEMONS_PER_WAVE, QUICK_MODE_SURGES, CAMPAIGN_SURGES,
   QUICK_MODE_STARTING_WARDS, HEROES, SWARM_THRESHOLD,
   HORDE_FORMATION_NIGHTS, SONGS, CONSUMABLE_RECIPES,
+  TERRAIN_DEMON_AFFINITY,
 } from './constants';
 
 // ============================================================
@@ -79,6 +80,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     id: l.id,
     name: l.name,
     position: l.position,
+    terrain: l.terrain,
     population: l.startPop,
     maxPopulation: l.startPop,
     primaryResource: l.primaryResource,
@@ -352,48 +354,49 @@ function spawnDemons(state: GameState): void {
   // Campaign modifiers
   if (state.campaignModifiers?.extraDemonsPerWave) count += state.campaignModifiers.extraDemonsPerWave;
 
-  // Build demon pool based on night/chapter
-  const availableTypes = DEMON_TYPES.filter(d => d.introducedChapter <= (state.mode === 'campaign' ? state.chapter : state.nightNumber));
+  // Terrain-based demon spawning — each location attracts demons matching its terrain
+  const living = state.locations.filter(l => !l.fallen);
+  const availableChapter = state.mode === 'campaign' ? state.chapter : state.nightNumber;
 
   for (let i = 0; i < count; i++) {
-    const demonDef = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-    const target = determineDemonTarget(state, demonDef.type);
+    // Pick target location (spread evenly with slight randomness)
+    const target = living[i % living.length];
+    const targetId = target.id;
+
+    // Pick demon type based on terrain affinity
+    const affinity = TERRAIN_DEMON_AFFINITY[target.terrain] ?? TERRAIN_DEMON_AFFINITY.plains;
+    const pool = Math.random() < 0.7 ? affinity.primary : affinity.secondary;
+    // Filter by what's available at this chapter/night
+    const available = pool.filter(dt => DEMON_TYPES.find(d => d.type === dt && d.introducedChapter <= availableChapter));
+    const demonType = available.length > 0
+      ? available[Math.floor(Math.random() * available.length)]
+      : 'flame'; // fallback to flame (most common)
+    const demonDef = DEMON_TYPES.find(d => d.type === demonType)!;
 
     let strength = demonDef.baseStrength;
-
-    // Blood Moon surge
     if (state.currentSurge === 'blood_moon') strength += 1;
-    // Campaign strength bonus
     if (state.campaignModifiers?.demonStrengthBonus) strength += state.campaignModifiers.demonStrengthBonus;
 
-    // Wind demons: group of 2, SPREAD across locations instead of stacking
-    if (demonDef.type === 'wind') {
-      const windLocs = shuffle(state.locations.filter(l => !l.fallen).map(l => l.id));
+    // Mind demons always target hero presence
+    const finalTarget = demonType === 'mind' ? state.presenceLocation : targetId;
+
+    // Wind demons: spawn 2 but spread across locations
+    if (demonType === 'wind') {
+      const windLocs = shuffle(living.map(l => l.id));
       for (let w = 0; w < 2; w++) {
-        const windTarget = windLocs[w % windLocs.length];
-        const windDemon: DemonCard = {
-          type: 'wind',
-          strength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0),
-          targetLocation: windTarget,
-          isLocked: false,
-          isBoss: false,
-          isPrinceUpgraded: false,
-        };
-        state.demonsAtLocations[windTarget].push({ demon: windDemon, currentStrength: windDemon.strength, swarmed: false });
+        const wTarget = windLocs[w % windLocs.length];
+        state.demonsAtLocations[wTarget].push({
+          demon: { type: 'wind', strength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), targetLocation: wTarget, isLocked: false, isBoss: false, isPrinceUpgraded: false },
+          currentStrength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), swarmed: false,
+        });
       }
       continue;
     }
 
-    const demon: DemonCard = {
-      type: demonDef.type,
-      strength,
-      targetLocation: target,
-      isLocked: demonDef.isLocked,
-      isBoss: demonDef.isBoss,
-      isPrinceUpgraded: false,
-    };
-
-    state.demonsAtLocations[target].push({ demon, currentStrength: strength, swarmed: false });
+    state.demonsAtLocations[finalTarget].push({
+      demon: { type: demonType, strength, targetLocation: finalTarget, isLocked: demonDef.isLocked, isBoss: demonDef.isBoss, isPrinceUpgraded: false },
+      currentStrength: strength, swarmed: false,
+    });
   }
 
   // Coreling Prince: upgrade 1 random demon +2 str

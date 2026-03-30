@@ -2,7 +2,7 @@
 // Campaign Types — The Demon's Cycle
 // ============================================================
 
-import type { LocationId, WardType, DemonSurgeType, ResourceType, HeroId } from './types';
+import type { LocationId, TerrainType, WardType, DemonSurgeType, ResourceType, HeroId } from './types';
 
 // --- Dialogue ---
 
@@ -57,7 +57,7 @@ export interface ChapterDefinition {
   heroId: HeroId;
   nightCount: number;
   startingNightNumber: number;
-  locationOverrides?: Partial<Record<LocationId, { name: string; startPop?: number }>>;
+  locationOverrides?: Partial<Record<LocationId, { name: string; startPop?: number; terrain?: TerrainType }>>;
   startingPresence: LocationId;
   hiddenLocations?: LocationId[];  // locations disabled for this chapter (marked fallen)
   preplacedWards: { locationId: LocationId; ward: WardType }[];
