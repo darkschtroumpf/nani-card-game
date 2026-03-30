@@ -21,6 +21,7 @@ export interface DialogueChoice {
 
 export interface DialogueNode {
   id: string;
+  background?: string;      // key into scene images (e.g. 'village_sunset')
   lines: DialogueLine[];
   choices?: DialogueChoice[];
   nextNodeId?: string;

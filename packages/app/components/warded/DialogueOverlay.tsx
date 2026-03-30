@@ -1,7 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated } from 'react-native';
 import { warded, wardedFonts } from '../../theme-warded';
 import type { DialogueNode, DialogueChoice } from '../../../engine/src/warded/campaign-types';
+
+const SCENE_IMAGES: Record<string, any> = {
+  village_sunset: require('../../assets/images/scene_village_sunset.png'),
+  messenger: require('../../assets/images/scene_messenger.png'),
+  refugees: require('../../assets/images/scene_refugees.png'),
+  ward_book: require('../../assets/images/scene_ward_book.png'),
+  dawn_victory: require('../../assets/images/scene_dawn_victory.png'),
+  village_burning: require('../../assets/images/scene_village_burning.png'),
+};
 
 const HERO_PORTRAITS: Record<string, any> = {
   arlen: require('../../assets/images/hero_arlen.png'),
@@ -129,11 +138,19 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const portrait = HERO_PORTRAITS[line.speaker];
   const isNarrator = line.speaker === 'narrator';
 
+  const sceneImage = node.background ? SCENE_IMAGES[node.background] : null;
+
   return (
     <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
       <TouchableOpacity style={styles.tapArea} activeOpacity={1} onPress={handleTap}>
-        {/* Dark background */}
-        <View style={styles.backdrop} />
+        {/* Scene background image */}
+        {sceneImage ? (
+          <ImageBackground source={sceneImage} style={styles.sceneBackground} imageStyle={styles.sceneImage}>
+            <View style={styles.sceneOverlay} />
+          </ImageBackground>
+        ) : (
+          <View style={styles.backdrop} />
+        )}
 
         {/* Dialogue box */}
         <View style={styles.dialogueBox}>
@@ -202,7 +219,17 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
+  },
+  sceneBackground: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  sceneImage: {
+    resizeMode: 'cover',
+  },
+  sceneOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   dialogueBox: {
     backgroundColor: warded.bgCard,

@@ -32,6 +32,7 @@ export const CHAPTER_1: ChapterDefinition = {
   introDialogue: [
     {
       id: 'intro_1',
+      background: 'village_sunset',
       lines: [
         { speaker: 'narrator', text: "292 AR. Le soleil descend sur Tibbet's Brook, un petit village perdu dans les plaines du nord." },
         { speaker: 'narrator', text: "Depuis des générations, les hommes vivent dans la terreur de la nuit. Car quand l'obscurité tombe, les démons surgissent de la terre." },
@@ -41,6 +42,7 @@ export const CHAPTER_1: ChapterDefinition = {
     },
     {
       id: 'intro_2',
+      background: 'village_sunset',
       lines: [
         { speaker: 'jeph', text: "Arlen ! Viens m'aider avec les wards. Le soleil se couche dans deux heures.", emotion: 'scared' },
         { speaker: 'arlen_young', text: "J'arrive, père. Mais pourquoi est-ce qu'on ne les combat pas, au lieu de se cacher ?", emotion: 'determined' },
@@ -51,6 +53,7 @@ export const CHAPTER_1: ChapterDefinition = {
     },
     {
       id: 'intro_3',
+      background: 'messenger',
       lines: [
         { speaker: 'narrator', text: "Un cavalier approche du village. C'est Ragen, un Messager — l'un des rares hommes assez courageux pour voyager entre les villes." },
         { speaker: 'ragen', text: "Bonnes gens de Tibbet's Brook ! J'apporte des nouvelles de Fort Miln.", emotion: 'neutral' },
@@ -71,6 +74,7 @@ export const CHAPTER_1: ChapterDefinition = {
       dialogueNodes: [
         {
           id: 'day1_1',
+          background: 'messenger',
           lines: [
             { speaker: 'ragen', text: "Petit, tu sais tracer des wards ?", emotion: 'neutral' },
             { speaker: 'arlen_young', text: "Mon père m'a appris les bases. Feu et pierre.", emotion: 'determined' },
@@ -105,6 +109,7 @@ export const CHAPTER_1: ChapterDefinition = {
       dialogueNodes: [
         {
           id: 'day2_1',
+          background: 'refugees',
           lines: [
             { speaker: 'narrator', text: "À l'aube du deuxième jour, une famille hagarde arrive à Tibbet's Brook. Leurs vêtements sont déchirés, leurs yeux hantés." },
             { speaker: 'refugee', text: "Par pitié... Notre ferme a été détruite cette nuit. Les wards ont cédé. Il ne reste rien.", emotion: 'scared' },
@@ -144,6 +149,7 @@ export const CHAPTER_1: ChapterDefinition = {
       dialogueNodes: [
         {
           id: 'day3_1',
+          background: 'ward_book',
           lines: [
             { speaker: 'narrator', text: "Arlen fouille les affaires de sa mère et trouve un vieux carnet poussiéreux. Les pages sont couvertes de symboles de wards qu'il n'a jamais vus." },
             { speaker: 'arlen_young', text: "Ce sont... des wards de combat ? Je croyais qu'on ne pouvait que se défendre !", emotion: 'hopeful' },
@@ -182,6 +188,7 @@ export const CHAPTER_1: ChapterDefinition = {
   victoryDialogue: [
     {
       id: 'victory_1',
+      background: 'dawn_victory',
       lines: [
         { speaker: 'narrator', text: "L'aube se lève sur Tibbet's Brook. Les corelings se dissolvent dans la lumière du matin, laissant derrière eux des traces noirâtres sur le sol." },
         { speaker: 'narrator', text: "Le village a tenu. Trois nuits. Trois nuits de terreur, de feu et de wards qui craquent sous la pression." },
@@ -193,6 +200,7 @@ export const CHAPTER_1: ChapterDefinition = {
     },
     {
       id: 'victory_2',
+      background: 'dawn_victory',
       lines: [
         { speaker: 'ragen', text: "Tu as du courage, petit. Plus que la plupart des hommes que je connais.", emotion: 'neutral' },
         { speaker: 'arlen_young', text: "Emmenez-moi à Fort Miln. Je veux apprendre. Les vrais wards. Les wards de combat.", emotion: 'determined' },
@@ -210,6 +218,7 @@ export const CHAPTER_1: ChapterDefinition = {
   defeatDialogue: [
     {
       id: 'defeat_1',
+      background: 'village_burning',
       lines: [
         { speaker: 'narrator', text: "Les wards cèdent. Les corelings envahissent Tibbet's Brook dans un torrent de griffes et de flammes." },
         { speaker: 'silvy', text: "ARLEN ! COURS !", emotion: 'scared' },
