@@ -69,7 +69,7 @@ export interface DemonAtLocation {
 
 // --- Heroes ---
 
-export type HeroId = 'arlen' | 'arlen_young' | 'jardir' | 'rojer' | 'leesha';
+export type HeroId = 'arlen' | 'arlen_young' | 'jardir' | 'jardir_young' | 'rojer' | 'rojer_young' | 'leesha' | 'leesha_young';
 
 export interface Hero {
   id: HeroId;

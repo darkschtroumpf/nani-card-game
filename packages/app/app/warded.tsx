@@ -1250,6 +1250,21 @@ export default function WardedGameScreen() {
                       <Text style={[styles.phaseBtnText, { color: '#FFD740' }]}>🏃 Leurre — attirer un démon ici</Text>
                     </TouchableOpacity>
                   )}
+                  {state.hero.id === 'jardir_young' && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FF5252', backgroundColor: '#FF525215' }]} onPress={ctrl.doSpearStrike}>
+                      <Text style={[styles.phaseBtnText, { color: '#FF5252' }]}>🔱 Coup de Lance — 2 dégâts</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'rojer_young' && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#7C4DFF', backgroundColor: '#7C4DFF15' }]} onPress={ctrl.doMelody}>
+                      <Text style={[styles.phaseBtnText, { color: '#7C4DFF' }]}>🎵 Mélodie — affaiblir un démon</Text>
+                    </TouchableOpacity>
+                  )}
+                  {state.hero.id === 'leesha_young' && (
+                    <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#69F0AE', backgroundColor: '#69F0AE15' }]} onPress={ctrl.doCataplasme}>
+                      <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🌿 Cataplasme — soigner +2 pop</Text>
+                    </TouchableOpacity>
+                  )}
                   {state.hero.id === 'jardir' && (state.hero.jardir_warriors ?? []).some(w => w.locationId === state.presenceLocation) && (
                     <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FF5252', backgroundColor: '#FF525215' }]} onPress={ctrl.doRally}>
                       <Text style={[styles.phaseBtnText, { color: '#FF5252' }]}>👑 Rally — renforcer guerrier</Text>

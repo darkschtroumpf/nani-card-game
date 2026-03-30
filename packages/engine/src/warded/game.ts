@@ -1212,6 +1212,76 @@ export function arlenYoung_leurre(state: GameState): string[] {
 }
 
 // ============================================================
+// Jardir Young — Coup de Lance (spear strike)
+// ============================================================
+
+export function jardirYoung_spearStrike(state: GameState): string[] {
+  if (state.hero.id !== 'jardir_young') return ['Jardir jeune uniquement.'];
+  if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+
+  const demons = state.demonsAtLocations[state.presenceLocation];
+  if (demons.length === 0) return ['Pas de démon à la Présence.'];
+
+  const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+  target.currentStrength -= 2;
+  state.heroWaveAbilityUsed = true;
+
+  const events = [`🔱 Coup de Lance: 2 dégâts à ${target.demon.type}!`];
+  if (target.currentStrength <= 0) {
+    demons.splice(demons.indexOf(target), 1);
+    events.push(`${target.demon.type} détruit!`);
+    onDemonKilled(state, state.presenceLocation);
+  }
+  addLog(state, `Coup de Lance: 2 dégâts à ${target.demon.type}.`);
+  return events;
+}
+
+// ============================================================
+// Rojer Young — Mélodie Instinctive (weaken demon)
+// ============================================================
+
+export function rojerYoung_melody(state: GameState): string[] {
+  if (state.hero.id !== 'rojer_young') return ['Rojer jeune uniquement.'];
+  if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+
+  const demons = state.demonsAtLocations[state.presenceLocation];
+  if (demons.length === 0) return ['Pas de démon à la Présence.'];
+
+  const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+  target.currentStrength = Math.max(0, target.currentStrength - 2);
+  state.heroWaveAbilityUsed = true;
+
+  const events = [`🎵 Mélodie Instinctive: ${target.demon.type} affaibli (force ${target.currentStrength})!`];
+  if (target.currentStrength <= 0) {
+    demons.splice(demons.indexOf(target), 1);
+    events.push(`${target.demon.type} dissipé par la musique!`);
+    onDemonKilled(state, state.presenceLocation);
+  }
+  addLog(state, `Mélodie Instinctive affaiblit ${target.demon.type}.`);
+  return events;
+}
+
+// ============================================================
+// Leesha Young — Cataplasme (heal population)
+// ============================================================
+
+export function leeshaYoung_cataplasme(state: GameState): string[] {
+  if (state.hero.id !== 'leesha_young') return ['Leesha jeune uniquement.'];
+  if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+
+  // Heal the location at presence (or most damaged)
+  const loc = getLocation(state, state.presenceLocation);
+  if (loc.fallen) return ['Lieu tombé.'];
+
+  const healed = Math.min(2, loc.maxPopulation - loc.population);
+  loc.population += healed;
+  state.heroWaveAbilityUsed = true;
+
+  addLog(state, `Cataplasme: +${healed} Pop à ${loc.name}.`);
+  return [`🌿 Cataplasme: +${healed} Pop à ${loc.name} (${loc.population}/${loc.maxPopulation})`];
+}
+
+// ============================================================
 // Jardir-specific
 // ============================================================
 

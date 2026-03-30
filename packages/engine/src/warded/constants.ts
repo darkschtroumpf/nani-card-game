@@ -141,6 +141,15 @@ export const HEROES: {
     waveAbility: 'Warded Fist: Deal damage equal to Ward Charge to 1 demon at Presence location. Does not consume Charge.',
   },
   {
+    id: 'jardir_young', name: 'Jardir (nie\'Sharum)', title: 'Recrue du Maze',
+    ap: 5, hp: 9,
+    passive: 'Entraînement: Jardir est un jeune guerrier du Maze. Il sait se battre à la lance mais n\'a pas encore de troupes.',
+    signatureName: 'Coup de Lance',
+    signatureEffect: 'Inflige 2 dégâts à 1 démon à la Présence. Utilisable 1 fois par vague.',
+    signatureCost: {},
+    waveAbility: 'Coup de Lance: 2 dégâts au démon le plus fort à la Présence.',
+  },
+  {
     id: 'jardir', name: 'Ahmann Jardir', title: 'Shar\'Dama Ka',
     ap: 5, hp: 10,
     passive: 'Sharum Commander: Deploy warrior tokens (str 2) at any location during Day (1 AP each). Warriors fight demons automatically during Night.',
@@ -150,6 +159,15 @@ export const HEROES: {
     waveAbility: 'Rally: One warrior at Presence heals to full and gains +1 str this wave.',
   },
   {
+    id: 'rojer_young', name: 'Rojer (apprenti)', title: 'Apprenti Jongleur',
+    ap: 3, hp: 7,
+    passive: 'Instinct musical: Rojer découvre que sa musique affecte les démons. Un pouvoir encore incontrôlé.',
+    signatureName: 'Mélodie Instinctive',
+    signatureEffect: 'Réduit la force d\'1 démon à la Présence de 2. Utilisable 1 fois par vague.',
+    signatureCost: {},
+    waveAbility: 'Mélodie Instinctive: -2 force au démon le plus fort à la Présence.',
+  },
+  {
     id: 'rojer', name: 'Rojer Inn', title: 'The Fiddle Wizard',
     ap: 5, hp: 10,
     passive: 'Song Weaver: During Day, spend 1 AP to Rehearse (set all 3 wave songs at once). Songs play automatically during Night. 3 different songs = Harmony bonus (+1 ward activation in Wave 3).',
@@ -157,6 +175,15 @@ export const HEROES: {
     signatureEffect: 'All songs affect ALL locations this night (not just Presence + adjacent).',
     signatureCost: { ap: 2 },
     waveAbility: 'Minor Charm: Move 1 non-locked, non-boss demon from an adjacent location to Presence.',
+  },
+  {
+    id: 'leesha_young', name: 'Leesha (apprentie)', title: 'Apprentie Herboriste',
+    ap: 4, hp: 8,
+    passive: 'Apprentie de Bruna: Leesha apprend les bases des herbes et des wards. Elle peut soigner mais pas encore crafter de potions.',
+    signatureName: 'Cataplasme',
+    signatureEffect: 'Soigne 2 Population à un lieu. Utilisable 1 fois par vague.',
+    signatureCost: {},
+    waveAbility: 'Cataplasme: +2 Pop au lieu le plus endommagé à la Présence.',
   },
   {
     id: 'leesha', name: 'Leesha Paper', title: 'Herb Gatherer',

@@ -7,7 +7,9 @@ import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warde
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, removeWard, swapWards,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre,
+  jardirYoung_spearStrike, rojerYoung_melody, leeshaYoung_cataplasme,
+  removeWard, swapWards,
   getThreatForecast, resolveWardPassives,
   jardir_deployWarrior, jardir_crownOfKaji, jardir_rally, jardir_sacrifice, resolveWarriorCombat,
   rojer_rehearse, rojer_symphony, rojer_minorCharm, rojer_desperateMelody, resolveSongs,
@@ -41,8 +43,11 @@ export interface WardedGameController {
   doWardedFist: () => void;
   doMistWalk: (locationId: LocationId) => void;
 
-  // Arlen Young
+  // Young heroes
   doLeurre: () => void;
+  doSpearStrike: () => void;
+  doMelody: () => void;
+  doCataplasme: () => void;
 
   // Jardir
   doDeployWarrior: (locationId: LocationId) => void;
@@ -277,6 +282,30 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync, addEvents]);
 
+  const doSpearStrike = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = jardirYoung_spearStrike(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doMelody = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = rojerYoung_melody(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
+  const doCataplasme = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    const evts = leeshaYoung_cataplasme(s);
+    addEvents(evts);
+    sync(s);
+  }, [sync, addEvents]);
+
   // --- HP-Cost Abilities ---
 
   const doSurgeOfWill = useCallback(() => {
@@ -434,6 +463,8 @@ export function useWardedGame(): WardedGameController {
     doCraft, doFortify, doGather, doRemoveWard, doSwapWards, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
+    // Young heroes
+    doSpearStrike, doMelody, doCataplasme,
     // Jardir
     doDeployWarrior, doCrownOfKaji, doRally,
     // Rojer

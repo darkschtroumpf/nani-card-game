@@ -20,15 +20,19 @@ const HERO_IMAGES: Record<string, any> = {
   leesha: require('../assets/images/hero_leesha.png'),
 };
 
-const CHAPTER_PORTRAITS: Record<number, string> = {
-  1: 'arlen_young', 2: 'leesha', 3: 'jardir', 4: 'rojer',
+// Map young heroId to display portrait
+const HERO_DISPLAY_PORTRAIT: Record<string, string> = {
+  arlen_young: 'arlen_young',
+  leesha_young: 'leesha',
+  jardir_young: 'jardir',
+  rojer_young: 'rojer',
 };
 
 const CHARACTER_INFO: Record<string, { name: string; color: string; subtitle: string }> = {
-  arlen_young: { name: 'Arlen Bales', color: '#FFD740', subtitle: "Le garçon qui refuse d'avoir peur" },
-  leesha: { name: 'Leesha Paper', color: '#69F0AE', subtitle: "L'herboriste qui soigne et protège" },
-  jardir: { name: 'Ahmann Jardir', color: '#FF5252', subtitle: "Le guerrier du désert" },
-  rojer: { name: 'Rojer Inn', color: '#7C4DFF', subtitle: "Le jongleur dont la musique charme les démons" },
+  arlen_young: { name: 'Arlen Bales', color: '#FFD740', subtitle: "Un garçon de 11 ans qui refuse d'avoir peur" },
+  leesha_young: { name: 'Leesha Paper', color: '#69F0AE', subtitle: "Apprentie herboriste, elle apprend à soigner" },
+  jardir_young: { name: 'Ahmann Jardir', color: '#FF5252', subtitle: "Recrue nie'Sharum, sa première nuit dans le Maze" },
+  rojer_young: { name: 'Rojer Inn', color: '#7C4DFF', subtitle: "Apprenti jongleur, il découvre un don étrange" },
 };
 
 const SAVE_KEY = '@warded_campaign_save';
@@ -93,7 +97,7 @@ export default function CampaignScreen() {
   }
 
   // Character selection — group chapters by hero
-  const heroIds = ['arlen_young', 'leesha', 'jardir', 'rojer'];
+  const heroIds = ['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,10 +110,7 @@ export default function CampaignScreen() {
 
         {heroIds.map(heroKey => {
           const info = CHARACTER_INFO[heroKey];
-          const chapter = CHAPTERS.find(c => {
-            const portrait = CHAPTER_PORTRAITS[c.id];
-            return portrait === heroKey || c.heroId === heroKey;
-          });
+          const chapter = CHAPTERS.find(c => c.heroId === heroKey);
           if (!chapter || !info) return null;
           const isCompleted = save?.completedChapters.includes(chapter.id);
 
@@ -121,7 +122,7 @@ export default function CampaignScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.cardHeader}>
-                <Image source={HERO_IMAGES[heroKey]} style={[styles.cardAvatar, { borderColor: info.color }]} />
+                <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[heroKey] ?? heroKey]} style={[styles.cardAvatar, { borderColor: info.color }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.cardName, { color: info.color }]}>{info.name}</Text>
                   <Text style={styles.cardSub}>{info.subtitle}</Text>
