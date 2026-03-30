@@ -5,6 +5,7 @@ import type { DialogueNode, DialogueChoice } from '../../../engine/src/warded/ca
 
 const HERO_PORTRAITS: Record<string, any> = {
   arlen: require('../../assets/images/hero_arlen.png'),
+  arlen_young: require('../../assets/images/hero_arlen_young.png'),
   jardir: require('../../assets/images/hero_jardir.png'),
   rojer: require('../../assets/images/hero_rojer.png'),
   leesha: require('../../assets/images/hero_leesha.png'),
@@ -12,6 +13,7 @@ const HERO_PORTRAITS: Record<string, any> = {
 
 const SPEAKER_COLORS: Record<string, string> = {
   arlen: '#FFD740',
+  arlen_young: '#FFD740',
   jardir: '#FF5252',
   rojer: '#7C4DFF',
   leesha: '#69F0AE',
@@ -24,6 +26,7 @@ const SPEAKER_COLORS: Record<string, string> = {
 
 const SPEAKER_NAMES: Record<string, string> = {
   arlen: 'Arlen',
+  arlen_young: 'Arlen',
   jardir: 'Jardir',
   rojer: 'Rojer',
   leesha: 'Leesha',

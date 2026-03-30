@@ -15,9 +15,15 @@ const BG_NIGHT = require('../assets/images/bg_night.png');
 
 const HERO_IMAGES: Record<string, any> = {
   arlen: require('../assets/images/hero_arlen.png'),
+  arlen_young: require('../assets/images/hero_arlen_young.png'),
   jardir: require('../assets/images/hero_jardir.png'),
   rojer: require('../assets/images/hero_rojer.png'),
   leesha: require('../assets/images/hero_leesha.png'),
+};
+
+// Chapter-specific hero portrait overrides
+const CHAPTER_HERO_PORTRAITS: Record<number, string> = {
+  1: 'arlen_young', // Chapter 1: young Arlen before becoming the Warded Man
 };
 
 type CampaignPhase = 'loading' | 'chapter_select' | 'intro' | 'day_event' | 'gameplay' | 'victory' | 'defeat';
@@ -178,7 +184,7 @@ export default function CampaignScreen() {
                 onPress={() => startChapter(chapter)}
               >
                 <View style={styles.chapterHeader}>
-                  <Image source={HERO_IMAGES[chapter.heroId]} style={styles.chapterHeroImg} />
+                  <Image source={HERO_IMAGES[CHAPTER_HERO_PORTRAITS[chapter.id] ?? chapter.heroId]} style={styles.chapterHeroImg} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.chapterNum}>Chapitre {chapter.id}</Text>
                     <Text style={styles.chapterTitle}>{chapter.title}</Text>

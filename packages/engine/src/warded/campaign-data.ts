@@ -40,9 +40,9 @@ export const CHAPTER_1: ChapterDefinition = {
       id: 'intro_2',
       lines: [
         { speaker: 'jeph', text: "Arlen ! Viens m'aider avec les wards. Le soleil se couche dans deux heures.", emotion: 'scared' },
-        { speaker: 'arlen', text: "J'arrive, père. Mais pourquoi est-ce qu'on ne les combat pas, au lieu de se cacher ?", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "J'arrive, père. Mais pourquoi est-ce qu'on ne les combat pas, au lieu de se cacher ?", emotion: 'determined' },
         { speaker: 'jeph', text: "Ne dis pas de bêtises, garçon. Les wards nous protègent. C'est tout ce qu'on a.", emotion: 'angry' },
-        { speaker: 'arlen', text: "...", emotion: 'angry' },
+        { speaker: 'arlen_young', text: "...", emotion: 'angry' },
       ],
       nextNodeId: 'intro_3',
     },
@@ -53,7 +53,7 @@ export const CHAPTER_1: ChapterDefinition = {
         { speaker: 'ragen', text: "Bonnes gens de Tibbet's Brook ! J'apporte des nouvelles de Fort Miln.", emotion: 'neutral' },
         { speaker: 'ragen', text: "Les corelings sont plus agités que d'habitude. Cette nuit sera dangereuse. Préparez-vous.", emotion: 'determined' },
         { speaker: 'silvy', text: "Créateur tout-puissant... Arlen, rentre à la maison.", emotion: 'scared' },
-        { speaker: 'arlen', text: "Non. Je veux aider.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Non. Je veux aider.", emotion: 'determined' },
       ],
     },
   ],
@@ -70,7 +70,7 @@ export const CHAPTER_1: ChapterDefinition = {
           id: 'day1_1',
           lines: [
             { speaker: 'ragen', text: "Petit, tu sais tracer des wards ?", emotion: 'neutral' },
-            { speaker: 'arlen', text: "Mon père m'a appris les bases. Feu et pierre.", emotion: 'determined' },
+            { speaker: 'arlen_young', text: "Mon père m'a appris les bases. Feu et pierre.", emotion: 'determined' },
             { speaker: 'ragen', text: "Bien. J'ai besoin d'aide. Soit tu m'aides à renforcer les wards de la place du village, soit tu restes à la ferme pour stocker du bois.", emotion: 'neutral' },
           ],
           choices: [
@@ -106,7 +106,7 @@ export const CHAPTER_1: ChapterDefinition = {
             { speaker: 'narrator', text: "À l'aube du deuxième jour, une famille hagarde arrive à Tibbet's Brook. Leurs vêtements sont déchirés, leurs yeux hantés." },
             { speaker: 'refugee', text: "Par pitié... Notre ferme a été détruite cette nuit. Les wards ont cédé. Il ne reste rien.", emotion: 'scared' },
             { speaker: 'silvy', text: "Pauvres gens... Mais on a à peine assez de nourriture pour nous.", emotion: 'sad' },
-            { speaker: 'arlen', text: "On ne peut pas les laisser dehors. Pas la nuit.", emotion: 'determined' },
+            { speaker: 'arlen_young', text: "On ne peut pas les laisser dehors. Pas la nuit.", emotion: 'determined' },
             { speaker: 'jeph', text: "C'est ta décision maintenant, fils ? Tu te prends pour un homme ?", emotion: 'angry' },
           ],
           choices: [
@@ -145,9 +145,9 @@ export const CHAPTER_1: ChapterDefinition = {
           id: 'day3_1',
           lines: [
             { speaker: 'narrator', text: "Arlen fouille les affaires de sa mère et trouve un vieux carnet poussiéreux. Les pages sont couvertes de symboles de wards qu'il n'a jamais vus." },
-            { speaker: 'arlen', text: "Ce sont... des wards de combat ? Je croyais qu'on ne pouvait que se défendre !", emotion: 'hopeful' },
+            { speaker: 'arlen_young', text: "Ce sont... des wards de combat ? Je croyais qu'on ne pouvait que se défendre !", emotion: 'hopeful' },
             { speaker: 'silvy', text: "Arlen ! Repose ça ! Ces wards sont maudits. Ton grand-père est mort en essayant de les utiliser.", emotion: 'scared' },
-            { speaker: 'arlen', text: "Ou peut-être qu'il est mort parce que personne ne l'a aidé.", emotion: 'determined' },
+            { speaker: 'arlen_young', text: "Ou peut-être qu'il est mort parce que personne ne l'a aidé.", emotion: 'determined' },
           ],
           choices: [
             {
@@ -184,9 +184,9 @@ export const CHAPTER_1: ChapterDefinition = {
       lines: [
         { speaker: 'narrator', text: "L'aube se lève sur Tibbet's Brook. Les corelings se dissolvent dans la lumière du matin, laissant derrière eux des traces noirâtres sur le sol." },
         { speaker: 'narrator', text: "Le village a tenu. Trois nuits. Trois nuits de terreur, de feu et de wards qui craquent sous la pression." },
-        { speaker: 'arlen', text: "On a survécu...", emotion: 'hopeful' },
+        { speaker: 'arlen_young', text: "On a survécu...", emotion: 'hopeful' },
         { speaker: 'jeph', text: "Oui. Et on survivra la prochaine nuit. Et celle d'après. C'est tout ce qu'on peut faire.", emotion: 'sad' },
-        { speaker: 'arlen', text: "Non. Ce n'est pas tout.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Non. Ce n'est pas tout.", emotion: 'determined' },
       ],
       nextNodeId: 'victory_2',
     },
@@ -194,9 +194,9 @@ export const CHAPTER_1: ChapterDefinition = {
       id: 'victory_2',
       lines: [
         { speaker: 'ragen', text: "Tu as du courage, petit. Plus que la plupart des hommes que je connais.", emotion: 'neutral' },
-        { speaker: 'arlen', text: "Emmenez-moi à Fort Miln. Je veux apprendre. Les vrais wards. Les wards de combat.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Emmenez-moi à Fort Miln. Je veux apprendre. Les vrais wards. Les wards de combat.", emotion: 'determined' },
         { speaker: 'ragen', text: "La route est dangereuse. Tu pourrais mourir.", emotion: 'neutral' },
-        { speaker: 'arlen', text: "Rester ici est pire que mourir.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Rester ici est pire que mourir.", emotion: 'determined' },
         { speaker: 'narrator', text: "Le lendemain matin, Arlen Bales quitte Tibbet's Brook. Il ne se retournera pas." },
         { speaker: 'narrator', text: "Chapitre 1 — Terminé" },
       ],
@@ -214,7 +214,7 @@ export const CHAPTER_1: ChapterDefinition = {
         { speaker: 'silvy', text: "ARLEN ! COURS !", emotion: 'scared' },
         { speaker: 'narrator', text: "Arlen court. Il court sans se retourner, les hurlements derrière lui se mêlant au rugissement des démons de flamme." },
         { speaker: 'narrator', text: "Il ne pleure pas. Pas encore. Les larmes viendront plus tard, sur la route, seul dans l'obscurité." },
-        { speaker: 'arlen', text: "Plus jamais. Plus jamais je ne serai aussi faible.", emotion: 'angry' },
+        { speaker: 'arlen_young', text: "Plus jamais. Plus jamais je ne serai aussi faible.", emotion: 'angry' },
         { speaker: 'narrator', text: "Chapitre 1 — Échec. Recommencer pour changer le destin d'Arlen." },
       ],
     },
