@@ -17,6 +17,7 @@ const SCENE_IMAGES: Record<string, any> = {
   forest_village: require('../../assets/images/scene_forest_village.png'),
   inn: require('../../assets/images/scene_inn.png'),
   krasia: require('../../assets/images/scene_krasia.png'),
+  bruna_hut: require('../../assets/images/scene_bruna_hut.png'),
 };
 
 // Character sprites (half-body, VN style)

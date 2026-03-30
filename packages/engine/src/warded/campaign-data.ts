@@ -275,7 +275,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
   preplacedWards: [
     { locationId: 'cutters_hollow', ward: 'fire' },
     { locationId: 'cutters_hollow', ward: 'stone' },
-    { locationId: 'miln', ward: 'bone' },
+    { locationId: 'miln', ward: 'fire' },
   ],
 
   introDialogue: [
@@ -303,31 +303,31 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'l_day1', background: 'ward_book',
+        id: 'l_day1', background: 'bruna_hut',
         lines: [
-          { speaker: 'bruna', text: "Leesha, j'ai quelque chose à te montrer. Viens.", emotion: 'neutral' },
-          { speaker: 'narrator', text: "Bruna ouvre un coffre poussiéreux. À l'intérieur, des fioles et des poudres d'une époque oubliée." },
-          { speaker: 'bruna', text: "Des hora. De la poudre de demon. Mélangée aux bons ingrédients, ça renforce n'importe quel ward.", emotion: 'neutral' },
-          { speaker: 'leesha', text: "C'est... incroyable. Pourquoi vous ne les avez jamais utilisés ?", emotion: 'hopeful' },
-          { speaker: 'bruna', text: "Parce que les gens ont peur de tout ce qui touche aux démons, même pour se défendre. Tu veux les utiliser ?", emotion: 'neutral' },
+          { speaker: 'bruna', text: "Leesha, viens ici. Il est temps que tu apprennes à préparer l'encre de ward.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Bruna sort des bocaux d'herbes séchées, un mortier, et une fiole d'encre noire épaisse." },
+          { speaker: 'bruna', text: "L'encre ordinaire s'efface en quelques semaines. Celle-ci, faite avec les bonnes herbes, tient des mois. La différence entre la vie et la mort.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Et les cataplasmes ? On en a presque plus.", emotion: 'scared' },
+          { speaker: 'bruna', text: "C'est le choix que tu dois faire, petite. On a assez d'herbes pour préparer l'encre ou les cataplasmes. Pas les deux.", emotion: 'neutral' },
         ],
         choices: [
           {
-            id: 'use_hora',
-            label: "Utiliser la poudre de hora",
-            hint: "+1 Ward de Lumière à la Maison de Bruna, -2 HP (manipulation dangereuse)",
+            id: 'make_ink',
+            label: "Préparer l'encre de ward renforcée",
+            hint: "+3 Encre à la Maison de Bruna (pour crafter des wards)",
             effects: [
-              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
-              { type: 'hero_hp_change', delta: -2 },
+              { type: 'add_resources', locationId: 'miln', resource: 'ink', amount: 3 },
             ],
           },
           {
-            id: 'stay_traditional',
-            label: "Rester aux méthodes traditionnelles",
-            hint: "+2 Encre et +2 Nourriture à Cutter's Hollow",
+            id: 'make_poultices',
+            label: "Préparer des cataplasmes de soin",
+            hint: "+2 Nourriture partout (les cataplasmes soutiennent la population)",
             effects: [
-              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 2 },
               { type: 'add_resources', locationId: 'cutters_hollow', resource: 'food', amount: 2 },
+              { type: 'add_resources', locationId: 'lakton', resource: 'food', amount: 2 },
+              { type: 'add_resources', locationId: 'miln', resource: 'food', amount: 2 },
             ],
           },
         ],
@@ -366,27 +366,29 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 3,
       dialogueNodes: [{
-        id: 'l_day3', background: 'forest_village',
+        id: 'l_day3', background: 'bruna_hut',
         lines: [
-          { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse du sang mais refuse de se coucher." },
+          { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse, mais refuse de se coucher." },
           { speaker: 'bruna', text: "Leesha... écoute-moi. Cette nuit sera la pire. Je le sens dans mes os.", emotion: 'sad' },
           { speaker: 'leesha', text: "Bruna, vous devez vous reposer—", emotion: 'scared' },
-          { speaker: 'bruna', text: "Tais-toi et écoute ! J'ai un dernier secret. Un ward de protection majeur. Mais il faut mon sang pour l'activer.", emotion: 'determined' },
+          { speaker: 'bruna', text: "Tais-toi et écoute ! On a assez d'encre pour renforcer tous les wards du village. Mais je suis trop faible. C'est toi qui devras le faire seule.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Moi ? Toute seule ? Je n'ai pas votre expérience...", emotion: 'scared' },
+          { speaker: 'bruna', text: "Tu sais tracer un ward, oui ou non ? Alors choisis : passer l'après-midi à renforcer les wards, ou rester ici à me soigner.", emotion: 'angry' },
         ],
         choices: [
           {
-            id: 'blood_ward',
-            label: "Laisser Bruna activer le ward",
-            hint: "+1 Ward de Feu à CHAQUE lieu, mais Bruna s'affaiblit (-1 démon force)",
+            id: 'reinforce_all',
+            label: "Renforcer tous les wards du village",
+            hint: "+1 Ward de Pierre à chaque lieu, mais Bruna sans soin (-2 HP héros de fatigue)",
             effects: [
-              { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
-              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
-              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
+              { type: 'hero_hp_change', delta: -2 },
             ],
           },
           {
-            id: 'protect_bruna',
-            label: "Refuser — protéger Bruna",
+            id: 'care_for_bruna',
+            label: "Rester soigner Bruna",
             hint: "+4 HP héros, +2 Nourriture partout",
             effects: [
               { type: 'hero_hp_change', delta: 4 },
