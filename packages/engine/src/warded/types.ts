@@ -27,6 +27,7 @@ export interface Location {
 export interface WardSlot {
   ward: WardType | null;
   isTemporary: boolean; // removed at dawn
+  durability: number;   // 3 = fresh, 0 = broken. Decreases each night.
 }
 
 // --- Resources ---

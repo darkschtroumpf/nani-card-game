@@ -85,7 +85,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     maxPopulation: l.startPop,
     primaryResource: l.primaryResource,
     secondaryFoodTurn: l.secondaryFoodTurn,
-    wards: [{ ward: null, isTemporary: false }, { ward: null, isTemporary: false }, { ward: null, isTemporary: false }],
+    wards: [{ ward: null, isTemporary: false, durability: 0 }, { ward: null, isTemporary: false, durability: 0 }, { ward: null, isTemporary: false, durability: 0 }],
     fallen: false,
     fallenNightsAgo: 0,
     stockpile: { wood: 0, ink: 0, food: 0 },
@@ -95,7 +95,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
   if (mode === 'quick') {
     for (const sw of QUICK_MODE_STARTING_WARDS) {
       const loc = locations.find(l => l.id === sw.locationId)!;
-      loc.wards[0] = { ward: sw.ward, isTemporary: false };
+      loc.wards[0] = { ward: sw.ward, isTemporary: false, durability: 3 };
     }
   }
 
@@ -196,7 +196,7 @@ export function processDawn(state: GameState): void {
   for (const loc of state.locations) {
     for (let i = 0; i < loc.wards.length; i++) {
       if (loc.wards[i].isTemporary) {
-        loc.wards[i] = { ward: null, isTemporary: false };
+        loc.wards[i] = { ward: null, isTemporary: false, durability: 0 };
       }
     }
   }
@@ -255,7 +255,7 @@ export function fortifyLocation(state: GameState, wardType: WardType, targetLoca
   const slotIdx = loc.wards.findIndex(w => !w.ward);
   if (slotIdx < 0) return false; // both slots full
 
-  loc.wards[slotIdx] = { ward: wardType, isTemporary: false };
+  loc.wards[slotIdx] = { ward: wardType, isTemporary: false, durability: 3 };
   state.wardReserves.splice(idx, 1);
   state.hero.ap--;
 
@@ -644,7 +644,7 @@ export function arlenWardedFlesh(state: GameState, wardType: WardType, targetLoc
   // Find a slot (prefer empty, or use temp slot)
   const emptySlot = loc.wards.findIndex(w => !w.ward);
   if (emptySlot >= 0) {
-    loc.wards[emptySlot] = { ward: wardType, isTemporary: true };
+    loc.wards[emptySlot] = { ward: wardType, isTemporary: true, durability: 1 };
   } else {
     // Both slots full — can't place temp ward
     return false;
@@ -652,6 +652,24 @@ export function arlenWardedFlesh(state: GameState, wardType: WardType, targetLoc
 
   state.hero.ap--;
   addLog(state, `Warded Flesh: ward temporaire de ${wardType} à ${loc.name}.`);
+  return true;
+}
+
+// ============================================================
+// Ward Repair (restore durability)
+// ============================================================
+
+export function repairWard(state: GameState, locationId: LocationId, slotIndex: number): boolean {
+  if (state.phase !== 'day' || state.hero.ap <= 0) return false;
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return false;
+  const ws = loc.wards[slotIndex];
+  if (!ws || !ws.ward || ws.isTemporary) return false;
+  if (ws.durability >= 3) return false; // already full
+
+  ws.durability = Math.min(3, ws.durability + 1);
+  state.hero.ap--;
+  addLog(state, `Ward de ${ws.ward} réparé à ${loc.name} (durabilité ${ws.durability}/3).`);
   return true;
 }
 
@@ -669,7 +687,7 @@ export function removeWard(state: GameState, locationId: LocationId, slotIndex: 
 
   // Return ward to reserves
   state.wardReserves.push(ws.ward);
-  loc.wards[slotIndex] = { ward: null, isTemporary: false };
+  loc.wards[slotIndex] = { ward: null, isTemporary: false, durability: 0 };
   addLog(state, `Ward de ${ws.ward} retiré de ${loc.name} → réserves.`);
   return true;
 }
@@ -1028,7 +1046,7 @@ export function resolveDamage(state: GameState): string[] {
         loc.fallen = true;
         loc.fallenNightsAgo = 0;
         // Destroy wards
-        loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false }));
+        loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0 }));
         events.push(`${loc.name} est TOMBÉ!`);
         addLog(state, `${loc.name} est tombé!`, true);
       }
@@ -1070,6 +1088,21 @@ export function endNight(state: GameState): void {
       if (loc.fallenNightsAgo >= HORDE_FORMATION_NIGHTS) {
         addLog(state, `HORDE se forme à ${loc.name}! Les démons attaquent un lieu adjacent!`, true);
         // TODO: Horde attacks adjacent
+      }
+    }
+  }
+
+  // Ward degradation — wards lose 1 durability each night
+  for (const loc of state.locations) {
+    if (loc.fallen) continue;
+    for (let i = 0; i < loc.wards.length; i++) {
+      const ws = loc.wards[i];
+      if (ws.ward && !ws.isTemporary && ws.durability > 0) {
+        ws.durability--;
+        if (ws.durability <= 0) {
+          addLog(state, `⚠ Ward de ${ws.ward} à ${loc.name} s'est brisé ! (usure)`, true);
+          loc.wards[i] = { ward: null, isTemporary: false, durability: 0 };
+        }
       }
     }
   }
@@ -1581,7 +1614,7 @@ export function leesha_greaterWardCircle(state: GameState): string[] {
     const emptyIdx = loc.wards.findIndex(ws => !ws.ward);
     if (emptyIdx >= 0) {
       const wardType: WardType = loc.wards.some(w => w.ward === 'fire') ? 'stone' : 'fire';
-      loc.wards[emptyIdx] = { ward: wardType, isTemporary: true };
+      loc.wards[emptyIdx] = { ward: wardType, isTemporary: true, durability: 1 };
     }
   }
 
@@ -1626,7 +1659,7 @@ export function arlenBloodWard(state: GameState, wardType: WardType, targetLocat
   const emptySlot = loc.wards.findIndex(w => !w.ward);
   if (emptySlot < 0) return ['Pas d\'emplacement libre.'];
 
-  loc.wards[emptySlot] = { ward: wardType, isTemporary: false };
+  loc.wards[emptySlot] = { ward: wardType, isTemporary: false, durability: 3 };
   state.hero.hp -= 3;
 
   addLog(state, `Blood Ward! ${wardType} permanent à ${loc.name} (-3 HP).`, true);

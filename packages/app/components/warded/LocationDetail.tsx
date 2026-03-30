@@ -40,6 +40,7 @@ interface Props {
   // CRITICAL 1: Warded Flesh
   onWardedFlesh?: (wardType: WardType) => void;
   // Ward management
+  onRepairWard?: (slotIndex: number) => void;
   onRemoveWard?: (slotIndex: number) => void;
   onSwapWards?: (slotA: number, slotB: number) => void;
   // MAJOR 2: Activation indicator
@@ -50,7 +51,7 @@ export default function LocationDetail({
   location, demons, isPresence, isNight, onClose,
   onCraft, onFortify, onGather, onActivateWard,
   availableWardReserves, canCraft, canFortify, canGather, canActivate,
-  onWardedFlesh, onRemoveWard, onSwapWards, isActivated,
+  onWardedFlesh, onRepairWard, onRemoveWard, onSwapWards, isActivated,
 }: Props) {
   const combo = getCombo(location);
 
@@ -103,6 +104,11 @@ export default function LocationDetail({
                   <Image source={WARD_IMAGES[ws.ward]} style={styles.wardSlotImage} />
                   <Text style={[styles.wardName, { color: wardColor(ws.ward) }]}>{ws.ward.toUpperCase()}</Text>
                   {ws.isTemporary && <Text style={styles.tempBadge}>TEMP</Text>}
+                  {!ws.isTemporary && ws.durability < 3 && (
+                    <Text style={[styles.tempBadge, { color: ws.durability <= 1 ? '#F44336' : '#FF9800' }]}>
+                      {'●'.repeat(ws.durability)}{'○'.repeat(3 - ws.durability)}
+                    </Text>
+                  )}
                 </>
               ) : (
                 <Text style={styles.emptySlotText}>Vide</Text>
@@ -117,13 +123,21 @@ export default function LocationDetail({
           </View>
         )}
         {/* Ward management (day only) */}
-        {!isNight && !location.fallen && (onRemoveWard || onSwapWards) && (
+        {!isNight && !location.fallen && (onRemoveWard || onSwapWards || onRepairWard) && (
           <View style={styles.wardManageRow}>
             {location.wards.map((ws, i) => ws.ward && !ws.isTemporary ? (
-              <TouchableOpacity key={`rm${i}`} style={styles.wardRemoveBtn}
-                onPress={() => onRemoveWard?.(i)}>
-                <Text style={styles.wardRemoveText}>✕ Retirer {ws.ward}</Text>
-              </TouchableOpacity>
+              <View key={`mgmt${i}`} style={{ flexDirection: 'row', gap: 4 }}>
+                {ws.durability < 3 && onRepairWard && (
+                  <TouchableOpacity style={[styles.wardSwapBtn, { borderColor: '#4CAF50' }]}
+                    onPress={() => onRepairWard(i)}>
+                    <Text style={[styles.wardSwapText, { color: '#4CAF50' }]}>🔧 Réparer (1 AP)</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={styles.wardRemoveBtn}
+                  onPress={() => onRemoveWard?.(i)}>
+                  <Text style={styles.wardRemoveText}>✕ Retirer</Text>
+                </TouchableOpacity>
+              </View>
             ) : null)}
             {location.wards.filter(ws => ws.ward).length >= 2 && onSwapWards && (
               <TouchableOpacity style={styles.wardSwapBtn}

@@ -7,6 +7,7 @@ import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS } from '../the
 // Generated art assets
 const BG_DAY = require('../assets/images/bg_day.png');
 const BG_NIGHT = require('../assets/images/bg_night.png');
+const BG_NIGHTFALL = require('../assets/images/scene_nightfall.png');
 const HERO_ARLEN = require('../assets/images/hero_arlen.png');
 
 // Hero images
@@ -308,7 +309,8 @@ export default function WardedGameScreen() {
   const [campaignDaysProcessed, setCampaignDaysProcessed] = useState<Record<number, boolean>>({});
   const [campaignEffectMessages, setCampaignEffectMessages] = useState<string[]>([]);
   const [showCampaignEffects, setShowCampaignEffects] = useState(false);
-  const [showCampaignTransition, setShowCampaignTransition] = useState(!!campaignChapter); // fade in on campaign start
+  const [showCampaignTransition, setShowCampaignTransition] = useState(!!campaignChapter);
+  const [tensionText, setTensionText] = useState<string | null>(null); // fade in on campaign start
   const campaignTransitionAnim = useRef(new Animated.Value(campaignChapter ? 1 : 0)).current;
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -660,6 +662,20 @@ export default function WardedGameScreen() {
 
     setDamageReport(report);
     if (tutorialStep === 6) setTutorialStep(-1);
+
+    // Dynamic tension: check if situation is critical
+    const fallenCount = state.locations.filter(l => l.fallen).length;
+    const lowPopLocs = state.locations.filter(l => !l.fallen && l.population <= 2).length;
+    const heroLow = state.hero.hp <= 3;
+    if (fallenCount >= 1 && lowPopLocs >= 1) {
+      setTensionText("Les wards craquent de toutes parts. Encore une brèche et tout est perdu...");
+    } else if (heroLow && fallenCount >= 1) {
+      setTensionText(`${state.hero.name} chancelle. Le sang coule de ses blessures. Combien de temps peut-il encore tenir ?`);
+    } else if (lowPopLocs >= 2) {
+      setTensionText("Les cris des villageois résonnent dans la nuit. Plusieurs lieux sont au bord de l'effondrement.");
+    } else {
+      setTensionText(null);
+    }
   };
 
   // FIX 1: Wrapped endDay to show transition overlay
@@ -685,13 +701,14 @@ export default function WardedGameScreen() {
         <View style={[styles.bgOverlay, { backgroundColor: isDay ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.6)' }]} />
       </ImageBackground>
 
-      {/* FIX 1: Night transition overlay */}
+      {/* Night transition overlay with scene image */}
       {showNightTransition && (
-        <View style={styles.transitionOverlay}>
+        <ImageBackground source={BG_NIGHTFALL} style={styles.transitionOverlay} imageStyle={{ opacity: 0.6 }}>
+          <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' }} />
           <Text style={styles.transitionEmoji}>🌙</Text>
           <Text style={styles.transitionText}>LA NUIT TOMBE</Text>
-          <Text style={styles.transitionSub}>Les demons surgissent de la terre...</Text>
-        </View>
+          <Text style={styles.transitionSub}>Les ténèbres s'éveillent... Les corelings montent de la terre.</Text>
+        </ImageBackground>
       )}
 
       {/* Header */}
@@ -824,6 +841,7 @@ export default function WardedGameScreen() {
               onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
                 ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
                 : undefined}
+              onRepairWard={isDay && state.hero.ap > 0 ? (slotIndex: number) => { ctrl.doRepairWard(selectedLoc.id, slotIndex); } : undefined}
               onRemoveWard={isDay ? (slotIndex: number) => { ctrl.doRemoveWard(selectedLoc.id, slotIndex); } : undefined}
               onSwapWards={isDay ? (a: number, b: number) => { ctrl.doSwapWards(selectedLoc.id, a, b); } : undefined}
             />
@@ -1464,6 +1482,19 @@ export default function WardedGameScreen() {
           <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.danger, width: 200 }]}
             onPress={() => { audio.stopMusic(); router.replace('/'); }}>
             <Text style={[styles.phaseBtnText, { color: warded.danger }]}>Quitter</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Tension interlude (critical situation) */}
+      {tensionText && damageResolved && !damageReport && (
+        <View style={[styles.transitionOverlay, { backgroundColor: 'rgba(80,0,0,0.85)' }]}>
+          <Text style={{ color: '#FF6B6B', fontSize: 14, fontStyle: 'italic', textAlign: 'center', paddingHorizontal: 30, lineHeight: 22 }}>
+            {tensionText}
+          </Text>
+          <TouchableOpacity style={[styles.phaseBtn, { marginTop: 20, borderColor: '#FF6B6B', width: 160 }]}
+            onPress={() => setTensionText(null)}>
+            <Text style={[styles.phaseBtnText, { color: '#FF6B6B' }]}>Continuer...</Text>
           </TouchableOpacity>
         </View>
       )}

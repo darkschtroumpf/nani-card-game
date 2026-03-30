@@ -7,7 +7,7 @@ import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warde
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, repairWard,
   jardirYoung_spearStrike, rojerYoung_melody, leeshaYoung_cataplasme,
   removeWard, swapWards,
   getThreatForecast, resolveWardPassives,
@@ -31,6 +31,7 @@ export interface WardedGameController {
   doCraft: (wardType: WardType, fromLocationId: LocationId) => void;
   doFortify: (wardType: WardType, targetLocationId: LocationId) => void;
   doGather: (locationId: LocationId) => void;
+  doRepairWard: (locationId: LocationId, slotIndex: number) => void;
   doRemoveWard: (locationId: LocationId, slotIndex: number) => void;
   doSwapWards: (locationId: LocationId, slotA: number, slotB: number) => void;
   endDay: () => void;
@@ -143,6 +144,13 @@ export function useWardedGame(): WardedGameController {
     const s = stateRef.current;
     if (!s) return;
     gather(s, locationId);
+    sync(s);
+  }, [sync]);
+
+  const doRepairWard = useCallback((locationId: LocationId, slotIndex: number) => {
+    const s = stateRef.current;
+    if (!s) return;
+    repairWard(s, locationId, slotIndex);
     sync(s);
   }, [sync]);
 
@@ -460,7 +468,7 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame, startCampaignGame: startCampaignGameFn, applyCampaignEffects: applyCampaignEffectsFn, startNewDay,
-    doCraft, doFortify, doGather, doRemoveWard, doSwapWards, endDay,
+    doCraft, doFortify, doGather, doRepairWard, doRemoveWard, doSwapWards, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
     // Young heroes
