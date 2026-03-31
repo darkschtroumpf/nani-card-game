@@ -827,7 +827,8 @@ export default function WardedGameScreen() {
         })()}
       </View>
 
-      {/* Map */}
+      {/* Map — flex:1 pushes action bar to bottom */}
+      <View style={{ flex: 1, justifyContent: 'center' }}>
       <WorldMap
         locations={state.locations}
         presenceLocation={state.presenceLocation}
@@ -977,7 +978,9 @@ export default function WardedGameScreen() {
         </View>
       )}
 
-      {/* Action bar */}
+      </View>
+
+      {/* Action bar — pinned to bottom */}
       <ScrollView style={styles.actionBar} contentContainerStyle={styles.actionBarContent} showsVerticalScrollIndicator={true}>
           {/* Day ONLY: craft wards */}
           {isDay && (
