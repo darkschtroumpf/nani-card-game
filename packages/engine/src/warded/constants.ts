@@ -83,9 +83,9 @@ export const DEMON_TYPES: {
   isBoss: boolean;
   introducedChapter: number;
 }[] = [
-  { type: 'flame', baseStrength: 1, targeting: 'random', special: 'Destroys 1 resource at target on hit', isLocked: false, isBoss: false, introducedChapter: 1 },
-  { type: 'wood', baseStrength: 2, targeting: 'least_defense', special: 'Takes double damage from Fire wards', isLocked: false, isBoss: false, introducedChapter: 1 },
-  { type: 'wind', baseStrength: 1, targeting: 'random', special: 'Group of 3. Cannot be redirected by Wind wards. Counts as 3 for Swarm.', isLocked: false, isBoss: false, introducedChapter: 3 },
+  { type: 'flame', baseStrength: 2, targeting: 'random', special: 'Destroys 1 resource at target on hit', isLocked: false, isBoss: false, introducedChapter: 1 },
+  { type: 'wood', baseStrength: 3, targeting: 'least_defense', special: 'Takes double damage from Fire wards', isLocked: false, isBoss: false, introducedChapter: 1 },
+  { type: 'wind', baseStrength: 1, targeting: 'random', special: 'Group of 2. Cannot be redirected by Wind wards.', isLocked: false, isBoss: false, introducedChapter: 2 },
   { type: 'water', baseStrength: 3, targeting: 'lakton_or_desert_spear', special: 'Ward defense halved. Location-locked.', isLocked: true, isBoss: false, introducedChapter: 3 },
   { type: 'rock', baseStrength: 4, targeting: 'highest_population', special: 'Ignores 1 point of ward defense', isLocked: false, isBoss: false, introducedChapter: 4 },
   { type: 'mind', baseStrength: 5, targeting: 'hero_presence', special: 'Deals 2 direct damage to hero HP. Boss — immune to redirection.', isLocked: false, isBoss: true, introducedChapter: 7 },
