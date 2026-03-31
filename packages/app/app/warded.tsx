@@ -59,8 +59,10 @@ const WARD_IMAGES: Record<string, any> = {
   bone: require('../assets/images/ward_bone.png'),
 };
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWardedGame } from '../hooks/useWardedGame';
 import { useAudio } from '../hooks/useAudio';
+import { updateSaveAfterChapter, createNewSave } from '../../engine/src/warded/campaign-engine';
 import { useLocalSearchParams } from 'expo-router';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
@@ -1604,7 +1606,20 @@ export default function WardedGameScreen() {
         <DialogueOverlay
           nodes={campaignChapter.victoryDialogue}
           onChoice={() => {}}
-          onComplete={() => router.replace('/campaign')}
+          onComplete={async () => {
+            // Save campaign progress — unlock next chapter
+            try {
+              const raw = await AsyncStorage.getItem('@warded_campaign_save');
+              const save = raw ? JSON.parse(raw) : createNewSave();
+              const updated = updateSaveAfterChapter(save, state, campaignChapter.id);
+              // Also save campaign flags for branching narrative
+              if (state.campaignFlags) {
+                updated.flags = { ...updated.flags, ...state.campaignFlags };
+              }
+              await AsyncStorage.setItem('@warded_campaign_save', JSON.stringify(updated));
+            } catch {}
+            router.replace('/campaign');
+          }}
         />
       )}
       {campaignChapter && state.gameOver && !state.victory && (

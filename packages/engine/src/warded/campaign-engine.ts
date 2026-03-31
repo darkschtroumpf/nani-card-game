@@ -42,8 +42,8 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
   }
 
   // Victory conditions — calculated AFTER hiding locations
-  const activeLocations = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).length;
-  state.minStandingLocations = Math.max(1, activeLocations - 1);
+  // Campaign is more lenient: only lose if ALL locations fall
+  state.minStandingLocations = 1;
 
   // Starting presence
   state.presenceLocation = chapter.startingPresence;
