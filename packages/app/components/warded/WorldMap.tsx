@@ -26,8 +26,8 @@ const DEMON_IMAGES: Record<string, any> = {
   mind: require('../../assets/images/demon_mind.png'),
 };
 
-const { width: SCREEN_W } = Dimensions.get('window');
-const MAP_SIZE = Math.min(SCREEN_W - 32, 340);
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+const MAP_SIZE = Math.min(SCREEN_W - 32, SCREEN_H * 0.35, 300);
 
 interface Props {
   locations: Location[];
