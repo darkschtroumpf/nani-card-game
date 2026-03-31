@@ -399,28 +399,12 @@ export function useWardedGame(): WardedGameController {
       if (warriorEvts.length > 0) addEvents(warriorEvts);
     }
 
-    // Auto-resolve ward passives
+    // Auto-resolve ward passives only (small damage, defensive)
     const passiveEvents = resolveWardPassives(s);
     addEvents(passiveEvents);
 
-    // Auto-activate ALL ward actives — no limit, all wards fire
-    const allEvents: string[] = [];
-    for (const loc of s.locations) {
-      if (loc.fallen) continue;
-      if (!loc.wards.some(ws => ws.ward)) continue;
-      const hasCombo = loc.wards.filter(ws => ws.ward).length >= 2;
-      const evts = activateWard(s, loc.id, hasCombo);
-      allEvents.push(...evts);
-    }
-    // Force activations to 0 so UI shows resolve button
-    s.activationsRemaining = 0;
-    if (allEvents.length > 0) addEvents(allEvents);
-
-    // Arlen: auto Warded Fist if charge > 0
-    if (s.hero.id === 'arlen' && (s.hero.arlenCharge ?? 0) > 0) {
-      const fistEvts = arlenWardedFist(s);
-      addEvents(fistEvts);
-    }
+    // Ward ACTIVES are NOT auto-fired — player sees demons first,
+    // then resolves damage. Actives fire during damage resolution.
 
     sync(s);
   }, [sync, addEvents]);
@@ -451,6 +435,25 @@ export function useWardedGame(): WardedGameController {
   const doResolveDamage = useCallback(() => {
     const s = stateRef.current;
     if (!s) return;
+
+    // Activate all ward actives NOW (before damage resolution)
+    const wardEvents: string[] = [];
+    for (const loc of s.locations) {
+      if (loc.fallen) continue;
+      if (!loc.wards.some(ws => ws.ward)) continue;
+      const hasCombo = loc.wards.filter(ws => ws.ward).length >= 2;
+      const evts = activateWard(s, loc.id, hasCombo);
+      wardEvents.push(...evts);
+    }
+    s.activationsRemaining = 0;
+    if (wardEvents.length > 0) addEvents(wardEvents);
+
+    // Arlen: Warded Fist
+    if (s.hero.id === 'arlen' && (s.hero.arlenCharge ?? 0) > 0) {
+      addEvents(arlenWardedFist(s));
+    }
+
+    // Then resolve demon damage
     const evts = resolveDamage(s);
     addEvents(evts);
     sync(s);
