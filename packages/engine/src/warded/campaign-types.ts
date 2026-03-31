@@ -45,6 +45,7 @@ export type CampaignEffect =
 
 export interface DayEvent {
   dayNumber: number;      // 1, 2, 3
+  condition?: { flag: string; value: boolean | number }; // only show if flag matches
   dialogueNodes: DialogueNode[];
 }
 

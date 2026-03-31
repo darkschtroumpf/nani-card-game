@@ -381,7 +381,15 @@ export default function WardedGameScreen() {
     if (!campaignChapter || !state || state.phase !== 'day') return;
     const dayNum = state.turnNumber;
     if (campaignDaysProcessed[dayNum]) return;
-    const event = campaignChapter.dayEvents.find(e => e.dayNumber === dayNum);
+    const event = campaignChapter.dayEvents.find(e => {
+      if (e.dayNumber !== dayNum) return false;
+      // Check condition flag if present
+      if (e.condition && state.campaignFlags) {
+        return state.campaignFlags[e.condition.flag] === e.condition.value;
+      }
+      if (e.condition && !state.campaignFlags) return false;
+      return true;
+    });
     if (event) {
       setCampaignDayEvent(event);
     }

@@ -766,135 +766,169 @@ export const CHAPTER_ROJER: ChapterDefinition = {
 
 // ============================================================
 // Chapter 5: Arlen — La Route vers Fort Miln
+// L'histoire diverge selon les choix du chapitre 1
 // ============================================================
 
 export const CHAPTER_ARLEN_2: ChapterDefinition = {
   id: 5,
   title: 'La Route vers Fort Miln',
-  subtitle: "Arlen voyage avec Ragen. Chaque nuit en plein air est un combat pour survivre.",
+  subtitle: "Cinq jours de marche. Cinq nuits sans murs.",
   heroId: 'arlen_young',
   nightCount: 3,
   startingNightNumber: 2,
   startingPresence: 'cutters_hollow',
-  hiddenLocations: ['lakton'] as any,
+  hiddenLocations: ['lakton', 'desert_spear'] as any,
   locationOverrides: {
-    cutters_hollow: { name: 'Campement de Route', startPop: 4, terrain: 'plains' as any },
+    cutters_hollow: { name: 'Campement du Soir', startPop: 4, terrain: 'plains' as any },
     miln: { name: 'Relais de Messager', startPop: 3, terrain: 'plains' as any },
-    desert_spear: { name: 'Ruines Anciennes', startPop: 2, terrain: 'mountain' as any },
     lakton: { name: '', startPop: 0 },
+    desert_spear: { name: '', startPop: 0 },
   },
   preplacedWards: [
     { locationId: 'cutters_hollow', ward: 'fire' },
-    { locationId: 'miln', ward: 'fire' },
+    { locationId: 'miln', ward: 'stone' },
   ],
 
   introDialogue: [
     {
-      id: 'a2_intro_1', background: 'road',
+      id: 'a2_intro', background: 'road',
       lines: [
-        { speaker: 'narrator', text: "La route entre Tibbet's Brook et Fort Miln fait cinq jours de marche. Cinq jours. Cinq nuits." },
-        { speaker: 'narrator', text: "Ragen connaît le chemin. Il sait où sont les relais de messagers — des cabanes fortifiées avec des wards de base, espacées d'une journée de marche." },
-        { speaker: 'ragen', text: "Règle numéro un, gamin : on ne marche JAMAIS après le crépuscule. Jamais.", emotion: 'determined' },
-        { speaker: 'arlen_young', text: "Et si les wards d'un relais sont cassés ?", emotion: 'scared' },
-        { speaker: 'ragen', text: "Alors on les répare. Ou on meurt.", emotion: 'neutral' },
+        { speaker: 'narrator', text: "Arlen a quitté Tibbet's Brook. Devant lui, cinq jours de route à travers les plaines de Thesa. Cinq nuits en plein air." },
+        { speaker: 'narrator', text: "Les seuls abris sont les relais de messagers — de petites cabanes wardées, espacées d'une journée de marche. Si les wards tiennent." },
+        { speaker: 'narrator', text: "Arlen ne connaît que les wards basiques : feu et pierre. À Tibbet's Brook, c'est tout ce qu'on enseigne. Personne n'en sait plus." },
+        { speaker: 'arlen_young', text: "Il doit y avoir d'autres wards. Des wards plus puissants. Je les trouverai.", emotion: 'determined' },
       ],
     },
   ],
 
   dayEvents: [
+    // Jour 1 — Branche : avec Ragen (a sauvé Silvy) ou seul (n'a pas sauvé)
     {
       dayNumber: 1,
+      condition: { flag: 'saved_silvy', value: true },
       dialogueNodes: [{
-        id: 'a2_day1', background: 'road',
+        id: 'a2_day1_ragen', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "Premier jour de marche. Ragen montre à Arlen comment lire les traces de corelings sur le sol — des marques noires qui s'évaporent au soleil." },
-          { speaker: 'ragen', text: "Tu vois ces traces ? Démon de flamme. Ils sont passés ici cette nuit. Beaucoup.", emotion: 'neutral' },
-          { speaker: 'arlen_young', text: "On peut explorer ces ruines là-bas ? On dirait qu'il y a des symboles sur les murs.", emotion: 'hopeful' },
-          { speaker: 'ragen', text: "Des ruines ? Hmm. Ça pourrait être un ancien poste de garde. On pourrait y trouver de l'encre de ward... ou des ennuis.", emotion: 'neutral' },
+          { speaker: 'ragen', text: "Premier relais. Les wards sont intacts. On a de la chance.", emotion: 'neutral' },
+          { speaker: 'arlen_young', text: "Ragen, ces symboles sur les poteaux... ils sont différents de ceux de Tibbet's Brook.", emotion: 'hopeful' },
+          { speaker: 'ragen', text: "C'est du travail de Messager. On utilise des cercles de protection complets, pas juste des lignes. Ça couvre une plus grande surface.", emotion: 'neutral' },
+          { speaker: 'arlen_young', text: "Apprenez-moi.", emotion: 'determined' },
+          { speaker: 'ragen', text: "D'accord. Mais ça prend du temps. Tu apprends les cercles, ou tu renforces les wards existants.", emotion: 'neutral' },
         ],
         choices: [
           {
-            id: 'explore_ruins',
-            label: "Explorer les ruines",
-            hint: "+2 Encre aux Ruines + découverte d'un ward ancien, mais -2 HP (piège)",
+            id: 'learn_circles',
+            label: "Apprendre les cercles de protection",
+            hint: "+1 Ward de Pierre en réserve (nouvelle technique), -1 AP",
             effects: [
-              { type: 'add_resources', locationId: 'desert_spear', resource: 'ink', amount: 2 },
               { type: 'bonus_reserve_ward', wardType: 'stone' },
-              { type: 'hero_hp_change', delta: -2 },
-              { type: 'set_flag', flag: 'explored_ruins', value: true },
+              { type: 'hero_ap_change', delta: -1 },
+              { type: 'set_flag', flag: 'learned_circles', value: true },
             ],
           },
           {
-            id: 'stay_on_road',
-            label: "Rester sur la route — pas le temps",
-            hint: "+2 Bois au Campement (collecte en chemin)",
+            id: 'reinforce_relay',
+            label: "Renforcer les wards du relais",
+            hint: "+2 Bois + +2 Encre au Relais",
             effects: [
-              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 2 },
+              { type: 'add_resources', locationId: 'miln', resource: 'wood', amount: 2 },
+              { type: 'add_resources', locationId: 'miln', resource: 'ink', amount: 2 },
             ],
           },
         ],
       }],
     },
+    {
+      dayNumber: 1,
+      condition: { flag: 'saved_silvy', value: false },
+      dialogueNodes: [{
+        id: 'a2_day1_alone', background: 'road',
+        lines: [
+          { speaker: 'narrator', text: "Arlen est seul. Ragen est parti avant lui, sans savoir qu'un garçon le suivrait sur la route." },
+          { speaker: 'narrator', text: "Le premier relais de messager est en mauvais état. Les wards sont fissurés, le toit percé." },
+          { speaker: 'arlen_young', text: "C'est tout ce que j'ai. Il faudra que ça suffise.", emotion: 'determined' },
+          { speaker: 'narrator', text: "Arlen examine les wards. Ils sont différents de ceux de son village. Plus complexes. Il essaie de comprendre." },
+        ],
+        choices: [
+          {
+            id: 'study_wards_alone',
+            label: "Étudier les wards inconnus",
+            hint: "+1 Ward de Vent en réserve (copié tant bien que mal), -2 HP (fatigue)",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'wind' },
+              { type: 'hero_hp_change', delta: -2 },
+            ],
+          },
+          {
+            id: 'patch_wards',
+            label: "Réparer les wards avec ce qu'on connaît",
+            hint: "+3 Bois au Campement",
+            effects: [
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 },
+            ],
+          },
+        ],
+      }],
+    },
+    // Jour 2 — commun
     {
       dayNumber: 2,
       dialogueNodes: [{
         id: 'a2_day2', background: 'road',
         lines: [
           { speaker: 'narrator', text: "Deuxième nuit survivue. Arlen n'a presque pas dormi. Les grattements des corelings contre les wards résonnent encore dans sa tête." },
-          { speaker: 'arlen_young', text: "Ragen... les wards du prochain relais. Ils ont l'air vieux sur votre carte.", emotion: 'scared' },
-          { speaker: 'ragen', text: "Personne n'est passé ici depuis des mois. On va peut-être devoir camper en plein air.", emotion: 'determined' },
-          { speaker: 'arlen_young', text: "En plein air ?!", emotion: 'scared' },
-          { speaker: 'ragen', text: "J'ai des wards portatifs. Mais ils ne couvrent pas une grande surface. On sera serrés.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Le prochain relais est censé être à une demi-journée de marche. Mais la route est en mauvais état." },
+          { speaker: 'arlen_young', text: "Il y a des traces de corelings partout. Plus que la nuit dernière.", emotion: 'scared' },
         ],
         choices: [
           {
-            id: 'detour_relay',
-            label: "Faire un détour vers un autre relais",
-            hint: "+1 Ward de Pierre au Relais, -1 AP (fatigue du détour)",
+            id: 'push_forward',
+            label: "Accélérer pour atteindre le relais",
+            hint: "+1 Ward de Feu au Relais, -1 AP (épuisement)",
             effects: [
-              { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
               { type: 'hero_ap_change', delta: -1 },
             ],
           },
           {
-            id: 'camp_open',
-            label: "Camper en plein air avec les wards portatifs",
-            hint: "Aucun bonus, mais +1 démon par vague (exposition)",
+            id: 'camp_early',
+            label: "Camper tôt et bien préparer les défenses",
+            hint: "+2 Bois + +2 Encre au Campement",
             effects: [
-              { type: 'extra_demons', count: 1 },
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 2 },
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 2 },
             ],
           },
         ],
       }],
     },
+    // Jour 3
     {
       dayNumber: 3,
       dialogueNodes: [{
         id: 'a2_day3', background: 'miln',
         lines: [
-          { speaker: 'narrator', text: "Le troisième jour. Au loin, les tours de Fort Miln se dessinent contre le ciel gris. Si proches, et pourtant..." },
-          { speaker: 'ragen', text: "Une dernière nuit, gamin. Les murs de Miln sont à portée de vue, mais on n'arrivera pas avant la tombée de la nuit.", emotion: 'determined' },
-          { speaker: 'arlen_young', text: "On pourrait courir ?", emotion: 'hopeful' },
-          { speaker: 'ragen', text: "Et arriver épuisés, incapables de nous défendre si les wards sont faibles ? Non. On campe ici et on entre demain à l'aube.", emotion: 'neutral' },
-          { speaker: 'narrator', text: "Mais Arlen a remarqué quelque chose dans les ruines qu'ils ont croisées. Des symboles qu'il n'a jamais vus. Des wards... offensifs ?" },
+          { speaker: 'narrator', text: "Dernier jour. Les tours de Fort Miln se dressent à l'horizon, énormes, imposantes. Des murs couverts de wards par milliers." },
+          { speaker: 'arlen_young', text: "On y est presque... une dernière nuit.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Mais cette nuit sera la plus dangereuse. La plaine devant Miln est dégagée — aucun couvert, aucun relais. Les corelings de vent y sont particulièrement actifs." },
         ],
         choices: [
           {
-            id: 'study_symbols',
-            label: "Recopier les symboles inconnus",
-            hint: "+1 Ward de Vent en réserve (ward offensif rudimentaire), -1 AP",
+            id: 'dig_in',
+            label: "Creuser un cercle de protection dans le sol",
+            hint: "-2 HP (effort physique), mais force des démons -1",
             effects: [
-              { type: 'bonus_reserve_ward', wardType: 'wind' },
-              { type: 'hero_ap_change', delta: -1 },
-              { type: 'set_flag', flag: 'found_combat_wards', value: true },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'demon_strength_bonus', bonus: -1 },
             ],
           },
           {
-            id: 'focus_defense',
-            label: "Se concentrer sur les défenses du campement",
-            hint: "+3 Bois au Campement",
+            id: 'minimal_camp',
+            label: "Campement minimal, garder ses forces",
+            hint: "+2 HP (repos), mais +1 démon par vague",
             effects: [
-              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 },
+              { type: 'hero_hp_change', delta: 2 },
+              { type: 'extra_demons', count: 1 },
             ],
           },
         ],
@@ -906,12 +940,12 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
     {
       id: 'a2_victory', background: 'miln',
       lines: [
-        { speaker: 'narrator', text: "L'aube du quatrième jour. Les portes de Fort Miln s'ouvrent devant eux." },
-        { speaker: 'narrator', text: "Arlen lève les yeux vers les murs immenses. Des wards gravés dans la pierre par centaines, par milliers. Plus anciens et plus puissants que tout ce qu'il a vu." },
-        { speaker: 'arlen_young', text: "C'est... magnifique.", emotion: 'hopeful' },
-        { speaker: 'ragen', text: "Bienvenue à Fort Miln, gamin. Ta nouvelle vie commence ici.", emotion: 'neutral' },
-        { speaker: 'narrator', text: "Arlen Bales pose le pied dans la plus grande cité qu'il ait jamais vue. Quelque part dans ces murs, il trouvera les réponses qu'il cherche." },
-        { speaker: 'narrator', text: "Les wards de combat. Le savoir perdu. La clé pour ne plus jamais avoir peur." },
+        { speaker: 'narrator', text: "L'aube. Fort Miln. Les portes s'ouvrent." },
+        { speaker: 'narrator', text: "Arlen lève les yeux. Les murs sont couverts de wards qu'il n'a jamais vus. Des centaines de symboles, gravés dans la pierre depuis des générations." },
+        { speaker: 'arlen_young', text: "Tout ce savoir... tout ce qu'on a oublié à Tibbet's Brook...", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Ici, Arlen apprendra. Les wards de protection, les cercles complets, les techniques des Messagers. Et peut-être, un jour, quelque chose de plus." },
+        { speaker: 'narrator', text: "Mais pour l'instant, il n'est qu'un garçon affamé aux portes d'une ville immense." },
+        { speaker: 'arlen_young', text: "Je suis Arlen Bales. De Tibbet's Brook. Et je refuse d'avoir peur.", emotion: 'determined' },
       ],
     },
   ],
@@ -920,10 +954,9 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
     {
       id: 'a2_defeat', background: 'village_burning',
       lines: [
-        { speaker: 'narrator', text: "Les wards portatifs cèdent. La nuit envahit le campement." },
-        { speaker: 'ragen', text: "COURS VERS MILN ! COURS ET NE T'ARRÊTE PAS !", emotion: 'angry' },
-        { speaker: 'narrator', text: "Arlen court dans l'obscurité, les corelings sur ses talons. Les murs de Miln sont si proches..." },
-        { speaker: 'narrator', text: "Il n'atteindra jamais les portes." },
+        { speaker: 'narrator', text: "Les wards cèdent dans la plaine. Les corelings de vent fondent sur le campement." },
+        { speaker: 'narrator', text: "Arlen court vers les lumières de Miln. Les murs sont si proches qu'il peut voir les wards briller." },
+        { speaker: 'narrator', text: "Mais la nuit est plus rapide que lui." },
         { speaker: 'narrator', text: "Chapitre 5 — Échec" },
       ],
     },
