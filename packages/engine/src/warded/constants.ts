@@ -94,7 +94,7 @@ export const DEMON_TYPES: {
 // Demons per wave by night number
 // Reduced demon counts for better balance (was: 3,4,5,6...)
 export const DEMONS_PER_WAVE: Record<number, number> = {
-  1: 2, 2: 2, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6, 9: 6, 10: 7, 11: 8, 12: 9,
+  1: 3, 2: 3, 3: 4, 4: 4, 5: 5, 6: 5, 7: 6, 8: 6, 9: 7, 10: 7, 11: 8, 12: 9,
 };
 
 // Terrain → demon type affinity (which demons are attracted to which terrain)

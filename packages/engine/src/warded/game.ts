@@ -366,7 +366,11 @@ function spawnDemons(state: GameState): void {
 
   // Terrain-based demon spawning — each location attracts demons matching its terrain
   const living = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
-  const availableChapter = state.mode === 'campaign' ? state.chapter : state.nightNumber;
+  if (living.length === 0) return; // no valid locations
+  // Use nightNumber for demon availability (not chapter, which is always 1)
+  const availableChapter = state.nightNumber;
+  // Ensure minimum demons per wave (at least 1 per living location)
+  count = Math.max(count, living.length);
 
   for (let i = 0; i < count; i++) {
     // Pick target location (spread evenly with slight randomness)

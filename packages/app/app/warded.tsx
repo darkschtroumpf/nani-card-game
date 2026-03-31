@@ -517,8 +517,8 @@ export default function WardedGameScreen() {
   const isNight = state.phase === 'night';
   const selectedLoc = selectedLocation ? state.locations.find(l => l.id === selectedLocation) : null;
 
-  // Game over
-  if (state.gameOver) {
+  // Game over (skip default screen in campaign — VN overlay handles it)
+  if (state.gameOver && !campaignChapter) {
     return (
       <SafeAreaView style={[styles.container, state.victory ? styles.victoryBg : styles.defeatBg]}>
         <View style={styles.gameOverBox}>

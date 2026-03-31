@@ -28,11 +28,19 @@ const HERO_DISPLAY_PORTRAIT: Record<string, string> = {
   rojer_young: 'rojer',
 };
 
-const CHARACTER_INFO: Record<string, { name: string; color: string; subtitle: string }> = {
-  arlen_young: { name: 'Arlen Bales', color: '#FFD740', subtitle: "Un garçon de 11 ans qui refuse d'avoir peur" },
-  leesha_young: { name: 'Leesha Paper', color: '#69F0AE', subtitle: "Apprentie herboriste, elle apprend à soigner" },
-  jardir_young: { name: 'Ahmann Jardir', color: '#FF5252', subtitle: "Recrue nie'Sharum, sa première nuit dans le Maze" },
-  rojer_young: { name: 'Rojer Inn', color: '#7C4DFF', subtitle: "Apprenti jongleur, il découvre un don étrange" },
+const CHARACTER_INFO: Record<string, { name: string; color: string }> = {
+  arlen_young: { name: 'Arlen Bales', color: '#FFD740' },
+  leesha_young: { name: 'Leesha Paper', color: '#69F0AE' },
+  jardir_young: { name: 'Ahmann Jardir', color: '#FF5252' },
+  rojer_young: { name: 'Rojer Inn', color: '#7C4DFF' },
+};
+
+// Group chapters by character
+const CHARACTER_CHAPTERS: Record<string, number[]> = {
+  arlen_young: [1, 5],
+  leesha_young: [2, 6],
+  jardir_young: [3],
+  rojer_young: [4],
 };
 
 const SAVE_KEY = '@warded_campaign_save';
@@ -110,27 +118,39 @@ export default function CampaignScreen() {
 
         {heroIds.map(heroKey => {
           const info = CHARACTER_INFO[heroKey];
-          const chapter = CHAPTERS.find(c => c.heroId === heroKey);
-          if (!chapter || !info) return null;
-          const isCompleted = save?.completedChapters.includes(chapter.id);
+          const chapterIds = CHARACTER_CHAPTERS[heroKey] ?? [];
+          const chapters = chapterIds.map(id => CHAPTERS.find(c => c.id === id)).filter(Boolean) as ChapterDefinition[];
+          if (!info || chapters.length === 0) return null;
 
           return (
-            <TouchableOpacity
-              key={heroKey}
-              style={[styles.card, { borderColor: info.color + '60' }]}
-              onPress={() => startChapter(chapter)}
-              activeOpacity={0.8}
-            >
+            <View key={heroKey} style={[styles.card, { borderColor: info.color + '60' }]}>
               <View style={styles.cardHeader}>
                 <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[heroKey] ?? heroKey]} style={[styles.cardAvatar, { borderColor: info.color }]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.cardName, { color: info.color }]}>{info.name}</Text>
-                  <Text style={styles.cardSub}>{info.subtitle}</Text>
-                  <Text style={styles.cardChapter}>{chapter.title}</Text>
-                </View>
-                {isCompleted && <Text style={styles.check}>✓</Text>}
+                <Text style={[styles.cardName, { color: info.color }]}>{info.name}</Text>
               </View>
-            </TouchableOpacity>
+              {chapters.map((chapter, idx) => {
+                const isCompleted = save?.completedChapters.includes(chapter.id);
+                const prevCompleted = idx === 0 || save?.completedChapters.includes(chapters[idx - 1].id);
+                const isUnlocked = idx === 0 || prevCompleted;
+                return (
+                  <TouchableOpacity
+                    key={chapter.id}
+                    style={[styles.chapterRow, !isUnlocked && { opacity: 0.4 }]}
+                    disabled={!isUnlocked}
+                    onPress={() => startChapter(chapter)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.chapterNum}>Ch.{idx + 1}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.cardChapter}>{chapter.title}</Text>
+                      <Text style={styles.cardSub}>{chapter.subtitle}</Text>
+                    </View>
+                    {isCompleted && <Text style={styles.check}>✓</Text>}
+                    {!isUnlocked && <Text style={styles.check}>🔒</Text>}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           );
         })}
 
@@ -160,7 +180,9 @@ const styles = StyleSheet.create({
   cardAvatar: { width: 56, height: 56, borderRadius: 28, borderWidth: 2 },
   cardName: { fontSize: wardedFonts.lg, fontWeight: 'bold' },
   cardSub: { color: warded.textDim, fontSize: wardedFonts.xs, marginTop: 1 },
-  cardChapter: { color: warded.text, fontSize: wardedFonts.sm, marginTop: 4, fontStyle: 'italic' },
+  chapterRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: warded.border, marginTop: 6 },
+  chapterNum: { color: warded.accent, fontSize: wardedFonts.xs, fontWeight: 'bold', width: 30 },
+  cardChapter: { color: warded.text, fontSize: wardedFonts.sm, fontWeight: '600' },
   check: { color: warded.success, fontSize: 24 },
   backBtn: { marginTop: 16, paddingVertical: 10 },
   backText: { color: warded.textDim, fontSize: wardedFonts.md },

@@ -764,4 +764,324 @@ export const CHAPTER_ROJER: ChapterDefinition = {
   }],
 };
 
-export const CHAPTERS: ChapterDefinition[] = [CHAPTER_1, CHAPTER_LEESHA, CHAPTER_JARDIR, CHAPTER_ROJER];
+// ============================================================
+// Chapter 5: Arlen — La Route vers Fort Miln
+// ============================================================
+
+export const CHAPTER_ARLEN_2: ChapterDefinition = {
+  id: 5,
+  title: 'La Route vers Fort Miln',
+  subtitle: "Arlen voyage avec Ragen. Chaque nuit en plein air est un combat pour survivre.",
+  heroId: 'arlen_young',
+  nightCount: 3,
+  startingNightNumber: 2,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['lakton'] as any,
+  locationOverrides: {
+    cutters_hollow: { name: 'Campement de Route', startPop: 4, terrain: 'plains' as any },
+    miln: { name: 'Relais de Messager', startPop: 3, terrain: 'plains' as any },
+    desert_spear: { name: 'Ruines Anciennes', startPop: 2, terrain: 'mountain' as any },
+    lakton: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'miln', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'a2_intro_1', background: 'road',
+      lines: [
+        { speaker: 'narrator', text: "La route entre Tibbet's Brook et Fort Miln fait cinq jours de marche. Cinq jours. Cinq nuits." },
+        { speaker: 'narrator', text: "Ragen connaît le chemin. Il sait où sont les relais de messagers — des cabanes fortifiées avec des wards de base, espacées d'une journée de marche." },
+        { speaker: 'ragen', text: "Règle numéro un, gamin : on ne marche JAMAIS après le crépuscule. Jamais.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Et si les wards d'un relais sont cassés ?", emotion: 'scared' },
+        { speaker: 'ragen', text: "Alors on les répare. Ou on meurt.", emotion: 'neutral' },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'a2_day1', background: 'road',
+        lines: [
+          { speaker: 'narrator', text: "Premier jour de marche. Ragen montre à Arlen comment lire les traces de corelings sur le sol — des marques noires qui s'évaporent au soleil." },
+          { speaker: 'ragen', text: "Tu vois ces traces ? Démon de flamme. Ils sont passés ici cette nuit. Beaucoup.", emotion: 'neutral' },
+          { speaker: 'arlen_young', text: "On peut explorer ces ruines là-bas ? On dirait qu'il y a des symboles sur les murs.", emotion: 'hopeful' },
+          { speaker: 'ragen', text: "Des ruines ? Hmm. Ça pourrait être un ancien poste de garde. On pourrait y trouver de l'encre de ward... ou des ennuis.", emotion: 'neutral' },
+        ],
+        choices: [
+          {
+            id: 'explore_ruins',
+            label: "Explorer les ruines",
+            hint: "+2 Encre aux Ruines + découverte d'un ward ancien, mais -2 HP (piège)",
+            effects: [
+              { type: 'add_resources', locationId: 'desert_spear', resource: 'ink', amount: 2 },
+              { type: 'bonus_reserve_ward', wardType: 'stone' },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'set_flag', flag: 'explored_ruins', value: true },
+            ],
+          },
+          {
+            id: 'stay_on_road',
+            label: "Rester sur la route — pas le temps",
+            hint: "+2 Bois au Campement (collecte en chemin)",
+            effects: [
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'a2_day2', background: 'road',
+        lines: [
+          { speaker: 'narrator', text: "Deuxième nuit survivue. Arlen n'a presque pas dormi. Les grattements des corelings contre les wards résonnent encore dans sa tête." },
+          { speaker: 'arlen_young', text: "Ragen... les wards du prochain relais. Ils ont l'air vieux sur votre carte.", emotion: 'scared' },
+          { speaker: 'ragen', text: "Personne n'est passé ici depuis des mois. On va peut-être devoir camper en plein air.", emotion: 'determined' },
+          { speaker: 'arlen_young', text: "En plein air ?!", emotion: 'scared' },
+          { speaker: 'ragen', text: "J'ai des wards portatifs. Mais ils ne couvrent pas une grande surface. On sera serrés.", emotion: 'neutral' },
+        ],
+        choices: [
+          {
+            id: 'detour_relay',
+            label: "Faire un détour vers un autre relais",
+            hint: "+1 Ward de Pierre au Relais, -1 AP (fatigue du détour)",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'camp_open',
+            label: "Camper en plein air avec les wards portatifs",
+            hint: "Aucun bonus, mais +1 démon par vague (exposition)",
+            effects: [
+              { type: 'extra_demons', count: 1 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'a2_day3', background: 'miln',
+        lines: [
+          { speaker: 'narrator', text: "Le troisième jour. Au loin, les tours de Fort Miln se dessinent contre le ciel gris. Si proches, et pourtant..." },
+          { speaker: 'ragen', text: "Une dernière nuit, gamin. Les murs de Miln sont à portée de vue, mais on n'arrivera pas avant la tombée de la nuit.", emotion: 'determined' },
+          { speaker: 'arlen_young', text: "On pourrait courir ?", emotion: 'hopeful' },
+          { speaker: 'ragen', text: "Et arriver épuisés, incapables de nous défendre si les wards sont faibles ? Non. On campe ici et on entre demain à l'aube.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Mais Arlen a remarqué quelque chose dans les ruines qu'ils ont croisées. Des symboles qu'il n'a jamais vus. Des wards... offensifs ?" },
+        ],
+        choices: [
+          {
+            id: 'study_symbols',
+            label: "Recopier les symboles inconnus",
+            hint: "+1 Ward de Vent en réserve (ward offensif rudimentaire), -1 AP",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'wind' },
+              { type: 'hero_ap_change', delta: -1 },
+              { type: 'set_flag', flag: 'found_combat_wards', value: true },
+            ],
+          },
+          {
+            id: 'focus_defense',
+            label: "Se concentrer sur les défenses du campement",
+            hint: "+3 Bois au Campement",
+            effects: [
+              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'wood', amount: 3 },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'a2_victory', background: 'miln',
+      lines: [
+        { speaker: 'narrator', text: "L'aube du quatrième jour. Les portes de Fort Miln s'ouvrent devant eux." },
+        { speaker: 'narrator', text: "Arlen lève les yeux vers les murs immenses. Des wards gravés dans la pierre par centaines, par milliers. Plus anciens et plus puissants que tout ce qu'il a vu." },
+        { speaker: 'arlen_young', text: "C'est... magnifique.", emotion: 'hopeful' },
+        { speaker: 'ragen', text: "Bienvenue à Fort Miln, gamin. Ta nouvelle vie commence ici.", emotion: 'neutral' },
+        { speaker: 'narrator', text: "Arlen Bales pose le pied dans la plus grande cité qu'il ait jamais vue. Quelque part dans ces murs, il trouvera les réponses qu'il cherche." },
+        { speaker: 'narrator', text: "Les wards de combat. Le savoir perdu. La clé pour ne plus jamais avoir peur." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [
+    {
+      id: 'a2_defeat', background: 'village_burning',
+      lines: [
+        { speaker: 'narrator', text: "Les wards portatifs cèdent. La nuit envahit le campement." },
+        { speaker: 'ragen', text: "COURS VERS MILN ! COURS ET NE T'ARRÊTE PAS !", emotion: 'angry' },
+        { speaker: 'narrator', text: "Arlen court dans l'obscurité, les corelings sur ses talons. Les murs de Miln sont si proches..." },
+        { speaker: 'narrator', text: "Il n'atteindra jamais les portes." },
+        { speaker: 'narrator', text: "Chapitre 5 — Échec" },
+      ],
+    },
+  ],
+};
+
+// ============================================================
+// Chapter 6: Leesha — L'Attaque de Cutter's Hollow
+// ============================================================
+
+export const CHAPTER_LEESHA_2: ChapterDefinition = {
+  id: 6,
+  title: "L'Attaque de Cutter's Hollow",
+  subtitle: "Sans Bruna, Leesha est la seule à pouvoir protéger le village.",
+  heroId: 'leesha_young',
+  nightCount: 3,
+  startingNightNumber: 3,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['desert_spear'] as any,
+  locationOverrides: {
+    cutters_hollow: { name: "Cutter's Hollow", startPop: 8, terrain: 'forest' as any },
+    miln: { name: 'Cabane de Bruna', startPop: 3, terrain: 'forest' as any },
+    lakton: { name: 'Scierie', startPop: 5, terrain: 'forest' as any },
+    desert_spear: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'lakton', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'l2_intro', background: 'forest_village',
+      lines: [
+        { speaker: 'narrator', text: "Bruna est morte. La vieille herboriste s'est éteinte dans son sommeil, un sourire aux lèvres." },
+        { speaker: 'narrator', text: "Leesha est seule maintenant. La seule à connaître les herbes, les onguents, et les secrets des wards." },
+        { speaker: 'leesha_young', text: "Je ne suis pas prête...", emotion: 'scared' },
+        { speaker: 'narrator', text: "Mais les corelings ne se soucient pas de sa peur. Et cette nuit, ils seront plus nombreux que jamais." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'l2_day1', background: 'forest_village',
+        lines: [
+          { speaker: 'narrator', text: "Les bûcherons de Cutter's Hollow regardent Leesha avec méfiance. Une gamine qui prétend remplacer Bruna ?" },
+          { speaker: 'leesha_young', text: "Les wards de la scierie sont fissurés. Si on ne les répare pas, les hommes qui travaillent là-bas seront sans protection.", emotion: 'determined' },
+          { speaker: 'narrator', text: "Le contremaître Smitt hésite." },
+        ],
+        choices: [
+          {
+            id: 'convince_smitt',
+            label: "Convaincre Smitt de fournir du bois pour les wards",
+            hint: "+3 Bois à la Scierie, mais -1 AP (négociations épuisantes)",
+            effects: [
+              { type: 'add_resources', locationId: 'lakton', resource: 'wood', amount: 3 },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'work_alone',
+            label: "Travailler seule avec les réserves de Bruna",
+            hint: "+2 Encre à la Cabane de Bruna",
+            effects: [
+              { type: 'add_resources', locationId: 'miln', resource: 'ink', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'l2_day2', background: 'refugees',
+        lines: [
+          { speaker: 'narrator', text: "La nuit a été violente. Des démons de bois ont arraché des arbres entiers pour les jeter contre les wards." },
+          { speaker: 'leesha_young', text: "Il faut explorer la forêt autour du village. Bruna disait qu'il y avait d'anciennes pierres wardées dans les bois.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'explore_forest',
+            label: "Explorer la forêt (risqué mais prometteur)",
+            hint: "+1 Ward de Pierre en réserve, -2 HP (blessure dans les ronces)",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'stone' },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'set_flag', flag: 'explored_forest', value: true },
+            ],
+          },
+          {
+            id: 'fortify_village',
+            label: "Rester au village et renforcer les défenses",
+            hint: "+1 Ward de Feu à Cutter's Hollow",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'cutters_hollow' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'l2_day3', background: 'forest_village',
+        lines: [
+          { speaker: 'narrator', text: "Dernière nuit. Les corelings sont de plus en plus agressifs, comme s'ils sentaient la faiblesse du village." },
+          { speaker: 'leesha_young', text: "J'ai trouvé quelque chose dans les notes de Bruna. Une recette d'onguent qui renforce temporairement les wards.", emotion: 'hopeful' },
+          { speaker: 'leesha_young', text: "Mais il faut toutes mes herbes. Si ça ne marche pas, je n'aurai plus rien pour soigner les blessés.", emotion: 'scared' },
+        ],
+        choices: [
+          {
+            id: 'use_ointment',
+            label: "Préparer l'onguent de renforcement",
+            hint: "Force des démons -1 cette nuit, mais pas de soin possible",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+            ],
+          },
+          {
+            id: 'keep_herbs',
+            label: "Garder les herbes pour les soins",
+            hint: "+4 HP héros + +2 Pop au village",
+            effects: [
+              { type: 'hero_hp_change', delta: 4 },
+              { type: 'modify_population', locationId: 'cutters_hollow', delta: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [{
+    id: 'l2_victory', background: 'dawn_victory',
+    lines: [
+      { speaker: 'narrator', text: "L'aube se lève. Cutter's Hollow tient debout." },
+      { speaker: 'narrator', text: "Les villageois regardent Leesha différemment maintenant. Plus de méfiance. Du respect." },
+      { speaker: 'leesha_young', text: "Bruna... j'espère que vous seriez fière.", emotion: 'sad' },
+      { speaker: 'narrator', text: "Leesha Paper. L'herboriste de Cutter's Hollow. La protectrice." },
+    ],
+  }],
+
+  defeatDialogue: [{
+    id: 'l2_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Les wards de Cutter's Hollow cèdent. Les démons de bois envahissent le village dans un fracas d'arbres brisés." },
+      { speaker: 'leesha_young', text: "Non... NON !", emotion: 'angry' },
+      { speaker: 'narrator', text: "Leesha fuit avec les survivants. Bruna est partie, et maintenant le village aussi." },
+      { speaker: 'narrator', text: "Chapitre 6 — Échec" },
+    ],
+  }],
+};
+
+export const CHAPTERS: ChapterDefinition[] = [
+  CHAPTER_1, CHAPTER_LEESHA, CHAPTER_JARDIR, CHAPTER_ROJER,
+  CHAPTER_ARLEN_2, CHAPTER_LEESHA_2,
+];
