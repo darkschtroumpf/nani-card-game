@@ -332,13 +332,13 @@ export default function WardedGameScreen() {
   // FIX 4: Action flash feedback
   const [actionFlash, setActionFlash] = useState<string | null>(null);
 
-  // Audio: auto-play music based on game phase
+  // Audio: start music immediately, then adapt to game phase
+  useEffect(() => { audio.playMusic('menu'); }, []);
   useEffect(() => {
-    if (!state) { audio.playMusic('menu'); return; }
+    if (!state) return;
     if (state.gameOver) { audio.playMusic(state.victory ? 'victory' : 'defeat'); return; }
     if (campaignDayEvent) { audio.playMusic('vn_dramatic'); return; }
     if (state.phase === 'day') audio.playMusic('day_calm');
-    else if (state.waveNumber > 0) audio.playMusic('night_intense');
     else audio.playMusic('night_combat');
   }, [state?.phase, state?.waveNumber, state?.gameOver, campaignDayEvent]);
 

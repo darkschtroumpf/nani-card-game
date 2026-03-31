@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { warded, wardedFonts } from '../theme-warded';
+import { useAudio } from '../hooks/useAudio';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import { createNewSave } from '../../engine/src/warded/campaign-engine';
@@ -52,6 +53,10 @@ export default function CampaignScreen() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [save, setSave] = useState<CampaignSaveState | null>(null);
   const [currentChapter, setCurrentChapter] = useState<ChapterDefinition | null>(null);
+  const audio = useAudio();
+
+  // Start music immediately
+  useEffect(() => { audio.playMusic('menu'); }, []);
 
   useEffect(() => { loadSave(); }, []);
 
@@ -74,7 +79,8 @@ export default function CampaignScreen() {
   const startChapter = useCallback((chapter: ChapterDefinition) => {
     setCurrentChapter(chapter);
     setPhase('intro');
-  }, []);
+    audio.playMusic('vn_dramatic');
+  }, [audio]);
 
   const handleIntroComplete = useCallback(() => {
     if (!currentChapter) return;

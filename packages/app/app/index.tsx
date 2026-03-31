@@ -3,12 +3,16 @@ import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Animated } f
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { warded, wardedFonts } from '../theme-warded';
+import { useAudio } from '../hooks/useAudio';
 
 const BG_NIGHT = require('../assets/images/bg_night.png');
 
 export default function HomeScreen() {
   const router = useRouter();
+  const audio = useAudio();
   const glowAnim = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => { audio.playMusic('menu'); }, []);
 
   useEffect(() => {
     Animated.loop(
