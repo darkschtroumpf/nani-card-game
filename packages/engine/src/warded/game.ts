@@ -532,7 +532,11 @@ export function resolveWardPassives(state: GameState): string[] {
           if (demons.length > 0) {
             const redirectable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind');
             if (redirectable >= 0) {
-              const adj = getAdjacentIds(loc.id);
+              const adj = getAdjacentIds(loc.id).filter(a => {
+                const adjLoc = getLocation(state, a);
+                return !adjLoc.fallen && adjLoc.maxPopulation > 0;
+              });
+              if (adj.length === 0) break; // no valid adjacent
               // Pick the adjacent with fewest demons (spread the load)
               let bestAdj = adj[0];
               let bestCount = 99;

@@ -83,8 +83,8 @@ export const DEMON_TYPES: {
   isBoss: boolean;
   introducedChapter: number;
 }[] = [
-  { type: 'flame', baseStrength: 2, targeting: 'random', special: 'Destroys 1 resource at target on hit', isLocked: false, isBoss: false, introducedChapter: 1 },
-  { type: 'wood', baseStrength: 3, targeting: 'least_defense', special: 'Takes double damage from Fire wards', isLocked: false, isBoss: false, introducedChapter: 1 },
+  { type: 'flame', baseStrength: 3, targeting: 'random', special: 'Destroys 1 resource at target on hit', isLocked: false, isBoss: false, introducedChapter: 1 },
+  { type: 'wood', baseStrength: 4, targeting: 'least_defense', special: 'Takes double damage from Fire wards', isLocked: false, isBoss: false, introducedChapter: 1 },
   { type: 'wind', baseStrength: 1, targeting: 'random', special: 'Group of 2. Cannot be redirected by Wind wards.', isLocked: false, isBoss: false, introducedChapter: 2 },
   { type: 'water', baseStrength: 3, targeting: 'lakton_or_desert_spear', special: 'Ward defense halved. Location-locked.', isLocked: true, isBoss: false, introducedChapter: 3 },
   { type: 'rock', baseStrength: 4, targeting: 'highest_population', special: 'Ignores 1 point of ward defense', isLocked: false, isBoss: false, introducedChapter: 4 },
@@ -94,7 +94,7 @@ export const DEMON_TYPES: {
 // Demons per wave by night number
 // Reduced demon counts for better balance (was: 3,4,5,6...)
 export const DEMONS_PER_WAVE: Record<number, number> = {
-  1: 3, 2: 3, 3: 4, 4: 4, 5: 5, 6: 5, 7: 6, 8: 6, 9: 7, 10: 7, 11: 8, 12: 9,
+  1: 3, 2: 3, 3: 3, 4: 4, 5: 4, 6: 5, 7: 5, 8: 6, 9: 6, 10: 7, 11: 8, 12: 9,
 };
 
 // Terrain → demon type affinity (which demons are attracted to which terrain)
