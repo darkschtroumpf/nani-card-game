@@ -49,7 +49,7 @@ const translations = {
     defeat_sub: 'Les ténèbres recouvrent Ala.',
 
     // Stats
-    stat_nights: 'Nuits de survie',
+    stat_nights: 'Nuits survécues',
     stat_wards: 'Wards fabriqués',
     stat_activations: 'Activations',
     stat_demons_killed: 'Démons tués',

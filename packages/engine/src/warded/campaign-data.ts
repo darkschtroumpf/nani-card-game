@@ -885,7 +885,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a2_day2', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "Deuxième nuit survivue. Arlen n'a presque pas dormi. Les grattements des corelings contre les wards résonnent encore dans sa tête." },
+          { speaker: 'narrator', text: "Deuxième nuit survécue. Arlen n'a presque pas dormi. Les grattements des corelings contre les wards résonnent encore dans sa tête." },
           { speaker: 'narrator', text: "Le prochain relais est censé être à une demi-journée de marche. Mais la route est en mauvais état." },
           { speaker: 'arlen_young', text: "Il y a des traces de corelings partout. Plus que la nuit dernière.", emotion: 'scared' },
         ],

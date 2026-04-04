@@ -601,7 +601,7 @@ export default function WardedGameScreen() {
           <Text style={styles.gameOverTitle}>{state.victory ? (isEndlessMode ? 'FIN DE LA SURVIE' : "L'AUBE SE LÈVE") : 'LA NUIT GAGNE'}</Text>
           {isEndlessMode && (
             <Text style={{ color: warded.accent, fontSize: wardedFonts.xl, fontWeight: 'bold', marginTop: 4 }}>
-              {gameStats.current.nightsSurvived} nuits de survie
+              {gameStats.current.nightsSurvived} nuits survécues
             </Text>
           )}
           {state.victory && (() => {
@@ -627,7 +627,7 @@ export default function WardedGameScreen() {
           <View style={styles.statsGrid}>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.nightsSurvived}</Text>
-              <Text style={styles.statsLabel}>Nuits de survie</Text>
+              <Text style={styles.statsLabel}>Nuits survécues</Text>
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.wardsCrafted}</Text>
@@ -1619,7 +1619,7 @@ export default function WardedGameScreen() {
         <View style={styles.transitionOverlay}>
           <Text style={styles.transitionEmoji}>⬆</Text>
           <Text style={styles.transitionText}>NIVEAU {state.hero.level}</Text>
-          <Text style={styles.transitionSub}>Nuit de survie ! {state.hero.name} devient plus fort.</Text>
+          <Text style={styles.transitionSub}>Nuit survécue ! {state.hero.name} devient plus fort.</Text>
           <View style={{ gap: 6, marginTop: 12, alignItems: 'center' }}>
             <Text style={{ color: warded.success, fontSize: wardedFonts.md, fontWeight: 'bold' }}>🛡 Wards +{state.hero.wardPowerBonus} dégâts</Text>
             <Text style={{ color: warded.success, fontSize: wardedFonts.md, fontWeight: 'bold' }}>❤ +2 HP max ({state.hero.maxHp})</Text>
