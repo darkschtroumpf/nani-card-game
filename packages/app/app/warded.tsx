@@ -770,7 +770,9 @@ export default function WardedGameScreen() {
     if (tutorialStep === 4) setTutorialStep(5);
     gameStats.current.nightsSurvived++;
     audio.playSfx('night_fall');
-    setSelectedLocation(null); // Clear location detail on phase change
+    setSelectedLocation(null);
+    setWindRedirectDemon(null);
+    setMistWalkMode(false);
     setShowNightTransition(true);
     setTimeout(() => {
       setShowNightTransition(false);
@@ -1538,6 +1540,8 @@ export default function WardedGameScreen() {
                   onPress={() => {
                     setDamageResolved(false);
                     setSelectedLocation(null);
+                    setWindRedirectDemon(null);
+                    setMistWalkMode(false);
                     if (state.waveNumber < 3) {
                       ctrl.doStartWave();
                     } else {
@@ -1592,6 +1596,8 @@ export default function WardedGameScreen() {
             onPress={() => {
               setShowLevelUp(false);
               setSelectedLocation(null);
+              setWindRedirectDemon(null);
+              setMistWalkMode(false);
               ctrl.startNewDay();
             }}
           >
