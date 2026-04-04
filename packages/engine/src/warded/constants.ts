@@ -381,3 +381,41 @@ export const SWARM_THRESHOLD = 3; // 3+ demons = +1 str each
 // --- Horde formation ---
 
 export const HORDE_FORMATION_NIGHTS = 3; // fallen location forms horde after 3 nights
+
+// --- Talent Tree ---
+
+import type { TalentDefinition } from './types';
+
+export const TALENTS: TalentDefinition[] = [
+  // Arlen Young
+  { id: 'arlen_young_t1', heroId: 'arlen_young', name: 'Endurance', description: '+1 AP par jour', cost: 2, tier: 1,
+    effect: { type: 'ap_bonus', value: 1 } },
+  { id: 'arlen_young_t2', heroId: 'arlen_young', name: 'Courage', description: '+1 activation par nuit', cost: 4, tier: 2,
+    effect: { type: 'extra_activation', value: 1 } },
+  { id: 'arlen_young_t3', heroId: 'arlen_young', name: 'Volonte', description: '+1 degats wards', cost: 6, tier: 3,
+    effect: { type: 'ward_power', value: 1 } },
+
+  // Leesha Young
+  { id: 'leesha_young_t1', heroId: 'leesha_young', name: 'Herboriste', description: 'Soigne 1 HP a l\'aube', cost: 2, tier: 1,
+    effect: { type: 'heal_dawn', value: 1 } },
+  { id: 'leesha_young_t2', heroId: 'leesha_young', name: 'Science', description: '+1 AP par jour', cost: 4, tier: 2,
+    effect: { type: 'ap_bonus', value: 1 } },
+  { id: 'leesha_young_t3', heroId: 'leesha_young', name: 'Maitrise', description: '+1 degats wards', cost: 6, tier: 3,
+    effect: { type: 'ward_power', value: 1 } },
+
+  // Jardir Young
+  { id: 'jardir_young_t1', heroId: 'jardir_young', name: 'Discipline', description: '+2 HP max', cost: 2, tier: 1,
+    effect: { type: 'hp_bonus', value: 2 } },
+  { id: 'jardir_young_t2', heroId: 'jardir_young', name: 'Tactique', description: '+1 activation par nuit', cost: 4, tier: 2,
+    effect: { type: 'extra_activation', value: 1 } },
+  { id: 'jardir_young_t3', heroId: 'jardir_young', name: 'Foi', description: '+1 degats wards', cost: 6, tier: 3,
+    effect: { type: 'ward_power', value: 1 } },
+
+  // Rojer Young
+  { id: 'rojer_young_t1', heroId: 'rojer_young', name: 'Agilite', description: '+1 ressource au gather', cost: 2, tier: 1,
+    effect: { type: 'resource_bonus', value: 1 } },
+  { id: 'rojer_young_t2', heroId: 'rojer_young', name: 'Harmonie', description: '+1 AP par jour', cost: 4, tier: 2,
+    effect: { type: 'ap_bonus', value: 1 } },
+  { id: 'rojer_young_t3', heroId: 'rojer_young', name: 'Virtuosite', description: '+1 degats wards', cost: 6, tier: 3,
+    effect: { type: 'ward_power', value: 1 } },
+];

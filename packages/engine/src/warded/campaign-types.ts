@@ -87,6 +87,7 @@ export interface CampaignSaveState {
   currentChapter: number;
   completedChapters: number[];
   chapterStars: Record<number, 1 | 2 | 3>;
+  unlockedTalents: string[]; // TalentId[]
   flags: Record<string, boolean | number>;
   choiceHistory: Record<string, string>;
   heroLevels: Record<HeroId, number>;

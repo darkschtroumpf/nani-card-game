@@ -7,9 +7,10 @@ import { warded, wardedFonts } from '../theme-warded';
 import { useAudio } from '../hooks/useAudio';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
-import { createNewSave } from '../../engine/src/warded/campaign-engine';
+import { createNewSave, getTotalStars, getSpentStars } from '../../engine/src/warded/campaign-engine';
+import { TALENTS } from '../../engine/src/warded/constants';
 import type { ChapterDefinition, CampaignSaveState } from '../../engine/src/warded/campaign-types';
-import type { HeroId } from '../../engine/src/warded/types';
+import type { HeroId, TalentDefinition } from '../../engine/src/warded/types';
 
 const BG_NIGHT = require('../assets/images/bg_night.png');
 
@@ -166,6 +167,55 @@ export default function CampaignScreen() {
             </View>
           );
         })}
+
+        {/* Talent Tree */}
+        {save && (() => {
+          const totalStars = getTotalStars(save);
+          const spentStars = getSpentStars(save);
+          const available = totalStars - spentStars;
+          return (
+            <View style={[styles.card, { borderColor: '#9b30ff60' }]}>
+              <Text style={[styles.cardName, { color: '#9b30ff' }]}>Talents</Text>
+              <Text style={styles.cardSub}>★ {available} etoiles disponibles ({totalStars} total)</Text>
+              {heroIds.map(heroKey => {
+                const info = CHARACTER_INFO[heroKey];
+                const heroTalents = TALENTS.filter(t => t.heroId === heroKey);
+                if (heroTalents.length === 0) return null;
+                return (
+                  <View key={`talent-${heroKey}`} style={{ marginTop: 8 }}>
+                    <Text style={{ color: info.color, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>{info.name}</Text>
+                    {heroTalents.map(talent => {
+                      const isUnlocked = save.unlockedTalents?.includes(talent.id);
+                      const canAfford = available >= talent.cost;
+                      const prevTierUnlocked = talent.tier === 1 || heroTalents.some(t => t.tier === talent.tier - 1 && save.unlockedTalents?.includes(t.id));
+                      return (
+                        <TouchableOpacity
+                          key={talent.id}
+                          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4, opacity: isUnlocked ? 1 : prevTierUnlocked && canAfford ? 0.9 : 0.4 }}
+                          disabled={isUnlocked || !canAfford || !prevTierUnlocked}
+                          onPress={async () => {
+                            const updated = { ...save, unlockedTalents: [...(save.unlockedTalents ?? []), talent.id] };
+                            setSave(updated);
+                            await AsyncStorage.setItem(SAVE_KEY, JSON.stringify(updated));
+                          }}
+                        >
+                          <Text style={{ color: isUnlocked ? '#4CAF50' : warded.textDim, fontSize: wardedFonts.xs, width: 16 }}>
+                            {isUnlocked ? '✓' : `T${talent.tier}`}
+                          </Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ color: isUnlocked ? warded.text : warded.textDim, fontSize: wardedFonts.sm, fontWeight: '600' }}>{talent.name}</Text>
+                            <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{talent.description}</Text>
+                          </View>
+                          {!isUnlocked && <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>★{talent.cost}</Text>}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                );
+              })}
+            </View>
+          );
+        })()}
 
         <TouchableOpacity style={styles.backBtn} onPress={() => router.replace('/')}>
           <Text style={styles.backText}>← Retour</Text>

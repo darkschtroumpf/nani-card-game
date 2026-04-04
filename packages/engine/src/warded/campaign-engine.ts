@@ -5,7 +5,7 @@
 import type { GameState, LocationId, WardType } from './types';
 import type { ChapterDefinition, CampaignEffect, CampaignModifiers, CampaignSaveState } from './campaign-types';
 import { createGame, processDawn } from './game';
-import { LOCATIONS, CHAPTER_WARD_AVAILABILITY, CHAPTER_FIRE_CAN_KILL, CHAPTER_TRIPLE_COMBOS, WARD_TYPES } from './constants';
+import { LOCATIONS, CHAPTER_WARD_AVAILABILITY, CHAPTER_FIRE_CAN_KILL, CHAPTER_TRIPLE_COMBOS, WARD_TYPES, TALENTS } from './constants';
 
 /** Create a game state from a chapter definition */
 export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSaveState): GameState {
@@ -83,6 +83,24 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
     CHAPTER_WARD_AVAILABILITY[Math.min(chapterNum, 6)] ?? [...WARD_TYPES];
   state.maxComboSize = chapterNum >= CHAPTER_TRIPLE_COMBOS ? 3 : 2;
   state.fireCanKill = chapter.fireCanKill ?? (chapterNum >= CHAPTER_FIRE_CAN_KILL);
+
+  // Apply unlocked talents for this hero
+  if (save?.unlockedTalents) {
+    const heroTalents = TALENTS.filter(t => t.heroId === chapter.heroId && save.unlockedTalents.includes(t.id));
+    for (const talent of heroTalents) {
+      switch (talent.effect.type) {
+        case 'ap_bonus': state.hero.ap += talent.effect.value; break;
+        case 'hp_bonus':
+          state.hero.maxHp += talent.effect.value;
+          state.hero.hp += talent.effect.value;
+          break;
+        case 'ward_power': state.hero.wardPowerBonus += talent.effect.value; break;
+        case 'heal_dawn': /* handled in processDawn */ break;
+        case 'extra_activation': /* handled in startWave */ break;
+        case 'resource_bonus': /* handled in gather */ break;
+      }
+    }
+  }
 
   // Re-distribute resources
   processDawn(state);
@@ -181,12 +199,26 @@ export function createNewSave(): CampaignSaveState {
     currentChapter: 1,
     completedChapters: [],
     chapterStars: {},
+    unlockedTalents: [],
     flags: {},
     choiceHistory: {},
     heroLevels: { arlen: 1, arlen_young: 1, jardir: 1, jardir_young: 1, rojer: 1, rojer_young: 1, leesha: 1, leesha_young: 1 },
     heroMaxHp: { arlen: 10, arlen_young: 8, jardir: 10, jardir_young: 9, rojer: 10, rojer_young: 7, leesha: 10, leesha_young: 8 },
     wardPowerBonus: 0,
   };
+}
+
+/** Calculate total stars earned across all chapters */
+export function getTotalStars(save: CampaignSaveState): number {
+  return Object.values(save.chapterStars ?? {}).reduce((sum, s) => sum + s, 0);
+}
+
+/** Calculate stars spent on talents */
+export function getSpentStars(save: CampaignSaveState): number {
+  return (save.unlockedTalents ?? []).reduce((sum, tid) => {
+    const talent = TALENTS.find(t => t.id === tid);
+    return sum + (talent?.cost ?? 0);
+  }, 0);
 }
 
 /** Update save after completing a chapter */

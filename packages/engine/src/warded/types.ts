@@ -136,6 +136,23 @@ export interface Consumable {
   name: string;
 }
 
+// --- Talent Tree ---
+
+export type TalentId = string; // e.g. 'arlen_young_t1'
+
+export interface TalentDefinition {
+  id: TalentId;
+  heroId: HeroId;
+  name: string;
+  description: string;
+  cost: number; // stars required
+  tier: 1 | 2 | 3;
+  effect: {
+    type: 'ap_bonus' | 'hp_bonus' | 'ward_power' | 'extra_activation' | 'resource_bonus' | 'heal_dawn';
+    value: number;
+  };
+}
+
 // --- Game State ---
 
 export type GamePhase = 'day' | 'night';
