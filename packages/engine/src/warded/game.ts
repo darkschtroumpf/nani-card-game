@@ -922,9 +922,17 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
 
   if (useCombo) {
     const combo = getWardCombo(loc, state);
-    if (!combo) return ['Pas de combo à ce lieu.'];
-    events.push(`${combo.activeName} activé à ${loc.name}!`);
-    applyComboActive(state, locationId, combo, presenceBonus, events);
+    if (combo) {
+      events.push(`${combo.activeName} activé à ${loc.name}!`);
+      applyComboActive(state, locationId, combo, presenceBonus, events);
+    } else {
+      // No combo available — fallback to individual ward actives
+      for (const ws of loc.wards) {
+        if (!ws.ward) continue;
+        events.push(`${ws.ward} activé à ${loc.name}!`);
+        applyWardActive(state, locationId, ws.ward, presenceBonus, events);
+      }
+    }
   } else {
     // Activate each individual ward
     for (const ws of loc.wards) {

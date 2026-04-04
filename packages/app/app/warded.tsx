@@ -141,11 +141,11 @@ function getNightStepIndex(waveNumber: number, activationsRemaining: number, _to
 // --- Tutorial ---
 const TUTORIAL_STEPS: { text: string; buttonLabel: string }[] = [
   { text: "Les bordures colorées montrent les menaces de la nuit. ROUGE = danger ! Prépare tes défenses.", buttonLabel: "Compris" },
-  { text: "Tape sur un lieu pour voir ses défenses et agir.", buttonLabel: "Suivant" },
+  { text: "Tape sur un lieu pour voir ses défenses et agir. Utilise la 🔍 pour inspecter un lieu.", buttonLabel: "Suivant" },
   { text: "Fabrique un ward pour protéger tes cités. Chaque ward a un effet unique.", buttonLabel: "Suivant" },
-  { text: "Place ton ward sur un lieu. L'ordre des runes compte ! Deux runes adjacentes créent un COMBO si leurs liens sont assez forts. Intervertis-les pour optimiser ton maillage.", buttonLabel: "Suivant" },
+  { text: "Place ton ward sur un lieu. L'ordre des runes compte ! Deux runes adjacentes créent un COMBO si leurs liens sont assez forts.", buttonLabel: "Suivant" },
   { text: "Prêt ? Lance la nuit pour affronter les démons !", buttonLabel: "Suivant" },
-  { text: "Tape un lieu wardé pour activer ses défenses. Si un combo est actif, il se déclenche automatiquement !", buttonLabel: "Suivant" },
+  { text: "Les wards s'activent automatiquement. Utilise tes pouvoirs bonus si disponibles, puis résous les dégâts.", buttonLabel: "Suivant" },
   { text: "Résous les dégâts pour voir ce qui a survécu. Bonne chance !", buttonLabel: "Suivant" },
 ];
 
@@ -328,6 +328,7 @@ export default function WardedGameScreen() {
   const [mistWalkMode, setMistWalkMode] = useState(false);
   const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
   const [showComboPanel, setShowComboPanel] = useState(true);
+  const [inspectMode, setInspectMode] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
@@ -687,6 +688,12 @@ export default function WardedGameScreen() {
       setMistWalkMode(false);
       return;
     }
+    // Inspect mode: always open detail
+    if (inspectMode) {
+      setInspectMode(false);
+      setSelectedLocation(locId);
+      return;
+    }
     // DAY: auto-fortify if reserves + location has empty slot + AP
     if (isDay && state.wardReserves.length > 0 && state.hero.ap > 0) {
       const loc = state.locations.find(l => l.id === locId);
@@ -914,6 +921,15 @@ export default function WardedGameScreen() {
         lastDamagedLocations={lastDamagedLocs as any}
       />
 
+      {/* Inspect mode banner */}
+      {inspectMode && isDay && (
+        <View style={{ backgroundColor: warded.accent + '20', borderWidth: 1, borderColor: warded.accent, borderRadius: 8, paddingVertical: 4, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 2 }}>
+          <Text style={{ color: warded.accent, fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
+            🔍 Tape un lieu pour inspecter ses défenses
+          </Text>
+        </View>
+      )}
+
       {/* CRITICAL 2: Positioning banner during wave 0 */}
       {isNight && state.waveNumber === 0 && !state.presenceMoveUsed && !selectedLoc && (
         <View style={{ backgroundColor: warded.warning + '20', borderWidth: 1, borderColor: warded.warning, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
@@ -1099,10 +1115,18 @@ export default function WardedGameScreen() {
             <View style={styles.actionSection}>
               {state.hero.ap > 0 ? (
                 <>
-                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — {(() => {
-                    const alive = state.locations.filter(l => !l.fallen);
-                    return `${alive.reduce((s, l) => s + l.stockpile.wood, 0)} Bois | ${alive.reduce((s, l) => s + l.stockpile.ink, 0)} Encre`;
-                  })()}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — {(() => {
+                      const alive = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
+                      return `${alive.reduce((s, l) => s + l.stockpile.wood, 0)} Bois | ${alive.reduce((s, l) => s + l.stockpile.ink, 0)} Encre`;
+                    })()}</Text>
+                    <TouchableOpacity
+                      style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
+                      onPress={() => setInspectMode(!inspectMode)}
+                    >
+                      <Text style={{ color: inspectMode ? warded.accent : warded.textDim, fontSize: wardedFonts.sm }}>🔍</Text>
+                    </TouchableOpacity>
+                  </View>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.wardCraftScroll}>
                     {(state.availableWards ?? WARD_TYPES).map(w => {
                       const cost = WARD_COSTS[w];
@@ -1167,7 +1191,15 @@ export default function WardedGameScreen() {
                   </View>
                 ))}
               </View>
-              <Text style={styles.reserveHint}>👆 Tape un lieu sur la carte pour y placer ta rune !</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <Text style={styles.reserveHint}>👆 Tape un lieu pour placer ta rune</Text>
+                <TouchableOpacity
+                  style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
+                  onPress={() => setInspectMode(!inspectMode)}
+                >
+                  <Text style={{ color: inspectMode ? warded.accent : warded.textDim, fontSize: wardedFonts.sm }}>🔍</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
