@@ -297,8 +297,9 @@ const tutStyles = StyleSheet.create({
 
 export default function WardedGameScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ chapter?: string }>();
+  const params = useLocalSearchParams<{ chapter?: string; mode?: string }>();
   const campaignChapterId = params.chapter ? parseInt(params.chapter) : null;
+  const isEndlessMode = params.mode === 'endless';
   const campaignChapter = campaignChapterId ? CHAPTERS.find(c => c.id === campaignChapterId) ?? null : null;
 
   const ctrl = useWardedGame();
@@ -328,7 +329,7 @@ export default function WardedGameScreen() {
   const [mistWalkMode, setMistWalkMode] = useState(false);
   const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
   const [showComboPanel, setShowComboPanel] = useState(true);
-  const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight'>('waning');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
   // FIX 3: Game stats tracking
@@ -487,7 +488,7 @@ export default function WardedGameScreen() {
         </ImageBackground>
         <ScrollView contentContainerStyle={styles.heroSelectContainer}>
           <Text style={styles.heroSelectTitle}>CHOISIS TON CHAMPION</Text>
-          <Text style={styles.heroSelectSub}>Quick Mode — 3 nuits de survie</Text>
+          <Text style={styles.heroSelectSub}>{isEndlessMode ? 'Mode Survie — Combien de nuits ?' : 'Quick Mode — Survie'}</Text>
 
           {HEROES.filter(h => HERO_LORE[h.id]).map(h => {
             const info = HERO_LORE[h.id];
@@ -523,7 +524,7 @@ export default function WardedGameScreen() {
 
           {selectedHero && (
             <>
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              {!isEndlessMode && <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 {([
                   { key: 'new_moon' as const, label: 'Facile', sub: '2 nuits', color: '#4CAF50' },
                   { key: 'waning' as const, label: 'Normal', sub: '3 nuits', color: '#FFD740' },
@@ -543,7 +544,7 @@ export default function WardedGameScreen() {
                     <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{d.sub}</Text>
                   </TouchableOpacity>
                 ))}
-              </View>
+              </View>}
               <TouchableOpacity
                 style={[styles.heroStartBtn, { borderColor: HERO_LORE[selectedHero].color, backgroundColor: HERO_LORE[selectedHero].color + '20' }]}
                 onPress={() => handleStartGame(selectedHero)}

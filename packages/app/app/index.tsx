@@ -47,6 +47,14 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>Campagne</Text>
           <Text style={styles.buttonDesc}>Chapitre 1 — Le Garçon de Tibbet's Brook</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { borderColor: '#9b30ff' }]}
+          onPress={() => router.replace('/warded?mode=endless')}
+        >
+          <Text style={styles.buttonText}>Survie</Text>
+          <Text style={styles.buttonDesc}>Mode infini — Combien de nuits survivras-tu ?</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.version}>v0.7.0 — The Demon's Cycle</Text>

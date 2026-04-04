@@ -204,7 +204,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
   };
 
   // Night number depends on difficulty
-  const nightNumber = difficulty === 'new_moon' ? 2 : difficulty === 'waning' ? 3 : 4;
+  const nightNumber = difficulty === 'new_moon' ? 2 : difficulty === 'waning' ? 3 : difficulty === 'midnight' ? 4 : 1;
 
   const state: GameState = {
     phase: 'day',
@@ -231,8 +231,8 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     maxComboSize: mode === 'quick' ? 3 : 2,
     fireCanKill: mode === 'quick',
     wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0 },
-    maxNights: 3,
-    minStandingLocations: mode === 'quick' ? 3 : 1,
+    maxNights: difficulty === 'endless' ? 999 : 3,
+    minStandingLocations: mode === 'quick' ? (difficulty === 'endless' ? 1 : 3) : 1,
     gameOver: false,
     victory: false,
     defeatReason: null,

@@ -232,4 +232,4 @@ export interface ChapterScore {
 
 // --- Quick Mode Difficulty ---
 
-export type Difficulty = 'new_moon' | 'waning' | 'midnight';
+export type Difficulty = 'new_moon' | 'waning' | 'midnight' | 'endless';
