@@ -1392,7 +1392,15 @@ export default function WardedGameScreen() {
             <View style={styles.nightActions}>
               <View style={styles.positioningBanner}>
                 <Image source={BG_DEMONS_RISING} style={{ width: 60, height: 60, borderRadius: 8, alignSelf: 'center', marginBottom: 6, opacity: 0.8 }} />
-                <Text style={styles.positioningTitle}>🌙 PHASE DE NUIT</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <Text style={styles.positioningTitle}>🌙 PHASE DE NUIT</Text>
+                  <TouchableOpacity
+                    style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
+                    onPress={() => setInspectMode(!inspectMode)}
+                  >
+                    <Text style={{ color: inspectMode ? warded.accent : warded.textDim, fontSize: wardedFonts.sm }}>🔍</Text>
+                  </TouchableOpacity>
+                </View>
                 <Text style={styles.positioningHint}>
                   {state.presenceMoveUsed
                     ? `Présence: ${state.locations.find(l => l.id === state.presenceLocation)?.name}. Lance la vague !`
@@ -1425,7 +1433,15 @@ export default function WardedGameScreen() {
             <View style={styles.nightActions}>
               {/* Show what happened during auto-activation */}
               <View style={styles.waveRecap}>
-                <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Défenses activées</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Défenses activées</Text>
+                  <TouchableOpacity
+                    style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
+                    onPress={() => setInspectMode(!inspectMode)}
+                  >
+                    <Text style={{ color: inspectMode ? warded.accent : warded.textDim, fontSize: wardedFonts.sm }}>🔍</Text>
+                  </TouchableOpacity>
+                </View>
                 {state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => {
                   const demons = (state.demonsAtLocations[l.id] ?? []);
                   const totalStr = demons.reduce((s, d) => s + d.currentStrength, 0);
