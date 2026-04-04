@@ -258,7 +258,6 @@ const styles = StyleSheet.create({
     backgroundColor: warded.border,
   },
   locationNode: {
-    position: 'absolute',
     width: 90,
     backgroundColor: warded.bgCard,
     borderRadius: 10,
