@@ -437,7 +437,12 @@ const styles = StyleSheet.create({
   },
   // MAJOR 2: Activated location styles
   locationActivated: {
-    opacity: 0.55,
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 6,
   },
   activatedBadge: {
     position: 'absolute',

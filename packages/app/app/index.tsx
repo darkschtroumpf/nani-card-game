@@ -36,23 +36,23 @@ export default function HomeScreen() {
           style={styles.button}
           onPress={() => router.replace('/warded')}
         >
-          <Text style={styles.buttonText}>Jouer</Text>
-          <Text style={styles.buttonDesc}>Mode rapide — Arlen Bales</Text>
+          <Text style={styles.buttonText}>⚡ Jouer</Text>
+          <Text style={styles.buttonDesc}>Mode rapide — choisis ton hero</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, { borderColor: warded.wardFire }]}
           onPress={() => router.replace('/campaign')}
         >
-          <Text style={styles.buttonText}>Campagne</Text>
-          <Text style={styles.buttonDesc}>Chapitre 1 — Le Garçon de Tibbet's Brook</Text>
+          <Text style={styles.buttonText}>📖 Campagne</Text>
+          <Text style={styles.buttonDesc}>12 chapitres — L'histoire de The Warded Man</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, { borderColor: '#9b30ff' }]}
           onPress={() => router.replace('/warded?mode=endless')}
         >
-          <Text style={styles.buttonText}>Survie</Text>
+          <Text style={styles.buttonText}>♾ Survie</Text>
           <Text style={styles.buttonDesc}>Mode infini — Combien de nuits survivras-tu ?</Text>
         </TouchableOpacity>
 
@@ -60,7 +60,7 @@ export default function HomeScreen() {
           style={[styles.button, { borderColor: warded.textDim }]}
           onPress={() => router.push('/codex')}
         >
-          <Text style={styles.buttonText}>Codex</Text>
+          <Text style={styles.buttonText}>📚 Codex</Text>
           <Text style={styles.buttonDesc}>Runes, Demons, Combos — tout savoir</Text>
         </TouchableOpacity>
       </View>

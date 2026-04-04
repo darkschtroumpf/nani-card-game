@@ -129,7 +129,7 @@ function wardCostLabel(w: WardType): string {
 
 // FIX 5: Night phase steps
 function getNightStepLabels(activationsRemaining: number): string[] {
-  return ['Position', 'Vague', `Activer (${activationsRemaining})`, 'Dégâts'];
+  return ['Placement', 'Demons', `Defendre (${activationsRemaining})`, 'Degats'];
 }
 
 function getNightStepIndex(waveNumber: number, activationsRemaining: number, totalActivations: number): number {
@@ -798,69 +798,45 @@ export default function WardedGameScreen() {
         </ImageBackground>
       )}
 
-      {/* Header */}
+      {/* Header — compact: Hero | Phase | AP/Wave | HP */}
       <View style={styles.header}>
         <View style={styles.heroRow}>
           <Image source={HERO_IMAGES[state.hero.id] ?? HERO_ARLEN} style={styles.heroAvatar} />
           <View>
             <Text style={styles.heroName}>{state.hero.name}</Text>
-            <Text style={styles.heroTitle}>{state.hero.title}</Text>
+            <Text style={styles.heroTitle}>
+              {state.hero.id === 'arlen' && state.hero.arlenCharge !== undefined ? `Charge: ${state.hero.arlenCharge} ` : ''}
+              {state.hero.id === 'jardir' ? `Sharum: ${(state.hero.jardir_warriors ?? []).length} ` : ''}
+              {state.hero.id === 'rojer' ? `Chansons: ${(state.hero.rojer_songs ?? []).filter(Boolean).length}/3 ` : ''}
+              {state.hero.id === 'leesha' ? `Objets: ${(state.hero.leesha_consumables ?? []).length} ` : ''}
+            </Text>
           </View>
         </View>
         <View style={styles.headerRight}>
           <Text style={styles.phaseText}>{isDay ? '☀ JOUR' : '🌙 NUIT'}</Text>
-          {isDay && <Text style={styles.apText}>AP: {state.hero.ap}</Text>}
+          {isDay && <Text style={[styles.apText, { fontSize: 18 }]}>AP: {state.hero.ap}</Text>}
           {isNight && <Text style={styles.waveText}>Vague {state.waveNumber}/3</Text>}
+          <Text style={[styles.apText, { color: state.hero.hp > 5 ? warded.success : warded.danger }]}>
+            HP: {state.hero.hp}/{state.hero.maxHp}
+          </Text>
         </View>
       </View>
 
-      {/* Hero stats */}
+      {/* Thin stats bar: resources (day) or activations+surge (night) */}
       <View style={styles.statsRow}>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>HP</Text>
-          <Text style={[styles.statValue, { color: state.hero.hp > 5 ? warded.success : warded.danger }]}>
-            {state.hero.hp}/{state.hero.maxHp}
-          </Text>
-        </View>
-        {state.hero.id === 'arlen' && state.hero.arlenCharge !== undefined && (
-          <View style={styles.statChip}>
-            <Text style={styles.statLabel}>Charge</Text>
-            <Text style={[styles.statValue, { color: warded.accent }]}>{state.hero.arlenCharge}</Text>
-          </View>
-        )}
-        {state.hero.id === 'jardir' && (
-          <View style={styles.statChip}>
-            <Text style={styles.statLabel}>Sharum</Text>
-            <Text style={[styles.statValue, { color: '#FF5252' }]}>{(state.hero.jardir_warriors ?? []).length}</Text>
-          </View>
-        )}
-        {state.hero.id === 'rojer' && (
-          <View style={styles.statChip}>
-            <Text style={styles.statLabel}>Chansons</Text>
-            <Text style={[styles.statValue, { color: '#7C4DFF' }]}>{(state.hero.rojer_songs ?? []).filter(Boolean).length}/3</Text>
-          </View>
-        )}
-        {state.hero.id === 'leesha' && (
-          <View style={styles.statChip}>
-            <Text style={styles.statLabel}>Objets</Text>
-            <Text style={[styles.statValue, { color: '#69F0AE' }]}>{(state.hero.leesha_consumables ?? []).length}</Text>
-          </View>
-        )}
         {isNight && (
           <View style={styles.statChip}>
-            <Text style={styles.statLabel}>Activations</Text>
+            <Text style={styles.statLabel}>Acts</Text>
             <Text style={[styles.statValue, { color: warded.wardLight }]}>{state.activationsRemaining}</Text>
           </View>
         )}
         {state.currentSurge && state.currentSurge !== 'night_of_courage' && (
           <View style={[styles.statChip, { borderColor: warded.danger }]}>
-            <Text style={[styles.statLabel, { color: warded.danger }]}>Surge</Text>
             <Text style={[styles.statValue, { color: warded.danger, fontSize: wardedFonts.xs }]}>
-              {state.currentSurge.replace(/_/g, ' ')}
+              ⚠ {state.currentSurge.replace(/_/g, ' ')}
             </Text>
           </View>
         )}
-        {/* MAJOR 4: Global resource summary during day */}
         {isDay && (() => {
           const alive = state.locations.filter(l => !l.fallen);
           const totalWood = alive.reduce((s, l) => s + l.stockpile.wood, 0);
@@ -869,21 +845,35 @@ export default function WardedGameScreen() {
           return (
             <>
               <View style={[styles.statChip, { borderColor: warded.wood + '60' }]}>
-                <Text style={styles.statLabel}>Bois</Text>
-                <Text style={[styles.statValue, { color: warded.wood }]}>{totalWood}</Text>
+                <Text style={[styles.statValue, { color: warded.wood }]}>{totalWood} Bois</Text>
               </View>
               <View style={[styles.statChip, { borderColor: warded.ink + '60' }]}>
-                <Text style={styles.statLabel}>Encre</Text>
-                <Text style={[styles.statValue, { color: warded.ink }]}>{totalInk}</Text>
+                <Text style={[styles.statValue, { color: warded.ink }]}>{totalInk} Encre</Text>
               </View>
               <View style={[styles.statChip, { borderColor: warded.food + '60' }]}>
-                <Text style={styles.statLabel}>Nourr.</Text>
-                <Text style={[styles.statValue, { color: warded.food }]}>{totalFood}</Text>
+                <Text style={[styles.statValue, { color: warded.food }]}>{totalFood} Nourr.</Text>
               </View>
             </>
           );
         })()}
       </View>
+
+      {/* MAJOR 3: Threat forecast panel (day only) */}
+      {isDay && forecast && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, paddingHorizontal: 12, marginBottom: 2 }}>
+          {state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => {
+            const level = (forecast as any)[l.id] ?? 'low';
+            const color = level === 'extreme' ? warded.danger : level === 'high' ? warded.danger : level === 'medium' ? warded.warning : warded.success;
+            const icon = level === 'extreme' ? '🔴' : level === 'high' ? '🟠' : level === 'medium' ? '🟡' : '🟢';
+            return (
+              <View key={l.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: color + '10', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, borderWidth: 1, borderColor: color + '30' }}>
+                <Text style={{ fontSize: 8 }}>{icon}</Text>
+                <Text style={{ color, fontSize: wardedFonts.xs, fontWeight: '600' }} numberOfLines={1}>{l.name.split(' ')[0]}</Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
 
       {/* Map — flex:1 pushes action bar to bottom */}
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -900,6 +890,27 @@ export default function WardedGameScreen() {
         lastActivatedLocation={lastActivatedLoc as any}
         lastDamagedLocations={lastDamagedLocs as any}
       />
+
+      {/* CRITICAL 2: Positioning banner during wave 0 */}
+      {isNight && state.waveNumber === 0 && !state.presenceMoveUsed && !selectedLoc && (
+        <View style={{ backgroundColor: warded.warning + '20', borderWidth: 1, borderColor: warded.warning, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
+          <Text style={{ color: warded.warning, fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
+            👇 TAPE UN LIEU pour positionner ton hero avant le combat
+          </Text>
+        </View>
+      )}
+
+      {/* CRITICAL 3: Mist Walk mode banner */}
+      {mistWalkMode && (
+        <View style={{ backgroundColor: '#9b30ff20', borderWidth: 1, borderColor: '#9b30ff', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
+          <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
+            ⚡ MIST WALK — Tape un lieu pour te teleporter
+          </Text>
+          <TouchableOpacity onPress={() => setMistWalkMode(false)}>
+            <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, textAlign: 'center', marginTop: 2 }}>Annuler</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Location detail (if selected) */}
       {selectedLoc && (
@@ -974,27 +985,44 @@ export default function WardedGameScreen() {
       {/* FIX 5: Night phase step indicator */}
       {isNight && !selectedLoc && (
         <View style={styles.nightStepsBar}>
-          {getNightStepLabels(state.activationsRemaining).map((step, i) => {
+          {(() => {
             const totalAct = state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward)).length;
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
-            const isActive = i === currentStep;
-            const isDone = i < currentStep;
+            const hints = [
+              'Tape un lieu pour positionner ton hero',
+              'Les demons approchent...',
+              'Tape un lieu warde pour activer ses defenses !',
+              'Appuie sur "Resoudre" pour voir les degats',
+            ];
             return (
-              <View key={step} style={styles.nightStepItem}>
-                <View style={[
-                  styles.nightStepDot,
-                  isActive && styles.nightStepDotActive,
-                  isDone && styles.nightStepDotDone,
-                ]} />
-                <Text style={[
-                  styles.nightStepLabel,
-                  isActive && styles.nightStepLabelActive,
-                  isDone && styles.nightStepLabelDone,
-                ]}>{step}</Text>
-                {i < 3 && <View style={styles.nightStepConnector} />}
-              </View>
+              <>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                  {getNightStepLabels(state.activationsRemaining).map((step, i) => {
+                    const isActive = i === currentStep;
+                    const isDone = i < currentStep;
+                    return (
+                      <View key={step} style={styles.nightStepItem}>
+                        <View style={[
+                          styles.nightStepDot,
+                          isActive && styles.nightStepDotActive,
+                          isDone && styles.nightStepDotDone,
+                        ]} />
+                        <Text style={[
+                          styles.nightStepLabel,
+                          isActive && styles.nightStepLabelActive,
+                          isDone && styles.nightStepLabelDone,
+                        ]}>{step}</Text>
+                        {i < 3 && <View style={styles.nightStepConnector} />}
+                      </View>
+                    );
+                  })}
+                </View>
+                <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, textAlign: 'center', marginTop: 2 }}>
+                  {hints[currentStep] ?? ''}
+                </Text>
+              </>
             );
-          })}
+          })()}
         </View>
       )}
 
@@ -1050,7 +1078,10 @@ export default function WardedGameScreen() {
             <View style={styles.actionSection}>
               {state.hero.ap > 0 ? (
                 <>
-                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — glisse pour voir</Text>
+                  <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — {(() => {
+                    const alive = state.locations.filter(l => !l.fallen);
+                    return `${alive.reduce((s, l) => s + l.stockpile.wood, 0)} Bois | ${alive.reduce((s, l) => s + l.stockpile.ink, 0)} Encre`;
+                  })()}</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.wardCraftScroll}>
                     {(state.availableWards ?? WARD_TYPES).map(w => {
                       const cost = WARD_COSTS[w];
@@ -1945,6 +1976,13 @@ const styles = StyleSheet.create({
   nightStepDotActive: {
     backgroundColor: warded.accent,
     borderColor: warded.accent,
+    shadowColor: warded.accent,
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   nightStepDotDone: {
     backgroundColor: warded.success,
