@@ -128,15 +128,14 @@ function wardCostLabel(w: WardType): string {
 }
 
 // FIX 5: Night phase steps
-function getNightStepLabels(activationsRemaining: number): string[] {
-  return ['Placement', 'Démons', `Défendre (${activationsRemaining})`, 'Dégâts'];
+function getNightStepLabels(): string[] {
+  return ['Placement', 'Combat', 'Dégâts'];
 }
 
-function getNightStepIndex(waveNumber: number, activationsRemaining: number, totalActivations: number): number {
+function getNightStepIndex(waveNumber: number, activationsRemaining: number, _totalActivations: number): number {
   if (waveNumber === 0) return 0;
-  if (activationsRemaining === totalActivations) return 1; // wave just started, passives resolving
-  if (activationsRemaining > 0) return 2;
-  return 3;
+  if (activationsRemaining > 0) return 1; // auto-activating
+  return 2; // ready to resolve
 }
 
 // --- Tutorial ---
@@ -682,16 +681,6 @@ export default function WardedGameScreen() {
       setMistWalkMode(false);
       return;
     }
-    // NIGHT: auto-activate ward when tapping a warded location with activations remaining
-    if (isNight && state.waveNumber > 0 && state.activationsRemaining > 0) {
-      const loc = state.locations.find(l => l.id === locId);
-      if (loc && !loc.fallen && loc.wards.some(ws => ws.ward)) {
-        const hasCombo = loc.wards.filter(ws => ws.ward).length >= 2;
-        handleActivateWard(locId, !!hasCombo);
-        return;
-      }
-    }
-
     // DAY: auto-fortify if reserves + location has empty slot + AP
     if (isDay && state.wardReserves.length > 0 && state.hero.ap > 0) {
       const loc = state.locations.find(l => l.id === locId);
@@ -726,18 +715,20 @@ export default function WardedGameScreen() {
   };
 
   // Wrapped doActivateWard to advance tutorial
-  const handleActivateWard = (locId: LocationId, useCombo: boolean) => {
-    ctrl.doActivateWard(locId, useCombo);
+  // Auto-activate ALL warded locations (no manual clicking needed)
+  const autoActivateAllWards = useCallback(() => {
+    const wardedLocs = state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward));
+    for (const loc of wardedLocs) {
+      if (state.activationsRemaining > 0) {
+        ctrl.doActivateWard(loc.id, true); // always use combo if available
+        gameStats.current.activationsUsed++;
+      }
+    }
     audio.playSfx('ward_activate');
-    gameStats.current.activationsUsed++;
-    // FIX 4: warm yellow flash on activate
     setActionFlash('#FFAA00');
     setTimeout(() => setActionFlash(null), 400);
-    // Combat animation: glow on activated location
-    setLastActivatedLoc(locId);
-    setTimeout(() => setLastActivatedLoc(null), 900);
     if (tutorialStep === 5) setTutorialStep(6);
-  };
+  }, [state, ctrl, audio, tutorialStep]);
 
   // Wrapped doResolveDamage with clear per-location report
   const handleResolveDamage = () => {
@@ -975,10 +966,8 @@ export default function WardedGameScreen() {
               canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
               availableWardReserves={state.wardReserves}
               availableWards={state.availableWards}
-              onActivateWard={isNight && state.activationsRemaining > 0 && selectedLoc.wards.some(ws => ws.ward)
-                ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
-                : undefined}
-              canActivate={isNight && state.activationsRemaining > 0 && !!selectedLoc.wards.some(ws => ws.ward)}
+              onActivateWard={undefined}
+              canActivate={false}
               isActivated={state.activationsUsedAt?.includes(selectedLoc.id) ?? false}
               onWardedFlesh={isDay && state.hero.id === 'arlen' && state.hero.ap > 0 && selectedLoc.wards.some(ws => !ws.ward)
                 ? (w: WardType) => { ctrl.doWardedFlesh(w, selectedLoc.id); }
@@ -1030,14 +1019,13 @@ export default function WardedGameScreen() {
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const hints = [
               'Tape un lieu pour positionner ton héro',
-              'Les démons approchent...',
-              'Tape un lieu wardé pour activer ses défenses !',
+              'Wards activés automatiquement — utilise tes pouvoirs bonus !',
               'Appuie sur "Résoudre" pour voir les dégâts',
             ];
             return (
               <>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                  {getNightStepLabels(state.activationsRemaining).map((step, i) => {
+                  {getNightStepLabels().map((step, i) => {
                     const isActive = i === currentStep;
                     const isDone = i < currentStep;
                     return (
@@ -1052,7 +1040,7 @@ export default function WardedGameScreen() {
                           isActive && styles.nightStepLabelActive,
                           isDone && styles.nightStepLabelDone,
                         ]}>{step}</Text>
-                        {i < 3 && <View style={styles.nightStepConnector} />}
+                        {i < 2 && <View style={styles.nightStepConnector} />}
                       </View>
                     );
                   })}
@@ -1386,39 +1374,18 @@ export default function WardedGameScreen() {
                     : `Tape un lieu pour déplacer ta Présence.\nPuis lance la vague pour affronter les démons.`}
                 </Text>
               </View>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWave(); }}>
+              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWave(); setTimeout(() => autoActivateAllWards(), 50); }}>
                 <Text style={[styles.phaseBtnText, { color: warded.danger }]}>⚔ Lancer Vague 1</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {/* Activations are now automatic — this block only shows if somehow activations remain (shouldn't happen) */}
+          {/* Activations happen automatically — this fallback shouldn't appear normally */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
             <View style={styles.nightActions}>
-              <Text style={styles.nightLabel}>Activations en cours...</Text>
-              {mistWalkMode ? (
-                <View style={styles.mistWalkBanner}>
-                  <Text style={styles.mistWalkTitle}>MIST WALK</Text>
-                  <Text style={styles.mistWalkHint}>Tape un lieu pour te téléporter</Text>
-                  <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.textDim }]} onPress={() => setMistWalkMode(false)}>
-                    <Text style={[styles.phaseBtnText, { color: warded.textDim }]}>Annuler</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <>
-                  <Text style={styles.nightLabel}>Sélectionne un lieu pour activer ses wards ({state.activationsRemaining} restantes)</Text>
-                  {state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) >= 5 && (
-                    <TouchableOpacity style={[styles.phaseBtn, styles.mistWalkBtn]} onPress={() => setMistWalkMode(true)}>
-                      <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>MIST WALK (5 charges)</Text>
-                    </TouchableOpacity>
-                  )}
-                  {state.hero.id === 'arlen' && !state.heroWaveAbilityUsed && (state.hero.arlenCharge ?? 0) > 0 && (
-                    <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.accent + '30', borderColor: warded.accent }]} onPress={ctrl.doWardedFist}>
-                      <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
-                    </TouchableOpacity>
-                  )}
-                </>
-              )}
+              <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent }]} onPress={autoActivateAllWards}>
+                <Text style={[styles.phaseBtnText, { color: warded.accent }]}>🛡 Activer les défenses</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -1581,6 +1548,7 @@ export default function WardedGameScreen() {
                     setMistWalkMode(false);
                     if (state.waveNumber < 3) {
                       ctrl.doStartWave();
+                      setTimeout(() => autoActivateAllWards(), 50);
                     } else {
                       ctrl.doEndWave();
                       // Show level up ONLY after React re-renders with fresh state
@@ -1926,8 +1894,9 @@ const styles = StyleSheet.create({
   waveRecap: {
     backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: 8,
-    padding: 8,
-    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 1,
     borderWidth: 1,
     borderColor: warded.border,
   },
