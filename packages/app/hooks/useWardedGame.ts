@@ -79,6 +79,7 @@ export interface WardedGameController {
   // Night actions
   doMovePresence: (locationId: LocationId) => void;
   doStartWave: () => void;
+  doStartWaveAndAutoActivate: () => void;
   doActivateWard: (locationId: LocationId, useCombo: boolean) => void;
   doResolveDamage: () => void;
   doEndWave: () => void;
@@ -409,6 +410,36 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync, addEvents]);
 
+  const doStartWaveAndAutoActivate = useCallback(() => {
+    const s = stateRef.current;
+    if (!s) return;
+    startWave(s);
+
+    // Rojer: auto-resolve songs
+    if (s.hero.id === 'rojer') {
+      const songEvts = resolveSongs(s, s.waveNumber - 1);
+      if (songEvts.length > 0) addEvents(songEvts);
+    }
+    // Jardir: auto-resolve warrior combat
+    if (s.hero.id === 'jardir') {
+      const warriorEvts = resolveWarriorCombat(s);
+      if (warriorEvts.length > 0) addEvents(warriorEvts);
+    }
+    // Resolve ward passives
+    const passiveEvents = resolveWardPassives(s);
+    addEvents(passiveEvents);
+
+    // Auto-activate ALL warded locations (combo if possible)
+    for (const loc of s.locations) {
+      if (!loc.fallen && loc.wards.some(ws => ws.ward) && s.activationsRemaining > 0) {
+        const evts = activateWard(s, loc.id, true);
+        addEvents(evts);
+      }
+    }
+
+    sync(s);
+  }, [sync, addEvents]);
+
   const doActivateWard = useCallback((locationId: LocationId, useCombo: boolean) => {
     const s = stateRef.current;
     if (!s) return;
@@ -487,6 +518,6 @@ export function useWardedGame(): WardedGameController {
     // Wind redirect
     doWindRedirect,
     // Night
-    doMovePresence, doStartWave, doActivateWard, doResolveDamage, doEndWave,
+    doMovePresence, doStartWave, doStartWaveAndAutoActivate, doActivateWard, doResolveDamage, doEndWave,
   };
 }

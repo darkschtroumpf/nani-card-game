@@ -62,7 +62,7 @@ const WARD_IMAGES: Record<string, any> = {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWardedGame } from '../hooks/useWardedGame';
 import { useAudio } from '../hooks/useAudio';
-import { updateSaveAfterChapter, createNewSave } from '../../engine/src/warded/campaign-engine';
+import { updateSaveAfterChapter, createNewSave, migrateSave } from '../../engine/src/warded/campaign-engine';
 import { useLocalSearchParams } from 'expo-router';
 import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
@@ -404,7 +404,13 @@ export default function WardedGameScreen() {
     if (campaignChapter && !initialized) {
       setInitialized(true);
       setTutorialStep(-1);
-      ctrl.startCampaignGame(campaignChapter);
+      // Load save for campaign start (hero levels/talents carry over)
+      AsyncStorage.getItem('@warded_campaign_save').then(raw => {
+        const save = raw ? migrateSave(JSON.parse(raw)) : undefined;
+        ctrl.startCampaignGame(campaignChapter!, save);
+      }).catch(() => {
+        ctrl.startCampaignGame(campaignChapter!);
+      });
       // Fade out the black overlay after a brief moment
       setTimeout(() => {
         Animated.timing(campaignTransitionAnim, { toValue: 0, duration: 1200, useNativeDriver: true }).start(() => {
@@ -715,20 +721,7 @@ export default function WardedGameScreen() {
   };
 
   // Wrapped doActivateWard to advance tutorial
-  // Auto-activate ALL warded locations (no manual clicking needed)
-  const autoActivateAllWards = useCallback(() => {
-    const wardedLocs = state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward));
-    for (const loc of wardedLocs) {
-      if (state.activationsRemaining > 0) {
-        ctrl.doActivateWard(loc.id, true); // always use combo if available
-        gameStats.current.activationsUsed++;
-      }
-    }
-    audio.playSfx('ward_activate');
-    setActionFlash('#FFAA00');
-    setTimeout(() => setActionFlash(null), 400);
-    if (tutorialStep === 5) setTutorialStep(6);
-  }, [state, ctrl, audio, tutorialStep]);
+  // Auto-activation is now handled inside the hook (doStartWaveAndAutoActivate)
 
   // Wrapped doResolveDamage with clear per-location report
   const handleResolveDamage = () => {
@@ -1374,16 +1367,22 @@ export default function WardedGameScreen() {
                     : `Tape un lieu pour déplacer ta Présence.\nPuis lance la vague pour affronter les démons.`}
                 </Text>
               </View>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWave(); setTimeout(() => autoActivateAllWards(), 50); }}>
+              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWaveAndAutoActivate(); audio.playSfx('ward_activate'); }}>
                 <Text style={[styles.phaseBtnText, { color: warded.danger }]}>⚔ Lancer Vague 1</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {/* Activations happen automatically — this fallback shouldn't appear normally */}
+          {/* Fallback: if auto-activation somehow left remaining activations */}
           {isNight && state.waveNumber > 0 && state.activationsRemaining > 0 && (
             <View style={styles.nightActions}>
-              <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent }]} onPress={autoActivateAllWards}>
+              <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent }]} onPress={() => {
+                for (const loc of state.locations) {
+                  if (!loc.fallen && loc.wards.some(ws => ws.ward) && state.activationsRemaining > 0) {
+                    ctrl.doActivateWard(loc.id, true);
+                  }
+                }
+              }}>
                 <Text style={[styles.phaseBtnText, { color: warded.accent }]}>🛡 Activer les défenses</Text>
               </TouchableOpacity>
             </View>
@@ -1547,8 +1546,8 @@ export default function WardedGameScreen() {
                     setWindRedirectDemon(null);
                     setMistWalkMode(false);
                     if (state.waveNumber < 3) {
-                      ctrl.doStartWave();
-                      setTimeout(() => autoActivateAllWards(), 50);
+                      ctrl.doStartWaveAndAutoActivate();
+                      audio.playSfx('ward_activate');
                     } else {
                       ctrl.doEndWave();
                       // Show level up ONLY after React re-renders with fresh state

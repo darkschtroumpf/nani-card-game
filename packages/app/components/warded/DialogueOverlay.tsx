@@ -192,9 +192,18 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
   const speakerColor = SPEAKER_COLORS[line.speaker] ?? warded.text;
   const speakerName = SPEAKER_NAMES[line.speaker] ?? line.speaker;
   const emotionIcon = line.emotion ? EMOTION_ICONS[line.emotion] ?? '' : '';
-  // Use emotion-specific sprite if available, fallback to base
-  const emotionKey = line.emotion ? `${line.speaker}_${line.emotion}` : null;
-  const sprite = (emotionKey && SPRITES[emotionKey]) ? SPRITES[emotionKey] : SPRITES[line.speaker];
+  // Always use BASE sprite for consistency (DALL-E variants look like different people)
+  const sprite = SPRITES[line.speaker];
+  // Emotion shown via color overlay + icon instead of different image
+  const emotionOverlay: Record<string, string> = {
+    angry: 'rgba(255,50,50,0.15)',
+    scared: 'rgba(100,100,255,0.12)',
+    determined: 'rgba(255,200,50,0.1)',
+    hopeful: 'rgba(100,255,100,0.1)',
+    sad: 'rgba(80,80,150,0.15)',
+    neutral: 'transparent',
+  };
+  const emotionTint = line.emotion ? emotionOverlay[line.emotion] ?? 'transparent' : 'transparent';
   const isNarrator = line.speaker === 'narrator';
   const sceneImage = node.background ? SCENE_IMAGES[node.background] : null;
 
@@ -237,6 +246,10 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                 },
               ]}>
                 <Image source={sprite} style={styles.activeSprite} />
+                {/* Emotion color overlay */}
+                {emotionTint !== 'transparent' && (
+                  <View style={[styles.activeSprite, { position: 'absolute', backgroundColor: emotionTint, borderRadius: 8 }]} />
+                )}
                 {/* Glow behind active speaker */}
                 <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
               </Animated.View>
