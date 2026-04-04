@@ -177,7 +177,7 @@ export default function CampaignScreen() {
           return (
             <View style={[styles.card, { borderColor: '#9b30ff60' }]}>
               <Text style={[styles.cardName, { color: '#9b30ff' }]}>Talents</Text>
-              <Text style={styles.cardSub}>★ {available} etoiles disponibles ({totalStars} total)</Text>
+              <Text style={styles.cardSub}>★ {available} étoiles disponibles ({totalStars} total)</Text>
               {heroIds.map(heroKey => {
                 const info = CHARACTER_INFO[heroKey];
                 const heroTalents = TALENTS.filter(t => t.heroId === heroKey);

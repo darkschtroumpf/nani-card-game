@@ -245,11 +245,13 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                   opacity: spriteAnim,
                 },
               ]}>
-                <Image source={sprite} style={styles.activeSprite} />
-                {/* Emotion color overlay */}
-                {emotionTint !== 'transparent' && (
-                  <View style={[styles.activeSprite, { position: 'absolute', backgroundColor: emotionTint, borderRadius: 8 }]} />
-                )}
+                <View style={{ overflow: 'hidden', borderRadius: 12 }}>
+                  <Image source={sprite} style={styles.activeSprite} />
+                  {/* Emotion color overlay — clipped to image bounds */}
+                  {emotionTint !== 'transparent' && (
+                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: emotionTint }} />
+                  )}
+                </View>
                 {/* Edge fade: blend sprite into background */}
                 <View style={styles.spriteFadeBottom} />
                 <View style={styles.spriteFadeLeft} />

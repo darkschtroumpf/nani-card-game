@@ -68,8 +68,8 @@ export default function HomeScreen() {
           style={[styles.button, { borderColor: warded.textDark }]}
           onPress={() => router.push('/settings')}
         >
-          <Text style={styles.buttonText}>⚙ Parametres</Text>
-          <Text style={styles.buttonDesc}>Reinitialiser, credits</Text>
+          <Text style={styles.buttonText}>⚙ Paramètres</Text>
+          <Text style={styles.buttonDesc}>Réinitialiser, crédits</Text>
         </TouchableOpacity>
       </View>
 

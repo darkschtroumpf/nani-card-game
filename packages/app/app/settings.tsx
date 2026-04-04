@@ -11,12 +11,12 @@ export default function SettingsScreen() {
 
   const handleReset = () => {
     Alert.alert(
-      'Confirmer la reinitialisation',
-      'Cela supprimera ta sauvegarde de campagne et ton meilleur score en survie. Cette action est irreversible.',
+      'Confirmer la réinitialisation',
+      'Cela supprimera ta sauvegarde de campagne et ton meilleur score en survie. Cette action est irréversible.',
       [
         { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Reinitialiser',
+          text: 'Réinitialiser',
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('@warded_campaign_save');
@@ -34,7 +34,7 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>{'<'} Retour</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Parametres</Text>
+        <Text style={styles.title}>Paramètres</Text>
       </View>
 
       <View style={styles.content}>
@@ -46,7 +46,7 @@ export default function SettingsScreen() {
             disabled={resetDone}
           >
             <Text style={[styles.buttonText, resetDone && { color: warded.textDark }]}>
-              {resetDone ? 'Reinitialise !' : 'Reinitialiser la campagne'}
+              {resetDone ? 'Réinitialisé !' : 'Réinitialiser la campagne'}
             </Text>
             <Text style={styles.buttonHint}>
               Supprime la progression de campagne et le score de survie
