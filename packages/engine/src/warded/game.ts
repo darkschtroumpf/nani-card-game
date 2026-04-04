@@ -184,7 +184,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
   if (mode === 'quick') {
     for (const sw of QUICK_MODE_STARTING_WARDS) {
       const loc = locations.find(l => l.id === sw.locationId)!;
-      loc.wards[0] = { ward: sw.ward, isTemporary: false, durability: 3, xp: 0, enhanced: false };
+      loc.wards[0] = { ward: sw.ward, isTemporary: false, durability: 4, xp: 0, enhanced: false };
     }
   }
 
@@ -372,7 +372,7 @@ export function fortifyLocation(state: GameState, wardType: WardType, targetLoca
   const slotIdx = loc.wards.findIndex(w => !w.ward);
   if (slotIdx < 0) return false; // both slots full
 
-  loc.wards[slotIdx] = { ward: wardType, isTemporary: false, durability: 3, xp: 0, enhanced: false };
+  loc.wards[slotIdx] = { ward: wardType, isTemporary: false, durability: 4, xp: 0, enhanced: false };
   state.wardReserves.splice(idx, 1);
   state.hero.ap--;
 
@@ -826,11 +826,11 @@ export function repairWard(state: GameState, locationId: LocationId, slotIndex: 
   if (loc.fallen) return false;
   const ws = loc.wards[slotIndex];
   if (!ws || !ws.ward || ws.isTemporary) return false;
-  if (ws.durability >= 3) return false; // already full
+  if (ws.durability >= 4) return false; // already full
 
-  ws.durability = Math.min(3, ws.durability + 1);
+  ws.durability = Math.min(4, ws.durability + 2);
   state.hero.ap--;
-  addLog(state, `Ward de ${ws.ward} réparé à ${loc.name} (durabilité ${ws.durability}/3).`);
+  addLog(state, `Ward de ${ws.ward} réparé à ${loc.name} (durabilité ${ws.durability}/4).`);
   return true;
 }
 
@@ -1460,6 +1460,41 @@ export function resolveDamage(state: GameState): string[] {
     } else {
       events.push(`${loc.name}: wards tiennent! (0 dégâts)`);
     }
+
+    // === WARD WEAR: demons erode wards even if defense holds ===
+    if (!loc.fallen && demons.length > 0) {
+      const mesh = analyzeMesh(loc);
+      // Fortified mesh: no ward wear (strong enough to resist erosion)
+      if (mesh.tier === 'fortified') continue;
+      let wear = demons.length >= 5 ? 2 : 1;
+      // Reinforced mesh: reduce wear by 1
+      if (mesh.tier === 'reinforced') wear = Math.max(0, wear - 1);
+      if (wear === 0) continue;
+      const wardSlots = loc.wards.filter(ws => ws.ward && !ws.isTemporary);
+
+      if (demons.length < 3 && wardSlots.length > 0) {
+        // Light pressure: only 1 random ward takes wear
+        const target = wardSlots[Math.floor(Math.random() * wardSlots.length)];
+        target.durability = Math.max(0, target.durability - wear);
+        if (target.durability === 0) {
+          events.push(`⚠ ${loc.name}: rune ${target.ward} brisée par l'assaut!`);
+          target.ward = null;
+          target.xp = 0;
+          target.enhanced = false;
+        }
+      } else {
+        // Heavy pressure: all wards take wear
+        for (const ws of wardSlots) {
+          ws.durability = Math.max(0, ws.durability - wear);
+          if (ws.durability === 0) {
+            events.push(`⚠ ${loc.name}: rune ${ws.ward} brisée par l'assaut!`);
+            ws.ward = null;
+            ws.xp = 0;
+            ws.enhanced = false;
+          }
+        }
+      }
+    }
   }
 
   // Check defeat — too many locations fallen
@@ -2068,7 +2103,7 @@ export function arlenBloodWard(state: GameState, wardType: WardType, targetLocat
   const emptySlot = loc.wards.findIndex(w => !w.ward);
   if (emptySlot < 0) return ['Pas d\'emplacement libre.'];
 
-  loc.wards[emptySlot] = { ward: wardType, isTemporary: false, durability: 3, xp: 0, enhanced: false };
+  loc.wards[emptySlot] = { ward: wardType, isTemporary: false, durability: 4, xp: 0, enhanced: false };
   state.hero.hp -= 3;
 
   addLog(state, `Blood Ward! ${wardType} permanent à ${loc.name} (-3 HP).`, true);

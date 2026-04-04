@@ -31,8 +31,8 @@ function nightState(): GameState {
   }
   // Place wards that weren't pre-placed
   const desert = s.locations.find(l => l.id === 'desert_spear')!;
-  desert.wards[0] = { ward: 'fire', isTemporary: false, durability: 3, xp: 0, enhanced: false };
-  desert.wards[1] = { ward: 'stone', isTemporary: false, durability: 3, xp: 0, enhanced: false };
+  desert.wards[0] = { ward: 'fire', isTemporary: false, durability: 4, xp: 0, enhanced: false };
+  desert.wards[1] = { ward: 'stone', isTemporary: false, durability: 4, xp: 0, enhanced: false };
 
   s.phase = 'night';
   s.nightNumber = 1;
@@ -59,7 +59,7 @@ function clearDemons(state: GameState) {
 }
 
 function placeWard(loc: Location, slot: number, ward: WardType) {
-  loc.wards[slot] = { ward, isTemporary: false, durability: 3, xp: 0, enhanced: false };
+  loc.wards[slot] = { ward, isTemporary: false, durability: 4, xp: 0, enhanced: false };
 }
 
 // ============================================================
@@ -343,13 +343,13 @@ describe('Warded Engine', () => {
       expect(s.hero.ap).toBe(before - 1);
     });
 
-    it('ward gets durability 3 on placement', () => {
+    it('ward gets durability 4 on placement', () => {
       const s = quickState();
       s.wardReserves.push('fire');
       const loc = s.locations.find(l => l.wards.every(w => !w.ward))!;
       fortifyLocation(s, 'fire', loc.id);
       const placed = loc.wards.find(w => w.ward === 'fire')!;
-      expect(placed.durability).toBe(3);
+      expect(placed.durability).toBe(4);
     });
   });
 
@@ -530,7 +530,7 @@ describe('Warded Engine', () => {
       s.waveNumber = 1;
       const loc = s.locations.find(l => l.id === 'cutters_hollow')!;
       loc.wards = [
-        { ward: 'wind', isTemporary: false, durability: 3, xp: 0, enhanced: false },
+        { ward: 'wind', isTemporary: false, durability: 4, xp: 0, enhanced: false },
         { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false },
         { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false },
       ];
@@ -548,7 +548,7 @@ describe('Warded Engine', () => {
       s.waveNumber = 1;
       const loc = s.locations.find(l => l.id === 'cutters_hollow')!;
       loc.wards = [
-        { ward: 'wind', isTemporary: false, durability: 3, xp: 0, enhanced: false },
+        { ward: 'wind', isTemporary: false, durability: 4, xp: 0, enhanced: false },
         { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false },
         { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false },
       ];
@@ -1264,10 +1264,10 @@ describe('Warded Engine', () => {
       const loc = s.locations.find(l => l.id === 'desert_spear')!;
       loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
       placeWard(loc, 0, 'fire');
-      loc.wards[0].durability = 3;
+      loc.wards[0].durability = 4;
       processDawn(s);
       // Fragile mesh: -2 durability
-      expect(loc.wards[0].durability).toBe(1);
+      expect(loc.wards[0].durability).toBe(2);
     });
 
     it('reinforced/fortified mesh has 0 durability wear', () => {

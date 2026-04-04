@@ -202,9 +202,9 @@ function WorldMapInner({ locations, presenceLocation, demonsAtLocations, selecte
                   {ws.ward && WARD_IMAGES[ws.ward] && (
                     <Image source={WARD_IMAGES[ws.ward]} style={[styles.wardImage, isNight && styles.wardImageNight]} />
                   )}
-                  {ws.ward && !ws.isTemporary && ws.durability < 3 && (
+                  {ws.ward && !ws.isTemporary && ws.durability < 4 && (
                     <View style={{ position: 'absolute', bottom: -3, width: 14, height: 3, borderRadius: 1, backgroundColor: 'rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-                      <View style={{ width: `${(ws.durability / 3) * 100}%`, height: '100%', backgroundColor: ws.durability <= 1 ? '#F44336' : '#FF9800', borderRadius: 1 } as any} />
+                      <View style={{ width: `${(ws.durability / 4) * 100}%`, height: '100%', backgroundColor: ws.durability <= 1 ? '#F44336' : ws.durability <= 2 ? '#FF9800' : '#4CAF50', borderRadius: 1 } as any} />
                     </View>
                   )}
                 </View>

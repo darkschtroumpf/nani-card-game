@@ -71,7 +71,7 @@ export default function WardChain({ location, mesh, combos, selectedSlot, onSlot
                       {/* Status badges */}
                       {ws.isTemporary && <Text style={styles.badge}>TEMP</Text>}
                       {ws.enhanced && <Text style={[styles.badge, { color: warded.accent }]}>★</Text>}
-                      {!ws.isTemporary && ws.ward && ws.durability < 3 && (
+                      {!ws.isTemporary && ws.ward && ws.durability < 4 && (
                         <Text style={[styles.badge, {
                           color: ws.durability <= 1 ? warded.danger : warded.warning,
                         }]}>

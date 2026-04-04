@@ -135,7 +135,7 @@ function LocationDetailInner({
           <View style={styles.wardManageRow}>
             {location.wards.map((ws, i) => ws.ward && !ws.isTemporary ? (
               <View key={`mgmt${i}`} style={{ flexDirection: 'row', gap: 4 }}>
-                {ws.durability < 3 && onRepairWard && (
+                {ws.durability < 4 && onRepairWard && (
                   <TouchableOpacity style={[styles.wardSwapBtn, { borderColor: '#4CAF50' }]}
                     onPress={() => { onRepairWard(i); audio?.playSfx('ward_place'); }}>
                     <Text style={[styles.wardSwapText, { color: '#4CAF50' }]}>🔧 Réparer (1 AP)</Text>
