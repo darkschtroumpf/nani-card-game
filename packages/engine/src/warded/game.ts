@@ -540,6 +540,53 @@ function spawnDemons(state: GameState): void {
     }
   }
 
+  // Mist Shroud: 2 random demons swap target locations
+  if (state.currentSurge === 'mist_shroud') {
+    const allDemonEntries: { locId: LocationId; idx: number }[] = [];
+    for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {
+      state.demonsAtLocations[locId].forEach((_, idx) => allDemonEntries.push({ locId, idx }));
+    }
+    for (let swaps = 0; swaps < 2 && allDemonEntries.length >= 2; swaps++) {
+      const aIdx = Math.floor(Math.random() * allDemonEntries.length);
+      const a = allDemonEntries[aIdx];
+      allDemonEntries.splice(aIdx, 1);
+      const bIdx = Math.floor(Math.random() * allDemonEntries.length);
+      const b = allDemonEntries[bIdx];
+      allDemonEntries.splice(bIdx, 1);
+      if (a.locId !== b.locId) {
+        const demonA = state.demonsAtLocations[a.locId][a.idx];
+        const demonB = state.demonsAtLocations[b.locId][b.idx];
+        state.demonsAtLocations[a.locId][a.idx] = demonB;
+        state.demonsAtLocations[b.locId][b.idx] = demonA;
+        addLog(state, `Brume: ${demonA.demon.type} et ${demonB.demon.type} échangent de cible!`);
+      }
+    }
+  }
+
+  // Demon Frenzy: demons from fallen locations attack adjacent
+  if (state.currentSurge === 'demon_frenzy') {
+    for (const loc of state.locations) {
+      if (loc.fallen) {
+        const adjIds = getAdjacentIds(loc.id);
+        const aliveAdj = adjIds.filter(a => {
+          const al = getLocation(state, a);
+          return al && !al.fallen && al.maxPopulation > 0;
+        });
+        if (aliveAdj.length > 0) {
+          const targetId = aliveAdj[Math.floor(Math.random() * aliveAdj.length)];
+          // Spawn 2 extra flame demons at the adjacent location
+          for (let f = 0; f < 2; f++) {
+            state.demonsAtLocations[targetId].push({
+              demon: { type: 'flame', strength: 3, targetLocation: targetId, isLocked: false, isBoss: false, isPrinceUpgraded: false },
+              currentStrength: 3, swarmed: false, revealed: false,
+            });
+          }
+          addLog(state, `Frénésie: les démons de ${loc.name} envoient des renforts vers ${getLocation(state, targetId).name}!`);
+        }
+      }
+    }
+  }
+
   // Apply Swarm
   for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {
     const demons = state.demonsAtLocations[locId];
@@ -1488,7 +1535,7 @@ export function endNight(state: GameState): void {
       // Continue to next day — LEVEL UP
       state.nightNumber++;
       state.hero.level++;
-      state.hero.wardPowerBonus++;
+      if (state.hero.wardPowerBonus < 4) state.hero.wardPowerBonus++;
       state.hero.maxHp += 2;
       state.hero.hp = Math.min(state.hero.hp + 5, state.hero.maxHp); // heal 5 HP
       if (state.hero.id === 'arlen') {

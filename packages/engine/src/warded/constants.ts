@@ -29,10 +29,10 @@ export const ADJACENCY: Record<LocationId, LocationId[]> = {
 export const WARD_TYPES: WardType[] = ['fire', 'stone', 'wind', 'light', 'bone'];
 
 export const WARD_COSTS: Record<WardType, { wood: number; ink: number; food: number }> = {
-  fire: { wood: 2, ink: 0, food: 0 },
-  stone: { wood: 2, ink: 0, food: 0 },
-  wind: { wood: 0, ink: 2, food: 0 },
-  light: { wood: 0, ink: 2, food: 0 },
+  fire: { wood: 1, ink: 0, food: 0 },
+  stone: { wood: 1, ink: 0, food: 0 },
+  wind: { wood: 0, ink: 1, food: 0 },
+  light: { wood: 0, ink: 1, food: 0 },
   bone: { wood: 1, ink: 1, food: 0 },
 };
 

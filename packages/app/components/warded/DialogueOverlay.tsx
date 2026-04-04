@@ -247,6 +247,15 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
         {/* Narrator: just show the scene, no sprites */}
         {isNarrator && <View style={styles.spriteArea} />}
 
+        {/* Skip button (top-right) */}
+        <TouchableOpacity
+          style={styles.skipBtn}
+          onPress={onComplete}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={styles.skipText}>Passer ▸▸</Text>
+        </TouchableOpacity>
+
         {/* Text box (bottom) */}
         <View style={styles.dialogueBox}>
           {/* Speaker name tag */}
@@ -421,5 +430,21 @@ const styles = StyleSheet.create({
   choiceHint: {
     color: warded.textDim,
     fontSize: wardedFonts.xs,
+  },
+  skipBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 16,
+    zIndex: 200,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: warded.textDim + '40',
+  },
+  skipText: {
+    color: warded.textDim,
+    fontSize: wardedFonts.sm,
   },
 });

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, DemonAtLocation, WardType, MeshAnalysis, WardCombo } from '../../../engine/src/warded/types';
 import { WARD_TYPES } from '../../../engine/src/warded/constants';
+import { useAudio } from '../../hooks/useAudio';
 import WardChain from './WardChain';
 
 const DEMON_IMAGES: Record<string, any> = {
@@ -54,6 +55,8 @@ export default function LocationDetail({
   mesh, activeCombos,
 }: Props) {
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
+  const audio = useAudio();
   const combo = activeCombos && activeCombos.length > 0 ? activeCombos[0] : null;
 
   const handleSlotPress = (index: number) => {
@@ -134,13 +137,23 @@ export default function LocationDetail({
               <View key={`mgmt${i}`} style={{ flexDirection: 'row', gap: 4 }}>
                 {ws.durability < 3 && onRepairWard && (
                   <TouchableOpacity style={[styles.wardSwapBtn, { borderColor: '#4CAF50' }]}
-                    onPress={() => onRepairWard(i)}>
+                    onPress={() => { onRepairWard(i); audio?.playSfx('ward_place'); }}>
                     <Text style={[styles.wardSwapText, { color: '#4CAF50' }]}>🔧 Réparer (1 AP)</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity style={styles.wardRemoveBtn}
-                  onPress={() => onRemoveWard?.(i)}>
-                  <Text style={styles.wardRemoveText}>✕ Retirer</Text>
+                  onPress={() => {
+                    if (confirmRemove === i) {
+                      onRemoveWard?.(i);
+                      audio?.playSfx('damage');
+                      setConfirmRemove(null);
+                    } else {
+                      setConfirmRemove(i);
+                    }
+                  }}>
+                  <Text style={styles.wardRemoveText}>
+                    {confirmRemove === i ? '⚠ Confirmer ?' : '✕ Retirer'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : null)}
