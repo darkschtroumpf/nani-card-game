@@ -70,7 +70,11 @@ export default function CampaignScreen() {
   const loadSave = async () => {
     try {
       const raw = await AsyncStorage.getItem(SAVE_KEY);
-      setSave(raw ? JSON.parse(raw) : createNewSave());
+      const parsed = raw ? JSON.parse(raw) : createNewSave();
+      // Backward compat: ensure new fields exist on old saves
+      if (!parsed.chapterStars) parsed.chapterStars = {};
+      if (!parsed.unlockedTalents) parsed.unlockedTalents = [];
+      setSave(parsed);
     } catch {
       setSave(createNewSave());
     }

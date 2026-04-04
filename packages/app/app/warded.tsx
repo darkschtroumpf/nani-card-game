@@ -129,7 +129,7 @@ function wardCostLabel(w: WardType): string {
 
 // FIX 5: Night phase steps
 function getNightStepLabels(activationsRemaining: number): string[] {
-  return ['Placement', 'Demons', `Defendre (${activationsRemaining})`, 'Degats'];
+  return ['Placement', 'Démons', `Défendre (${activationsRemaining})`, 'Dégâts'];
 }
 
 function getNightStepIndex(waveNumber: number, activationsRemaining: number, totalActivations: number): number {
@@ -895,7 +895,7 @@ export default function WardedGameScreen() {
       {isNight && state.waveNumber === 0 && !state.presenceMoveUsed && !selectedLoc && (
         <View style={{ backgroundColor: warded.warning + '20', borderWidth: 1, borderColor: warded.warning, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
           <Text style={{ color: warded.warning, fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
-            👇 TAPE UN LIEU pour positionner ton hero avant le combat
+            👇 TAPE UN LIEU pour positionner ton héro avant le combat
           </Text>
         </View>
       )}
@@ -904,7 +904,7 @@ export default function WardedGameScreen() {
       {mistWalkMode && (
         <View style={{ backgroundColor: '#9b30ff20', borderWidth: 1, borderColor: '#9b30ff', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
           <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
-            ⚡ MIST WALK — Tape un lieu pour te teleporter
+            ⚡ MIST WALK — Tape un lieu pour te téléporter
           </Text>
           <TouchableOpacity onPress={() => setMistWalkMode(false)}>
             <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, textAlign: 'center', marginTop: 2 }}>Annuler</Text>
@@ -922,6 +922,7 @@ export default function WardedGameScreen() {
           />
           <ScrollView style={styles.detailScroll}>
             <LocationDetail
+              key={selectedLoc.id}
               location={selectedLoc}
               demons={state.demonsAtLocations[selectedLoc.id] ?? []}
               isPresence={state.presenceLocation === selectedLoc.id}
@@ -989,10 +990,10 @@ export default function WardedGameScreen() {
             const totalAct = state.locations.filter(l => !l.fallen && l.wards.some(ws => ws.ward)).length;
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const hints = [
-              'Tape un lieu pour positionner ton hero',
-              'Les demons approchent...',
-              'Tape un lieu warde pour activer ses defenses !',
-              'Appuie sur "Resoudre" pour voir les degats',
+              'Tape un lieu pour positionner ton héro',
+              'Les démons approchent...',
+              'Tape un lieu wardé pour activer ses défenses !',
+              'Appuie sur "Résoudre" pour voir les dégâts',
             ];
             return (
               <>

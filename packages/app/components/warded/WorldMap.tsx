@@ -136,7 +136,8 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
           >
           {isJustActivated && (
             <Animated.View style={{
-              position: 'absolute', top: -6, left: -6, right: -6, bottom: -6,
+              position: 'absolute', top: -6, left: -6,
+              width: nodeSize + 12, height: nodeSize + 12,
               borderRadius: 18, borderWidth: 2, borderColor: warded.accent,
               opacity: glowAnim,
               shadowColor: warded.accent, shadowOpacity: 0.8, shadowRadius: 16, elevation: 10,

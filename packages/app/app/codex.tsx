@@ -26,7 +26,7 @@ const DEMON_IMAGES: Record<string, any> = {
 };
 
 const WARD_NAMES: Record<WardType, string> = {
-  fire: 'Feu', stone: 'Pierre', wind: 'Vent', light: 'Lumiere', bone: 'Os',
+  fire: 'Feu', stone: 'Pierre', wind: 'Vent', light: 'Lumière', bone: 'Os',
 };
 
 const DEMON_NAMES: Record<DemonType, string> = {
@@ -121,8 +121,8 @@ export default function CodexScreen() {
                 <View style={styles.cardSection}>
                   <Text style={styles.cardDesc}>{d.special}</Text>
                 </View>
-                {d.isLocked && <Text style={styles.badge}>Verrouille (non-redirigeable)</Text>}
-                {d.isBoss && <Text style={styles.badge}>Boss (immunise a la redirection)</Text>}
+                {d.isLocked && <Text style={styles.badge}>Verrouillé (non-redirigeable)</Text>}
+                {d.isBoss && <Text style={styles.badge}>Boss (immunisé à la redirection)</Text>}
               </View>
             ))}
           </>

@@ -108,11 +108,11 @@ export default function WardChain({ location, mesh, combos, selectedSlot, onSlot
               : warded.textDim,
           }]} />
         </View>
-        <Text style={{ color: warded.textDim, fontSize: 8, marginTop: 1 }}>
-          {mesh.tier === 'fragile' ? '⚠ Fragile: wards se degradent vite !'
-            : mesh.tier === 'reinforced' ? '✓ Renforce: durabilite preservee'
-            : mesh.tier === 'fortified' ? '★ Fortifie: bonus defense + degats'
-            : 'Intervertis les runes pour ameliorer les liens'}
+        <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, marginTop: 1 }}>
+          {mesh.tier === 'fragile' ? '⚠ Fragile: wards se dégradent vite !'
+            : mesh.tier === 'reinforced' ? '✓ Renforcé: durabilité préservée'
+            : mesh.tier === 'fortified' ? '★ Fortifié: bonus défense + dégâts'
+            : 'Intervertis les runes pour améliorer les liens'}
         </Text>
       </View>
 

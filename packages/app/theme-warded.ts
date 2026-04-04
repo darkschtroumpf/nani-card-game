@@ -11,7 +11,7 @@ export const warded = {
 
   // Text
   text: '#e8e0d4',
-  textDim: '#8a7e6e',
+  textDim: '#9b8f7f',
   textDark: '#5a4e3e',
 
   // Wards
