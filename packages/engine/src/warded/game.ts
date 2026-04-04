@@ -1479,6 +1479,20 @@ export function resolveDamage(state: GameState): string[] {
           state.victory = false;
           state.defeatReason = `${loc.name} est tombé — ${state.hero.name} est submergé par les démons!`;
         }
+        // Demons scatter: ~50% of surviving demons migrate to adjacent alive locations
+        const scatterTargets = getAdjacentIds(locId).filter(a => {
+          const al = getLocation(state, a);
+          return al && !al.fallen && al.maxPopulation > 0;
+        });
+        if (scatterTargets.length > 0 && demons.length > 0) {
+          const scatterCount = Math.ceil(demons.length / 2);
+          for (let s = 0; s < scatterCount && demons.length > 0; s++) {
+            const d = demons.pop()!;
+            const targetId = scatterTargets[s % scatterTargets.length];
+            state.demonsAtLocations[targetId].push(d);
+            events.push(`${d.demon.type} fuit ${loc.name} vers ${getLocation(state, targetId).name}!`);
+          }
+        }
       }
     } else {
       events.push(`${loc.name}: wards tiennent! (0 dégâts)`);
