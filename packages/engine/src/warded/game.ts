@@ -6,14 +6,16 @@ import type {
   GameState, Location, LocationId, WardType, WardSlot,
   DemonCard, DemonAtLocation, DemonType, DemonSurgeType,
   Hero, HeroId, ResourceStockpile, ResourceType, LogEntry,
-  Difficulty, WardCombo, SongType, Consumable, ThreatLevel,
+  Difficulty, WardCombo, TripleWardCombo, SongType, Consumable, ThreatLevel,
+  MeshAnalysis, MeshTier, LinkConnection,
 } from './types';
 import {
-  LOCATIONS, ADJACENCY, WARD_COSTS, WARD_COMBOS,
+  LOCATIONS, ADJACENCY, WARD_COSTS, WARD_COMBOS, TRIPLE_WARD_COMBOS,
+  WARD_LINK_PROFILES, MESH_TIERS,
   DEMON_TYPES, DEMONS_PER_WAVE, QUICK_MODE_SURGES, CAMPAIGN_SURGES,
   QUICK_MODE_STARTING_WARDS, HEROES, SWARM_THRESHOLD,
   HORDE_FORMATION_NIGHTS, SONGS, CONSUMABLE_RECIPES,
-  TERRAIN_DEMON_AFFINITY,
+  TERRAIN_DEMON_AFFINITY, WARD_TYPES,
 } from './constants';
 
 // ============================================================
@@ -41,28 +43,115 @@ function getAdjacentIds(locationId: LocationId): LocationId[] {
   return ADJACENCY[locationId] ?? [];
 }
 
-function getWardCombo(loc: Location): WardCombo | null {
-  const activeWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
-  if (activeWards.length < 2) return null;
+// ============================================================
+// Ward Chain — Mesh Analysis & Directional Combos
+// ============================================================
 
-  // Check triple combos first (3 wards)
-  if (activeWards.length >= 3) {
-    const tripleCombo = WARD_COMBOS.find(c =>
-      c.wards.length === 3 &&
-      c.wards.every(cw => activeWards.includes(cw)) &&
-      activeWards.filter(w => c.wards.includes(w)).length >= 3
-    );
-    if (tripleCombo) return tripleCombo;
+/** Analyze the ward chain at a location. Returns connections, mesh strength, and tier. */
+export function analyzeMesh(loc: Location): MeshAnalysis {
+  const connections: LinkConnection[] = [];
+  const filledSlots = loc.wards
+    .map((ws, i) => ({ ws, i }))
+    .filter(({ ws }) => ws.ward !== null);
+
+  // Check each consecutive pair of filled slots
+  for (let idx = 0; idx < filledSlots.length - 1; idx++) {
+    const left = filledSlots[idx];
+    const right = filledSlots[idx + 1];
+    // Only adjacent slots form connections (no gaps)
+    if (right.i !== left.i + 1) continue;
+    const leftProfile = WARD_LINK_PROFILES[left.ws.ward!];
+    const rightProfile = WARD_LINK_PROFILES[right.ws.ward!];
+    const strength = Math.min(leftProfile.rightLinks, rightProfile.leftLinks);
+    connections.push({
+      leftSlot: left.i,
+      rightSlot: right.i,
+      leftWard: left.ws.ward!,
+      rightWard: right.ws.ward!,
+      strength,
+    });
   }
 
-  // Check double combos (best pair)
-  for (const combo of WARD_COMBOS) {
-    if (combo.wards.length !== 2) continue;
-    if (activeWards.includes(combo.wards[0]) && activeWards.includes(combo.wards[1])) {
-      return combo;
+  const meshStrength = connections.reduce((sum, c) => sum + c.strength, 0);
+  const tier = getMeshTier(meshStrength);
+  return { connections, meshStrength, tier };
+}
+
+function getMeshTier(strength: number): MeshTier {
+  for (const t of MESH_TIERS) {
+    if (strength >= t.min && strength <= t.max) return t.tier;
+  }
+  return 'normal';
+}
+
+/** Find the best directional combo at a location, respecting chapter unlock and bond strength. */
+function getDirectionalCombo(loc: Location, state: GameState): WardCombo | TripleWardCombo | null {
+  const mesh = analyzeMesh(loc);
+  const orderedWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
+  if (orderedWards.length < 2) return null;
+
+  // Check triple combos first (if unlocked)
+  if (state.maxComboSize >= 3 && orderedWards.length >= 3) {
+    for (const tc of TRIPLE_WARD_COMBOS) {
+      if (tc.unlockedAtChapter > state.chapter) continue;
+      if (mesh.meshStrength < tc.minTotalMesh) continue;
+      // Check exact ordered match
+      if (orderedWards.length === 3 &&
+          orderedWards[0] === tc.wards[0] &&
+          orderedWards[1] === tc.wards[1] &&
+          orderedWards[2] === tc.wards[2]) {
+        return tc;
+      }
     }
   }
-  return null;
+
+  // Check dual combos — scan adjacent pairs, return the best (highest bond)
+  let bestCombo: WardCombo | null = null;
+  let bestBond = 0;
+
+  for (const conn of mesh.connections) {
+    for (const combo of WARD_COMBOS) {
+      if (combo.unlockedAtChapter > state.chapter) continue;
+      if (conn.leftWard === combo.wards[0] && conn.rightWard === combo.wards[1]) {
+        if (conn.strength >= combo.minBondStrength && conn.strength > bestBond) {
+          bestCombo = combo;
+          bestBond = conn.strength;
+        }
+      }
+    }
+  }
+
+  return bestCombo;
+}
+
+/** Get ALL active directional combos at a location (multiple pairs can each trigger a combo). */
+export function getAllDirectionalCombos(loc: Location, state: GameState): WardCombo[] {
+  const mesh = analyzeMesh(loc);
+  const combos: WardCombo[] = [];
+
+  for (const conn of mesh.connections) {
+    for (const combo of WARD_COMBOS) {
+      if (combo.unlockedAtChapter > state.chapter) continue;
+      if (conn.leftWard === combo.wards[0] && conn.rightWard === combo.wards[1]) {
+        if (conn.strength >= combo.minBondStrength) {
+          combos.push(combo);
+          break; // one combo per connection
+        }
+      }
+    }
+  }
+
+  return combos;
+}
+
+// Legacy wrapper — returns first/best combo (used by most activation code)
+function getWardCombo(loc: Location, state?: GameState): WardCombo | TripleWardCombo | null {
+  if (!state) {
+    // Fallback for calls without state — use permissive defaults
+    const fakeState = { chapter: 12, maxComboSize: 3 } as GameState;
+    return getDirectionalCombo(loc, fakeState);
+  }
+  return getDirectionalCombo(loc, state);
 }
 
 function wardedLocationCount(state: GameState): number {
@@ -139,6 +228,10 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     chapter: 1,
     skillPoints: 0,
     questsCompleted: [],
+    // Ward chain progression
+    availableWards: mode === 'quick' ? [...WARD_TYPES] : ['stone', 'wind'],
+    maxComboSize: mode === 'quick' ? 3 : 2,
+    fireCanKill: mode === 'quick',
     wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0 },
     maxNights: 3,
     minStandingLocations: mode === 'quick' ? 3 : 1,
@@ -195,6 +288,26 @@ export function processDawn(state: GameState): void {
     }
   }
 
+  // Ward durability degradation — fragile mesh = extra wear
+  for (const loc of state.locations) {
+    if (loc.fallen) continue;
+    const mesh = analyzeMesh(loc);
+    for (const ws of loc.wards) {
+      if (!ws.ward || ws.isTemporary) continue;
+      // Normal: -1 durability per night. Fragile: -2. Reinforced/Fortified: 0.
+      let wear = 1;
+      if (mesh.tier === 'fragile') wear = 2;
+      if (mesh.tier === 'reinforced' || mesh.tier === 'fortified') wear = 0;
+      ws.durability = Math.max(0, ws.durability - wear);
+      if (ws.durability <= 0) {
+        addLog(state, `Ward de ${ws.ward} à ${loc.name} est brisé!`, true);
+        ws.ward = null;
+        ws.xp = 0;
+        ws.enhanced = false;
+      }
+    }
+  }
+
   // Remove temporary wards
   for (const loc of state.locations) {
     for (let i = 0; i < loc.wards.length; i++) {
@@ -232,6 +345,7 @@ export function canCraftWard(state: GameState, wardType: WardType): boolean {
 
 export function craftWard(state: GameState, wardType: WardType, fromLocationId: LocationId): boolean {
   if (state.hero.ap <= 0) return false;
+  if (!state.availableWards.includes(wardType)) return false;
   const cost = WARD_COSTS[wardType];
   const loc = getLocation(state, fromLocationId);
   if (loc.fallen) return false;
@@ -262,9 +376,11 @@ export function fortifyLocation(state: GameState, wardType: WardType, targetLoca
   state.wardReserves.splice(idx, 1);
   state.hero.ap--;
 
-  const combo = getWardCombo(loc);
+  const mesh = analyzeMesh(loc);
+  const combo = getWardCombo(loc, state);
   const comboText = combo ? ` → ${combo.name}!` : '';
-  addLog(state, `Ward de ${wardType} placé à ${loc.name}${comboText}.`, !!combo);
+  const meshLabel = MESH_TIERS.find(t => t.tier === mesh.tier)?.label ?? '';
+  addLog(state, `Ward de ${wardType} placé à ${loc.name}${comboText} (Maillage: ${mesh.meshStrength} — ${meshLabel}).`, !!combo);
   return true;
 }
 
@@ -454,14 +570,24 @@ function spawnDemons(state: GameState): void {
 }
 
 
-function getWardDefense(loc: Location): number {
+function getWardDefense(loc: Location, state?: GameState): number {
   let def = 0;
   for (const ws of loc.wards) {
     if (ws.ward === 'stone') def += 2;
   }
-  // Fortress combo bonus
-  const combo = getWardCombo(loc);
-  if (combo?.name === 'Fortress Ward') def += 3;
+  // Mesh tier bonus
+  const mesh = analyzeMesh(loc);
+  if (mesh.tier === 'reinforced') def += 1;
+  if (mesh.tier === 'fortified') def += 2;
+  // Directional combo bonuses
+  if (state) {
+    const combos = getAllDirectionalCombos(loc, state);
+    const names = new Set(combos.map(c => c.name));
+    if (names.has('Forteresse')) def += 3;
+    if (names.has('Rempart')) def += 3;
+    if (names.has('Sentinelle')) def += 2;
+    if (names.has('Révélation')) def += 2;
+  }
   return def;
 }
 
@@ -489,29 +615,43 @@ export function resolveWardPassives(state: GameState): string[] {
     const isPresence = state.presenceLocation === loc.id;
     const presenceBonus = isPresence ? 1 : 0;
 
-    const combo = getWardCombo(loc);
+    const mesh = analyzeMesh(loc);
+    const combos = getAllDirectionalCombos(loc, state);
+    const comboNames = new Set(combos.map(c => c.name));
+
+    // Mesh tier bonus for passive numeric effects
+    const meshBonus = mesh.tier === 'fortified' ? 1 : mesh.tier === 'reinforced' ? 1 : 0;
+
+    // Helper: apply fire damage to a demon, respecting fireCanKill
+    const applyFireDamage = (d: DemonAtLocation, dmg: number, locId: LocationId, locName: string): boolean => {
+      const multiplier = d.demon.type === 'wood' ? 2 : 1;
+      d.currentStrength -= dmg * multiplier;
+      if (!state.fireCanKill && d.currentStrength < 1) d.currentStrength = 1;
+      if (d.currentStrength <= 0) {
+        const demonList = state.demonsAtLocations[locId];
+        const idx = demonList.indexOf(d);
+        if (idx >= 0) demonList.splice(idx, 1);
+        events.push(`🜂 ${locName}: ${d.demon.type} détruit par Fire!`);
+        onDemonKilled(state, locId);
+        return true;
+      }
+      return false;
+    };
 
     for (const ws of loc.wards) {
       if (!ws.ward) continue;
 
       switch (ws.ward) {
         case 'fire': {
-          // Deal 1 damage to all demons (2 with Magma combo, +1 at Presence)
-          let fireDmg = 1;
-          if (combo?.name === 'Magma Ward') fireDmg = 2;
+          let fireDmg = 1 + meshBonus;
+          if (comboNames.has('Magma')) fireDmg += 1;
+          if (comboNames.has('Forge')) fireDmg += 1;
+          if (comboNames.has('Soufflet')) fireDmg += 2;
           fireDmg += presenceBonus;
 
           if (demons.length > 0) {
             for (let i = demons.length - 1; i >= 0; i--) {
-              const d = demons[i];
-              // Wood demons take double from Fire
-              const multiplier = d.demon.type === 'wood' ? 2 : 1;
-              d.currentStrength -= fireDmg * multiplier;
-              if (d.currentStrength <= 0) {
-                events.push(`🜂 ${loc.name}: ${d.demon.type} détruit par Fire passive!`);
-                demons.splice(i, 1);
-                onDemonKilled(state, loc.id);
-              }
+              applyFireDamage(demons[i], fireDmg, loc.id, loc.name);
             }
             if (demons.length > 0) {
               events.push(`🜂 ${loc.name}: Fire inflige ${fireDmg} à ${demons.length} démon(s).`);
@@ -521,23 +661,24 @@ export function resolveWardPassives(state: GameState): string[] {
         }
 
         case 'stone': {
-          // +2 defense (handled in resolveDamage, not here)
-          // Just log for clarity
-          events.push(`⬡ ${loc.name}: Stone passive — +2 défense.`);
+          const stoneDef = 2 + meshBonus;
+          events.push(`⬡ ${loc.name}: Stone passive — +${stoneDef} défense.`);
           break;
         }
 
         case 'wind': {
-          // Redirect 1 non-locked, non-Wind demon to adjacent
+          if (comboNames.has('Soufflet')) break; // Soufflet disables wind redirect
+          const redirectCount = 1 + (comboNames.has('Déviation') ? 1 : 0);
           if (demons.length > 0) {
-            const redirectable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind');
-            if (redirectable >= 0) {
+            let redirected = 0;
+            for (let r = 0; r < redirectCount && demons.length > 0; r++) {
+              const redirectable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind');
+              if (redirectable < 0) break;
               const adj = getAdjacentIds(loc.id).filter(a => {
                 const adjLoc = getLocation(state, a);
                 return !adjLoc.fallen && adjLoc.maxPopulation > 0;
               });
-              if (adj.length === 0) break; // no valid adjacent
-              // Pick the adjacent with fewest demons (spread the load)
+              if (adj.length === 0) break;
               let bestAdj = adj[0];
               let bestCount = 99;
               for (const a of adj) {
@@ -547,59 +688,42 @@ export function resolveWardPassives(state: GameState): string[] {
               const [demon] = demons.splice(redirectable, 1);
               state.demonsAtLocations[bestAdj].push(demon);
               events.push(`🜁 ${loc.name}: ${demon.demon.type} redirigé vers ${getLocation(state, bestAdj).name}.`);
+              redirected++;
             }
           }
           break;
         }
 
         case 'light': {
-          // Reveal exact demon types (info is already visible in UI)
-          // With Storm combo: preview next wave (handled separately)
           break;
         }
 
         case 'bone': {
-          // Heal at dawn (handled in processDawn), not per-wave
-          // Haven combo heals 1 Pop per wave
-          if (combo?.name === 'Haven Ward') {
+          if (comboNames.has('Sanctuaire')) {
             loc.population = Math.min(loc.maxPopulation, loc.population + 1);
-            events.push(`☽ ${loc.name}: Haven Ward soigne 1 Pop (${loc.population}/${loc.maxPopulation}).`);
+            events.push(`☽ ${loc.name}: Sanctuaire soigne 1 Pop (${loc.population}/${loc.maxPopulation}).`);
           }
-          // Consecration combo: hero heals 1 HP per wave
-          if (combo?.name === 'Consecration Ward' && isPresence) {
+          if (comboNames.has('Consécration') && isPresence) {
             state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 1);
-            events.push(`☽ ${loc.name}: Consecration soigne 1 HP héros.`);
+            events.push(`☽ ${loc.name}: Consécration soigne 1 HP héros.`);
           }
           break;
         }
       }
     }
 
-    // Inferno combo (Fire+Wind): Fire passive affects adjacent too
-    if (combo?.name === 'Inferno Ward') {
+    // Inferno combo: Fire passive affects adjacent too
+    if (comboNames.has('Inferno')) {
       for (const adjId of getAdjacentIds(loc.id)) {
         const adjDemons = state.demonsAtLocations[adjId];
         if (!adjDemons || adjDemons.length === 0) continue;
         for (let i = adjDemons.length - 1; i >= 0; i--) {
-          const d = adjDemons[i];
-          const multiplier = d.demon.type === 'wood' ? 2 : 1;
-          d.currentStrength -= 1 * multiplier;
-          if (d.currentStrength <= 0) {
-            events.push(`🜂 ${getLocation(state, adjId).name}: ${d.demon.type} détruit par Inferno!`);
-            adjDemons.splice(i, 1);
-            onDemonKilled(state, adjId);
-          }
+          applyFireDamage(adjDemons[i], 1 + meshBonus, adjId, getLocation(state, adjId).name);
         }
       }
     }
 
-    // Beacon combo (Fire+Light): demons killed by Fire give +1 resource
-    if (combo?.name === 'Beacon Ward') {
-      // Already handled via onDemonKilled (Hora Craft for Leesha)
-      // For Beacon, add the resource bonus
-      // Count how many demons were killed this resolution at this location
-      // (handled implicitly via Fire damage above)
-    }
+    // Phare combo: demons killed by Fire give +1 resource (tracked via onDemonKilled)
   }
 
   return events;
@@ -677,7 +801,28 @@ export function swapWards(state: GameState, locationId: LocationId, slotA: numbe
   const temp = loc.wards[slotA];
   loc.wards[slotA] = loc.wards[slotB];
   loc.wards[slotB] = temp;
-  addLog(state, `Wards intervertis à ${loc.name}.`);
+  const mesh = analyzeMesh(loc);
+  const meshLabel = MESH_TIERS.find(t => t.tier === mesh.tier)?.label ?? '';
+  addLog(state, `Wards intervertis à ${loc.name}. (Maillage: ${mesh.meshStrength} — ${meshLabel})`);
+  return true;
+}
+
+/** Reorder wards at a location (drag-and-drop). Free action (0 AP). */
+export function reorderWards(state: GameState, locationId: LocationId, newOrder: number[]): boolean {
+  if (state.phase !== 'day') return false;
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return false;
+  if (newOrder.length !== loc.wards.length) return false;
+  // Validate permutation
+  const sorted = [...newOrder].sort();
+  for (let i = 0; i < sorted.length; i++) {
+    if (sorted[i] !== i) return false;
+  }
+  const reordered = newOrder.map(i => loc.wards[i]);
+  loc.wards = reordered;
+  const mesh = analyzeMesh(loc);
+  const meshLabel = MESH_TIERS.find(t => t.tier === mesh.tier)?.label ?? '';
+  addLog(state, `Wards réordonnés à ${loc.name}. (Maillage: ${mesh.meshStrength} — ${meshLabel})`);
   return true;
 }
 
@@ -697,7 +842,7 @@ export function activateWard(state: GameState, locationId: LocationId, useCombo:
   const presenceBonus = isPresence ? 1 : 0;
 
   if (useCombo) {
-    const combo = getWardCombo(loc);
+    const combo = getWardCombo(loc, state);
     if (!combo) return ['Pas de combo à ce lieu.'];
     events.push(`${combo.activeName} activé à ${loc.name}!`);
     applyComboActive(state, locationId, combo, presenceBonus, events);
@@ -743,6 +888,7 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
         const dmg = 3 + presenceBonus + powerBonus + enhancedBonus;
         strongest.currentStrength -= dmg;
+        if (!state.fireCanKill && strongest.currentStrength < 1) strongest.currentStrength = 1;
         events.push(`Blaze inflige ${dmg} dégâts à ${strongest.demon.type} (str ${strongest.currentStrength}).`);
         if (strongest.currentStrength <= 0) {
           demons.splice(demons.indexOf(strongest), 1);
@@ -799,7 +945,7 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
   }
 }
 
-function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo, presenceBonus: number, events: string[]) {
+function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo | TripleWardCombo, presenceBonus: number, events: string[]) {
   const demons = state.demonsAtLocations[locId];
   const loc = getLocation(state, locId);
   const powerBonus = state.hero.wardPowerBonus ?? 0;
@@ -958,8 +1104,8 @@ export function resolveDamage(state: GameState): string[] {
     const demons = state.demonsAtLocations[locId];
     if (demons.length === 0) continue;
 
-    // Calculate defense
-    let defense = getWardDefense(loc);
+    // Calculate defense (mesh-aware)
+    let defense = getWardDefense(loc, state);
     // Forbiddance Circle (Leesha consumable)
     if ((loc as any)._forbiddance > 0) {
       events.push(`${loc.name}: Forbiddance Circle — aucun dégât!`);
@@ -1084,20 +1230,7 @@ export function endNight(state: GameState): void {
     }
   }
 
-  // Ward degradation — wards lose 1 durability each night
-  for (const loc of state.locations) {
-    if (loc.fallen) continue;
-    for (let i = 0; i < loc.wards.length; i++) {
-      const ws = loc.wards[i];
-      if (ws.ward && !ws.isTemporary && ws.durability > 0) {
-        ws.durability--;
-        if (ws.durability <= 0) {
-          addLog(state, `⚠ Ward de ${ws.ward} à ${loc.name} s'est brisé ! (usure)`, true);
-          loc.wards[i] = { ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false };
-        }
-      }
-    }
-  }
+  // Ward degradation is now handled in processDawn (mesh-aware)
 
   // Clear demons from ALL locations (including fallen — demons don't stay)
   for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {

@@ -69,6 +69,7 @@ import LocationDetail from '../components/warded/LocationDetail';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
 import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS, RANDOM_DAY_EVENTS } from '../../engine/src/warded/constants';
+import { analyzeMesh, getAllDirectionalCombos } from '../../engine/src/warded/game';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campaign-types';
 
@@ -81,32 +82,32 @@ const WARD_EFFECTS: Record<string, string> = {
   bone: '+1 pop a l\'aube',
 };
 
-// Combo advisor: compute active combos + possible combos with reserves
-function getComboAdvisor(locations: { id: LocationId; name: string; wards: { ward: WardType | null }[]; fallen: boolean }[], reserves: WardType[]) {
+// Combo advisor: uses directional combo detection from engine
+function getComboAdvisor(locations: any[], reserves: WardType[], gameState: any) {
   const active: { locName: string; combo: typeof WARD_COMBOS[0] }[] = [];
   const possible: { locName: string; combo: typeof WARD_COMBOS[0]; missing: WardType[] }[] = [];
 
   for (const loc of locations) {
     if (loc.fallen) continue;
-    const locWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
-    const emptySlots = loc.wards.filter(ws => !ws.ward).length;
-
-    // Check active combos
-    for (const combo of WARD_COMBOS) {
-      const comboWards = combo.wards;
-      if (comboWards.every(cw => locWards.includes(cw))) {
+    // Active combos (directional)
+    if (gameState) {
+      const combos = getAllDirectionalCombos(loc, gameState);
+      for (const combo of combos) {
         active.push({ locName: loc.name, combo });
       }
     }
 
-    // Check possible combos (with reserves)
+    // Possible combos (simple heuristic: check if reserves could fill empty slots)
+    const locWards = loc.wards.filter((ws: any) => ws.ward).map((ws: any) => ws.ward!);
+    const emptySlots = loc.wards.filter((ws: any) => !ws.ward).length;
     if (emptySlots > 0 && reserves.length > 0) {
       for (const combo of WARD_COMBOS) {
+        if (combo.unlockedAtChapter > (gameState?.chapter ?? 12)) continue;
         const comboWards = combo.wards;
-        if (comboWards.every(cw => locWards.includes(cw))) continue; // already active
-        const missing = comboWards.filter(cw => !locWards.includes(cw));
-        if (missing.length > emptySlots) continue; // not enough slots
-        if (missing.every(m => reserves.includes(m))) {
+        if (comboWards.every((cw: WardType) => locWards.includes(cw))) continue;
+        const missing = comboWards.filter((cw: WardType) => !locWards.includes(cw));
+        if (missing.length > emptySlots) continue;
+        if (missing.every((m: WardType) => reserves.includes(m))) {
           possible.push({ locName: loc.name, combo, missing });
         }
       }
@@ -319,6 +320,7 @@ export default function WardedGameScreen() {
   const campaignTransitionAnim = useRef(new Animated.Value(campaignChapter ? 1 : 0)).current;
   const [showNightTransition, setShowNightTransition] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [pendingLevelUp, setPendingLevelUp] = useState(false);
   const [combatToast, setCombatToast] = useState<string | null>(null);
   const [showEventLog, setShowEventLog] = useState(false);
   const [damageResolved, setDamageResolved] = useState(false);
@@ -356,6 +358,16 @@ export default function WardedGameScreen() {
     });
     return () => handler.remove();
   }, []);
+
+  // After endNight + React re-render: show level up only if game is NOT over
+  useEffect(() => {
+    if (pendingLevelUp && state) {
+      setPendingLevelUp(false);
+      if (!state.gameOver) {
+        setShowLevelUp(true);
+      }
+    }
+  }, [pendingLevelUp, state?.gameOver]);
 
   // Game starts when hero is selected (or campaign auto-starts)
   const handleStartGame = useCallback((heroId: HeroId) => {
@@ -865,6 +877,7 @@ export default function WardedGameScreen() {
                 : undefined}
               canFortify={isDay && state.hero.ap > 0 && state.wardReserves.length > 0 && selectedLoc.wards.some(w => !w.ward)}
               availableWardReserves={state.wardReserves}
+              availableWards={state.availableWards}
               onActivateWard={isNight && state.activationsRemaining > 0 && selectedLoc.wards.some(ws => ws.ward)
                 ? (useCombo) => { handleActivateWard(selectedLoc.id, useCombo); }
                 : undefined}
@@ -876,6 +889,8 @@ export default function WardedGameScreen() {
               onRepairWard={isDay && state.hero.ap > 0 ? (slotIndex: number) => { ctrl.doRepairWard(selectedLoc.id, slotIndex); } : undefined}
               onRemoveWard={isDay ? (slotIndex: number) => { ctrl.doRemoveWard(selectedLoc.id, slotIndex); } : undefined}
               onSwapWards={isDay ? (a: number, b: number) => { ctrl.doSwapWards(selectedLoc.id, a, b); } : undefined}
+              mesh={analyzeMesh(selectedLoc)}
+              activeCombos={getAllDirectionalCombos(selectedLoc, state)}
             />
           </ScrollView>
         </View>
@@ -991,7 +1006,7 @@ export default function WardedGameScreen() {
                 <>
                   <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — glisse pour voir</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.wardCraftScroll}>
-                    {WARD_TYPES.map(w => {
+                    {(state.availableWards ?? WARD_TYPES).map(w => {
                       const cost = WARD_COSTS[w];
                       const bestLoc = state.locations.find(l => !l.fallen &&
                         l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
@@ -1062,7 +1077,7 @@ export default function WardedGameScreen() {
 
           {/* Combo advisor panel */}
           {isDay && (() => {
-            const advisor = getComboAdvisor(state.locations, state.wardReserves);
+            const advisor = getComboAdvisor(state.locations, state.wardReserves, state);
             if (advisor.active.length === 0 && advisor.possible.length === 0) return null;
             return (
               <View style={styles.comboPanel}>
@@ -1447,10 +1462,9 @@ export default function WardedGameScreen() {
                       ctrl.doStartWave();
                     } else {
                       ctrl.doEndWave();
-                      // Show level up if game continues
-                      if (!state.gameOver) {
-                        setShowLevelUp(true);
-                      }
+                      // Show level up ONLY after React re-renders with fresh state
+                      // (doEndWave may set gameOver=true, but state here is stale)
+                      setPendingLevelUp(true);
                     }
                   }}
                 >
@@ -1482,7 +1496,7 @@ export default function WardedGameScreen() {
       )}
 
       {/* Level Up overlay between nights */}
-      {showLevelUp && (
+      {showLevelUp && !state.gameOver && (
         <View style={styles.transitionOverlay}>
           <Text style={styles.transitionEmoji}>⬆</Text>
           <Text style={styles.transitionText}>NIVEAU {state.hero.level}</Text>

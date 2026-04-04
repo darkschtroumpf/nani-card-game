@@ -46,12 +46,47 @@ export interface ResourceStockpile {
 
 export type WardType = 'fire' | 'stone' | 'wind' | 'light' | 'bone';
 
+// --- Ward Links (chain mechanic) ---
+
+export interface WardLinkProfile {
+  leftLinks: number;   // connection strength on left side (incoming)
+  rightLinks: number;  // connection strength on right side (outgoing)
+}
+
+export type MeshTier = 'fragile' | 'normal' | 'reinforced' | 'fortified';
+
+export interface LinkConnection {
+  leftSlot: number;
+  rightSlot: number;
+  leftWard: WardType;
+  rightWard: WardType;
+  strength: number;  // min(left.rightLinks, right.leftLinks)
+}
+
+export interface MeshAnalysis {
+  connections: LinkConnection[];
+  meshStrength: number;  // sum of all connection strengths
+  tier: MeshTier;
+}
+
 export interface WardCombo {
   name: string;
-  wards: WardType[];
+  wards: [WardType, WardType];  // ORDER MATTERS: [left, right]
+  minBondStrength: number;       // minimum link strength required
   passiveEffect: string;
   activeEffect: string;
   activeName: string;
+  unlockedAtChapter: number;     // progressive unlock
+}
+
+export interface TripleWardCombo {
+  name: string;
+  wards: [WardType, WardType, WardType];  // all 3 in order
+  minTotalMesh: number;                    // minimum total mesh strength
+  passiveEffect: string;
+  activeEffect: string;
+  activeName: string;
+  unlockedAtChapter: number;
 }
 
 // --- Demons ---
@@ -144,6 +179,11 @@ export interface GameState {
     apModifier: number;
   };
   campaignFlags?: Record<string, boolean | number>;
+
+  // Ward progression (chain mechanic)
+  availableWards: WardType[];
+  maxComboSize: 2 | 3;
+  fireCanKill: boolean;
 
   // Ward usage tracking (for adaptive demons)
   wardUsageStats: Record<WardType, number>;

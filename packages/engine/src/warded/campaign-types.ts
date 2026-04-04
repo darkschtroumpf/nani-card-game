@@ -62,6 +62,10 @@ export interface ChapterDefinition {
   startingPresence: LocationId;
   hiddenLocations?: LocationId[];  // locations disabled for this chapter (marked fallen)
   preplacedWards: { locationId: LocationId; ward: WardType }[];
+  // Ward chain progression
+  availableWards?: WardType[];      // wards the player can craft this chapter
+  fireCanKill?: boolean;            // can fire wards destroy demons? (default false)
+  maxComboSize?: 2 | 3;             // 2 = dual combos only, 3 = triple combos unlocked
   introDialogue: DialogueNode[];
   dayEvents: DayEvent[];
   victoryDialogue: DialogueNode[];

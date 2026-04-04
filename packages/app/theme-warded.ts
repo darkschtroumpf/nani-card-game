@@ -59,6 +59,17 @@ export const warded = {
   // UI
   border: '#2a2a3a',
   highlight: '#ffd74033',
+
+  // Ward Chain — link visualization
+  linkWeak: 'rgba(200, 180, 140, 0.25)',
+  linkMedium: 'rgba(255, 215, 64, 0.5)',
+  linkStrong: 'rgba(255, 200, 60, 0.9)',
+
+  // Mesh glow
+  meshFragile: 'rgba(220, 53, 69, 0.2)',
+  meshNormal: 'rgba(200, 180, 140, 0.08)',
+  meshReinforced: 'rgba(76, 175, 80, 0.2)',
+  meshFortified: 'rgba(255, 215, 64, 0.3)',
 } as const;
 
 export const wardedFonts = {
@@ -128,4 +139,20 @@ export function resourceColor(res: string): string {
     food: warded.food,
   };
   return colors[res] ?? warded.textDim;
+}
+
+export function linkColor(strength: number): string {
+  if (strength >= 3) return warded.linkStrong;
+  if (strength >= 2) return warded.linkMedium;
+  return warded.linkWeak;
+}
+
+export function meshGlowColor(tier: string): string {
+  const colors: Record<string, string> = {
+    fragile: warded.meshFragile,
+    normal: warded.meshNormal,
+    reinforced: warded.meshReinforced,
+    fortified: warded.meshFortified,
+  };
+  return colors[tier] ?? warded.meshNormal;
 }

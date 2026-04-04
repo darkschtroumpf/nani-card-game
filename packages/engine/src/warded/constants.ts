@@ -3,8 +3,9 @@
 // ============================================================
 
 import type {
-  LocationId, MapPosition, TerrainType, WardType, WardCombo, DemonType,
+  LocationId, MapPosition, TerrainType, WardType, WardCombo, TripleWardCombo, DemonType,
   DemonSurgeType, ResourceType, HeroId, SongType, Consumable,
+  WardLinkProfile, MeshTier,
 } from './types';
 
 // --- Map ---
@@ -35,6 +36,45 @@ export const WARD_COSTS: Record<WardType, { wood: number; ink: number; food: num
   bone: { wood: 1, ink: 1, food: 0 },
 };
 
+// --- Ward Link Profiles (chain mechanic) ---
+// Each ward has asymmetric connection values: left (incoming) and right (outgoing).
+// Connection strength between adjacent wards = min(left_ward.rightLinks, right_ward.leftLinks).
+// Thematic logic:
+//   Stone: solid both sides (2/2)
+//   Wind:  weak entry, strong exit — wind flows through (1/3)
+//   Fire:  absorbs energy in, burns output (3/1)
+//   Light: balanced radiance (2/2)
+//   Bone:  fragile organic connections (1/1)
+
+export const WARD_LINK_PROFILES: Record<WardType, WardLinkProfile> = {
+  stone: { leftLinks: 2, rightLinks: 2 },
+  wind:  { leftLinks: 1, rightLinks: 3 },
+  fire:  { leftLinks: 3, rightLinks: 1 },
+  light: { leftLinks: 2, rightLinks: 2 },
+  bone:  { leftLinks: 1, rightLinks: 1 },
+};
+
+// --- Mesh Tier Thresholds ---
+// Mesh strength = sum of link connections at a location.
+export const MESH_TIERS: { min: number; max: number; tier: MeshTier; label: string }[] = [
+  { min: 0, max: 0, tier: 'fragile', label: 'Fragile' },
+  { min: 1, max: 2, tier: 'normal', label: 'Normal' },
+  { min: 3, max: 4, tier: 'reinforced', label: 'Renforcé' },
+  { min: 5, max: 99, tier: 'fortified', label: 'Fortifié' },
+];
+
+// --- Chapter Ward Progression ---
+export const CHAPTER_WARD_AVAILABILITY: Record<number, WardType[]> = {
+  1: ['stone', 'wind'],
+  2: ['stone', 'wind'],
+  3: ['stone', 'wind', 'fire'],
+  4: ['stone', 'wind', 'fire', 'light'],
+  5: ['stone', 'wind', 'fire', 'light'],
+  6: ['stone', 'wind', 'fire', 'light', 'bone'],
+};
+export const CHAPTER_FIRE_CAN_KILL = 4;     // fire deals lethal damage from chapter 4+
+export const CHAPTER_TRIPLE_COMBOS = 8;     // triple combos unlock at chapter 8+
+
 // Ward individual effects
 export const WARD_PASSIVES: Record<WardType, string> = {
   fire: 'Deal 1 damage to all demons at this location each wave',
@@ -52,24 +92,64 @@ export const WARD_ACTIVES: Record<WardType, { name: string; effect: string }> = 
   bone: { name: 'Mend', effect: 'Heal 2 Population at this location (up to max)' },
 };
 
-// Ward combos (2 wards at same location)
+// --- Ward Combos (directional — order matters!) ---
+// Combo triggers when wards[0] is LEFT of wards[1] with bond >= minBondStrength.
+// Bond = min(left_ward.rightLinks, right_ward.leftLinks).
+// Reference: Wind→Fire=3, Wind→Stone=2, Stone→Fire=2, Stone↔Light=2,
+//            Light→Fire=2, Wind→Light=2, Fire→anything=1, Bone→anything=1
+
 export const WARD_COMBOS: WardCombo[] = [
-  { name: 'Magma Ward', wards: ['fire', 'stone'], passiveEffect: 'Fire passive deals +1 damage (total 2)', activeEffect: '4 damage to strongest demon + 3 defense this wave', activeName: 'Eruption' },
-  { name: 'Inferno Ward', wards: ['fire', 'wind'], passiveEffect: 'Fire passive affects adjacent location too', activeEffect: '2 damage to all demons at this + adjacent locations', activeName: 'Firestorm' },
-  { name: 'Beacon Ward', wards: ['fire', 'light'], passiveEffect: 'Demons killed by Fire give +1 resource to stockpile', activeEffect: 'Deal 3 damage + reveal all concealed info at this location', activeName: 'Sunburst' },
-  { name: 'Pyre Ward', wards: ['fire', 'bone'], passiveEffect: 'Destroyed demons heal 1 Pop', activeEffect: '3 damage to all demons, heal 1 Pop per kill', activeName: 'Cremation' },
-  { name: 'Fortress Ward', wards: ['stone', 'wind'], passiveEffect: '+3 defense (total 5 with Stone)', activeEffect: 'Immune this wave + pull 1 demon from each adjacent', activeName: 'Rampart' },
-  { name: 'Haven Ward', wards: ['stone', 'bone'], passiveEffect: 'Heal 1 Pop per wave (not just dawn)', activeEffect: 'Heal 3 Pop + immune to demon damage this wave', activeName: 'Sanctuary' },
-  { name: 'Storm Ward', wards: ['wind', 'light'], passiveEffect: 'Preview next wave demon cards', activeEffect: 'Rearrange up to 3 non-locked, non-boss demons between any locations', activeName: 'Tempest' },
-  { name: 'Renewal Ward', wards: ['wind', 'bone'], passiveEffect: 'Heal 1 Pop when a demon is redirected away', activeEffect: 'Heal all locations 1 Pop + redirect 2 demons', activeName: 'Restoration' },
-  { name: 'Consecration Ward', wards: ['light', 'bone'], passiveEffect: 'Hero heals 1 HP per wave at this location', activeEffect: 'Purge all str<=2 demons at this location', activeName: 'Purification' },
-  { name: 'Revelation Ward', wards: ['stone', 'light'], passiveEffect: '+2 defense + reveal attacker types', activeEffect: '2 defense + deal 2 damage to all revealed demons', activeName: 'Judgement' },
-  // Triple combos (3 wards at same location)
-  { name: 'Infernal Fortress', wards: ['fire', 'stone', 'wind'], passiveEffect: 'Fire+Stone+Wind: 2 dmg to all, +3 defense, redirect 2', activeEffect: '5 dmg to strongest + immune this wave + redirect all non-locked', activeName: 'Cataclysm' },
-  { name: 'Sacred Beacon', wards: ['fire', 'light', 'bone'], passiveEffect: 'Fire+Light+Bone: 2 dmg, reveal all, heal 1 pop', activeEffect: '4 dmg to all demons, heal 2 pop, purge str<=3', activeName: 'Divine Light' },
-  { name: 'Tempest Sanctum', wards: ['wind', 'light', 'bone'], passiveEffect: 'Wind+Light+Bone: redirect 2, heal 1 pop per wave, preview', activeEffect: 'Rearrange all non-boss demons + heal all locations 2 pop', activeName: 'Grand Restoration' },
-  { name: 'Eternal Bastion', wards: ['fire', 'stone', 'bone'], passiveEffect: 'Fire+Stone+Bone: 2 dmg, +3 defense, heal 1', activeEffect: '4 dmg to strongest, immune, heal 3 pop', activeName: 'Last Stand' },
-  { name: 'Storm Nexus', wards: ['fire', 'wind', 'light'], passiveEffect: 'Fire+Wind+Light: 1 dmg to all + adjacent, redirect 1, reveal', activeEffect: '3 dmg to all demons here + all adjacent locations', activeName: 'Apocalypse' },
+  // Wind combos (strong outgoing R=3)
+  { name: 'Inferno', wards: ['wind', 'fire'], minBondStrength: 2, unlockedAtChapter: 3,
+    passiveEffect: 'Feu touche aussi le lieu adjacent', activeEffect: '2 dégâts à tous les démons ici + lieux adjacents', activeName: 'Tempête de Feu' },
+  { name: 'Forteresse', wards: ['wind', 'stone'], minBondStrength: 2, unlockedAtChapter: 1,
+    passiveEffect: '+3 défense totale', activeEffect: 'Immunité cette vague + attire 1 démon de chaque lieu adjacent', activeName: 'Rempart' },
+  { name: 'Tempête', wards: ['wind', 'light'], minBondStrength: 2, unlockedAtChapter: 4,
+    passiveEffect: 'Prévisualise les démons de la prochaine vague', activeEffect: 'Redistribue jusqu\'à 3 démons non-verrouillés entre lieux', activeName: 'Ouragan' },
+  { name: 'Renouveau', wards: ['wind', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
+    passiveEffect: 'Soigne 1 Pop quand un démon est redirigé', activeEffect: 'Soigne 1 Pop partout + redirige 2 démons', activeName: 'Restauration' },
+
+  // Stone combos (solid both sides L=2/R=2)
+  { name: 'Magma', wards: ['stone', 'fire'], minBondStrength: 2, unlockedAtChapter: 3,
+    passiveEffect: 'Passif Feu +1 dégât (total 2)', activeEffect: '4 dégâts au plus fort + 3 défense cette vague', activeName: 'Éruption' },
+  { name: 'Sentinelle', wards: ['stone', 'light'], minBondStrength: 2, unlockedAtChapter: 4,
+    passiveEffect: '+2 défense + révèle les types d\'attaquants', activeEffect: '2 défense + 2 dégâts à tous les démons révélés', activeName: 'Jugement' },
+  { name: 'Sanctuaire', wards: ['stone', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
+    passiveEffect: 'Soigne 1 Pop par vague (pas seulement à l\'aube)', activeEffect: 'Soigne 3 Pop + immunité cette vague', activeName: 'Refuge' },
+
+  // Light combos (balanced L=2/R=2)
+  { name: 'Phare', wards: ['light', 'fire'], minBondStrength: 2, unlockedAtChapter: 4,
+    passiveEffect: 'Démons tués par Feu donnent +1 ressource', activeEffect: '3 dégâts + révèle tout à cette location', activeName: 'Éclat Solaire' },
+  { name: 'Révélation', wards: ['light', 'stone'], minBondStrength: 2, unlockedAtChapter: 4,
+    passiveEffect: '+2 défense + révèle les types', activeEffect: '2 défense + 2 dégâts aux démons révélés', activeName: 'Illumination' },
+  { name: 'Consécration', wards: ['light', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
+    passiveEffect: 'Héros soigne 1 HP par vague ici', activeEffect: 'Purge tous les démons str≤2 ici', activeName: 'Purification' },
+
+  // Bone combos (fragile L=1/R=1 — only 1-bond combos)
+  { name: 'Bûcher', wards: ['bone', 'fire'], minBondStrength: 1, unlockedAtChapter: 6,
+    passiveEffect: 'Démons détruits soignent 1 Pop', activeEffect: '3 dégâts à tous, soigne 1 Pop par kill', activeName: 'Crémation' },
+
+  // Reverse combos (weaker — Fire/Bone on left have low rightLinks)
+  { name: 'Déviation', wards: ['stone', 'wind'], minBondStrength: 1, unlockedAtChapter: 1,
+    passiveEffect: 'Redirige +1 démon supplémentaire', activeEffect: 'Redirige jusqu\'à 3 démons non-verrouillés', activeName: 'Bourrasque' },
+  { name: 'Soufflet', wards: ['fire', 'wind'], minBondStrength: 1, unlockedAtChapter: 3,
+    passiveEffect: 'Feu +2 dégâts mais redirect Vent désactivé', activeEffect: '4 dégâts au plus fort (pas de redirect)', activeName: 'Brasier' },
+  { name: 'Forge', wards: ['fire', 'stone'], minBondStrength: 1, unlockedAtChapter: 3,
+    passiveEffect: 'Passif Feu amélioré (+1 dégât)', activeEffect: '3 dégâts + 2 défense cette vague', activeName: 'Forge' },
+];
+
+// --- Triple Ward Combos (3 wards in specific order, chapter 8+) ---
+export const TRIPLE_WARD_COMBOS: TripleWardCombo[] = [
+  { name: 'Cataclysme', wards: ['wind', 'stone', 'fire'], minTotalMesh: 4, unlockedAtChapter: 8,
+    passiveEffect: '2 dégâts à tous, +3 défense, redirect 2', activeEffect: '5 dégâts au plus fort + immunité + redirect tous non-verrouillés', activeName: 'Cataclysme' },
+  { name: 'Lumière Divine', wards: ['light', 'fire', 'bone'], minTotalMesh: 3, unlockedAtChapter: 8,
+    passiveEffect: '2 dégâts, révèle tout, soigne 1 pop', activeEffect: '4 dégâts à tous, soigne 2 pop, purge str≤3', activeName: 'Lumière Divine' },
+  { name: 'Grand Sanctuaire', wards: ['wind', 'light', 'bone'], minTotalMesh: 3, unlockedAtChapter: 8,
+    passiveEffect: 'Redirect 2, soigne 1 pop/vague, prévisualise', activeEffect: 'Redistribue tous les non-boss + soigne 2 pop partout', activeName: 'Grande Restauration' },
+  { name: 'Bastion Éternel', wards: ['stone', 'fire', 'bone'], minTotalMesh: 3, unlockedAtChapter: 8,
+    passiveEffect: '2 dégâts, +3 défense, soigne 1', activeEffect: '4 dégâts au plus fort, immunité, soigne 3 pop', activeName: 'Dernier Rempart' },
+  { name: 'Nexus', wards: ['wind', 'fire', 'light'], minTotalMesh: 4, unlockedAtChapter: 8,
+    passiveEffect: '1 dégât à tous + adjacent, redirect 1, révèle', activeEffect: '3 dégâts à tous les démons ici + tous lieux adjacents', activeName: 'Apocalypse' },
 ];
 
 // --- Demons ---

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Image, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -36,12 +36,12 @@ const CHARACTER_INFO: Record<string, { name: string; color: string }> = {
   rojer_young: { name: 'Rojer Inn', color: '#7C4DFF' },
 };
 
-// Group chapters by character
+// Group chapters by character (chapter IDs)
 const CHARACTER_CHAPTERS: Record<string, number[]> = {
-  arlen_young: [1, 5],
-  leesha_young: [2, 6],
-  jardir_young: [3],
-  rojer_young: [4],
+  arlen_young: [1, 5, 9, 11, 12],
+  leesha_young: [2, 6, 10],
+  jardir_young: [3, 7],
+  rojer_young: [4, 8],
 };
 
 const SAVE_KEY = '@warded_campaign_save';
@@ -76,11 +76,15 @@ export default function CampaignScreen() {
     setPhase('character_select');
   };
 
+  const audioRef = useRef(audio);
+  audioRef.current = audio;
+
   const startChapter = useCallback((chapter: ChapterDefinition) => {
     setCurrentChapter(chapter);
     setPhase('intro');
-    audio.playMusic('vn_dramatic');
-  }, [audio]);
+    // Fire-and-forget — don't block UI on audio
+    setTimeout(() => audioRef.current.playMusic('vn_dramatic'), 50);
+  }, []);
 
   const handleIntroComplete = useCallback(() => {
     if (!currentChapter) return;

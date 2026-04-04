@@ -5,7 +5,7 @@
 import type { GameState, LocationId, WardType } from './types';
 import type { ChapterDefinition, CampaignEffect, CampaignModifiers, CampaignSaveState } from './campaign-types';
 import { createGame, processDawn } from './game';
-import { LOCATIONS } from './constants';
+import { LOCATIONS, CHAPTER_WARD_AVAILABILITY, CHAPTER_FIRE_CAN_KILL, CHAPTER_TRIPLE_COMBOS, WARD_TYPES } from './constants';
 
 /** Create a game state from a chapter definition */
 export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSaveState): GameState {
@@ -76,6 +76,13 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
     demonStrengthBonus: 0,
     apModifier: 0,
   };
+
+  // Ward chain progression — unlock wards based on chapter
+  const chapterNum = chapter.id;
+  state.availableWards = chapter.availableWards ??
+    CHAPTER_WARD_AVAILABILITY[Math.min(chapterNum, 6)] ?? [...WARD_TYPES];
+  state.maxComboSize = chapterNum >= CHAPTER_TRIPLE_COMBOS ? 3 : 2;
+  state.fireCanKill = chapter.fireCanKill ?? (chapterNum >= CHAPTER_FIRE_CAN_KILL);
 
   // Re-distribute resources
   processDawn(state);

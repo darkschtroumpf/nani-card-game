@@ -1,7 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { useState } from 'react';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
-import type { Location, DemonAtLocation, WardType } from '../../../engine/src/warded/types';
-import { WARD_COMBOS, WARD_TYPES } from '../../../engine/src/warded/constants';
+import type { Location, DemonAtLocation, WardType, MeshAnalysis, WardCombo } from '../../../engine/src/warded/types';
+import { WARD_TYPES } from '../../../engine/src/warded/constants';
+import WardChain from './WardChain';
 
 const DEMON_IMAGES: Record<string, any> = {
   flame: require('../../assets/images/demon_flame.png'),
@@ -12,13 +14,6 @@ const DEMON_IMAGES: Record<string, any> = {
   mind: require('../../assets/images/demon_mind.png'),
 };
 
-const WARD_IMAGES: Record<string, any> = {
-  fire: require('../../assets/images/ward_fire.png'),
-  stone: require('../../assets/images/ward_stone.png'),
-  wind: require('../../assets/images/ward_wind.png'),
-  light: require('../../assets/images/ward_light.png'),
-  bone: require('../../assets/images/ward_bone.png'),
-};
 
 interface Props {
   location: Location;
@@ -33,6 +28,7 @@ interface Props {
   // Night actions
   onActivateWard?: (useCombo: boolean) => void;
   availableWardReserves?: WardType[];
+  availableWards?: WardType[];
   canCraft?: boolean;
   canFortify?: boolean;
   canGather?: boolean;
@@ -45,15 +41,33 @@ interface Props {
   onSwapWards?: (slotA: number, slotB: number) => void;
   // MAJOR 2: Activation indicator
   isActivated?: boolean;
+  // Ward chain
+  mesh?: MeshAnalysis;
+  activeCombos?: WardCombo[];
 }
 
 export default function LocationDetail({
   location, demons, isPresence, isNight, onClose,
   onCraft, onFortify, onGather, onActivateWard,
-  availableWardReserves, canCraft, canFortify, canGather, canActivate,
+  availableWardReserves, availableWards, canCraft, canFortify, canGather, canActivate,
   onWardedFlesh, onRepairWard, onRemoveWard, onSwapWards, isActivated,
+  mesh, activeCombos,
 }: Props) {
-  const combo = getCombo(location);
+  const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+  const combo = activeCombos && activeCombos.length > 0 ? activeCombos[0] : null;
+
+  const handleSlotPress = (index: number) => {
+    if (isNight) return;
+    if (selectedSlot === null) {
+      setSelectedSlot(index);
+    } else if (selectedSlot === index) {
+      setSelectedSlot(null);
+    } else {
+      // Swap the two slots
+      onSwapWards?.(selectedSlot, index);
+      setSelectedSlot(null);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -92,39 +106,29 @@ export default function LocationDetail({
         <ResChip label="Nourriture" value={location.stockpile.food} color={warded.food} />
       </View>
 
-      {/* Wards */}
+      {/* Ward Chain */}
       <View style={styles.sectionDivider} />
       <View style={styles.section}>
-        <Text style={styles.label}>Wards</Text>
-        <View style={styles.wardSlots}>
-          {location.wards.map((ws, i) => (
-            <View key={i} style={[styles.wardSlot, ws.ward ? { borderColor: wardColor(ws.ward) } : {}]}>
-              {ws.ward ? (
-                <>
-                  <Image source={WARD_IMAGES[ws.ward]} style={styles.wardSlotImage} />
-                  <Text style={[styles.wardName, { color: wardColor(ws.ward) }]}>{ws.ward.toUpperCase()}</Text>
-                  {ws.isTemporary && <Text style={styles.tempBadge}>TEMP</Text>}
-                  {ws.enhanced && <Text style={[styles.tempBadge, { color: '#FFD740' }]}>★ AMÉLIORÉ</Text>}
-                  {!ws.isTemporary && ws.durability < 3 && (
-                    <Text style={[styles.tempBadge, { color: ws.durability <= 1 ? '#F44336' : '#FF9800' }]}>
-                      {'●'.repeat(ws.durability)}{'○'.repeat(3 - ws.durability)}
-                    </Text>
-                  )}
-                </>
-              ) : (
-                <Text style={styles.emptySlotText}>Vide</Text>
-              )}
-            </View>
-          ))}
-        </View>
-        {combo && (
-          <View style={[styles.comboBanner, { borderColor: warded.accent }]}>
-            <Text style={styles.comboName}>{combo.name}</Text>
-            <Text style={styles.comboEffect}>{combo.passiveEffect}</Text>
-          </View>
+        <Text style={styles.label}>Chaîne de Wards</Text>
+        {mesh ? (
+          <WardChain
+            location={location}
+            mesh={mesh}
+            combos={activeCombos ?? []}
+            selectedSlot={selectedSlot}
+            onSlotPress={handleSlotPress}
+            isNight={isNight}
+          />
+        ) : (
+          <Text style={styles.emptySlotText}>Aucun ward</Text>
+        )}
+        {selectedSlot !== null && !isNight && (
+          <Text style={{ color: warded.accent, fontSize: wardedFonts.xs, textAlign: 'center' }}>
+            Sélectionne un autre slot pour intervertir
+          </Text>
         )}
         {/* Ward management (day only) */}
-        {!isNight && !location.fallen && (onRemoveWard || onSwapWards || onRepairWard) && (
+        {!isNight && !location.fallen && (onRemoveWard || onRepairWard) && (
           <View style={styles.wardManageRow}>
             {location.wards.map((ws, i) => ws.ward && !ws.isTemporary ? (
               <View key={`mgmt${i}`} style={{ flexDirection: 'row', gap: 4 }}>
@@ -140,15 +144,6 @@ export default function LocationDetail({
                 </TouchableOpacity>
               </View>
             ) : null)}
-            {location.wards.filter(ws => ws.ward).length >= 2 && onSwapWards && (
-              <TouchableOpacity style={styles.wardSwapBtn}
-                onPress={() => {
-                  const filled = location.wards.map((ws, i) => ws.ward ? i : -1).filter(i => i >= 0);
-                  if (filled.length >= 2) onSwapWards(filled[0], filled[1]);
-                }}>
-                <Text style={styles.wardSwapText}>⇄ Intervertir</Text>
-              </TouchableOpacity>
-            )}
           </View>
         )}
       </View>
@@ -194,7 +189,7 @@ export default function LocationDetail({
         <View style={styles.actionSection}>
           <Text style={styles.wardedFleshLabel}>⚔ Ward Temporaire (1 AP)</Text>
           <View style={styles.wardedFleshRow}>
-            {WARD_TYPES.map(w => (
+            {(availableWards ?? WARD_TYPES).map(w => (
               <TouchableOpacity
                 key={w}
                 style={[styles.wardedFleshBtn, { borderColor: wardColor(w) }]}
@@ -215,7 +210,7 @@ export default function LocationDetail({
         </View>
       )}
 
-      {/* MAJOR 1+3: Night ward activation - both slots, only if location has wards */}
+      {/* Night ward activation */}
       {isNight && canActivate && !isActivated && (
         <View style={styles.actionSection}>
           {combo && (
@@ -224,11 +219,9 @@ export default function LocationDetail({
               <Text style={styles.actionDesc}>{combo.activeEffect}</Text>
             </TouchableOpacity>
           )}
-          {location.wards.map((ws, i) => ws.ward ? (
-            <TouchableOpacity key={i} style={[styles.actionBtn, { borderColor: wardColor(ws.ward) }]} onPress={() => onActivateWard?.(false)}>
-              <Text style={styles.actionText}>Activer {WARD_SYMBOLS[ws.ward]} {ws.ward} (slot {i + 1})</Text>
-            </TouchableOpacity>
-          ) : null)}
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onActivateWard?.(false)}>
+            <Text style={styles.actionText}>Activer les wards individuellement</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -244,21 +237,6 @@ function ResChip({ label, value, color }: { label: string; value: number; color:
   );
 }
 
-function getCombo(loc: Location) {
-  const activeWards = loc.wards.filter(ws => ws.ward).map(ws => ws.ward!);
-  if (activeWards.length < 2) return null;
-  // Check triple combos first
-  if (activeWards.length >= 3) {
-    const triple = WARD_COMBOS.find(c =>
-      c.wards.length === 3 && c.wards.every(cw => activeWards.includes(cw))
-    );
-    if (triple) return triple;
-  }
-  // Double combos
-  return WARD_COMBOS.find(c =>
-    c.wards.length === 2 && activeWards.includes(c.wards[0]) && activeWards.includes(c.wards[1])
-  ) ?? null;
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -361,52 +339,9 @@ const styles = StyleSheet.create({
   section: {
     gap: 6,
   },
-  wardSlots: {
-    flexDirection: 'row',
-    gap: 8,
-    justifyContent: 'center',
-  },
-  wardSlot: {
-    flex: 1,
-    backgroundColor: warded.bgLight,
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: warded.border,
-    gap: 2,
-  },
-  wardIcon: {
-    fontSize: 20,
-  },
-  wardName: {
-    fontSize: wardedFonts.xs,
-    fontWeight: 'bold',
-  },
-  tempBadge: {
-    color: warded.warning,
-    fontSize: 7,
-    fontWeight: 'bold',
-  },
   emptySlotText: {
     color: warded.textDark,
     fontSize: wardedFonts.sm,
-  },
-  comboBanner: {
-    backgroundColor: warded.highlight,
-    borderRadius: 8,
-    padding: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  comboName: {
-    color: warded.accent,
-    fontSize: wardedFonts.md,
-    fontWeight: 'bold',
-  },
-  comboEffect: {
-    color: warded.textDim,
-    fontSize: wardedFonts.xs,
     textAlign: 'center',
   },
   demonList: {
@@ -431,11 +366,6 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-  },
-  wardSlotImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
   },
   demonStr: {
     fontSize: wardedFonts.md,
