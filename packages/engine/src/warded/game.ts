@@ -834,6 +834,23 @@ export function repairWard(state: GameState, locationId: LocationId, slotIndex: 
   return true;
 }
 
+/** Emergency night repair: costs 2 HP, restores 2 durability. Only at hero presence. */
+export function nightRepairWard(state: GameState, locationId: LocationId, slotIndex: number): boolean {
+  if (state.phase !== 'night') return false;
+  if (state.hero.hp <= 3) return false; // need at least 4 HP (leave 1 minimum after -2)
+  if (locationId !== state.presenceLocation) return false; // must be at presence
+  const loc = getLocation(state, locationId);
+  if (loc.fallen) return false;
+  const ws = loc.wards[slotIndex];
+  if (!ws || !ws.ward || ws.isTemporary) return false;
+  if (ws.durability >= 4) return false;
+
+  ws.durability = Math.min(4, ws.durability + 2);
+  state.hero.hp -= 2;
+  addLog(state, `Réparation d'urgence! ${ws.ward} réparé à ${loc.name} (-2 HP, durabilité ${ws.durability}/4).`, true);
+  return true;
+}
+
 // ============================================================
 // Ward Management (remove / swap)
 // ============================================================

@@ -1405,6 +1405,34 @@ export default function WardedGameScreen() {
                   );
                 })}
               </View>
+              {/* Emergency night repair — costs 2 HP, only at presence */}
+              {state.hero.hp > 3 && (() => {
+                const presLoc = state.locations.find(l => l.id === state.presenceLocation);
+                const damagedWards = presLoc?.wards
+                  .map((ws, i) => ({ ws, i }))
+                  .filter(({ ws }) => ws.ward && !ws.isTemporary && ws.durability < 4) ?? [];
+                if (damagedWards.length === 0) return null;
+                return (
+                  <View style={styles.optionalAction}>
+                    <Text style={styles.optionalLabel}>🔧 RÉPARATION D'URGENCE (-2 HP)</Text>
+                    <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                      {damagedWards.map(({ ws, i }) => (
+                        <TouchableOpacity key={i}
+                          style={[styles.phaseBtn, { borderColor: warded.warning, backgroundColor: warded.warning + '10', paddingHorizontal: 10 }]}
+                          onPress={() => {
+                            ctrl.doNightRepairWard(state.presenceLocation, i);
+                            audio.playSfx('heal');
+                          }}>
+                          <Text style={[styles.phaseBtnText, { color: warded.warning, fontSize: 11 }]}>
+                            🔧 {ws.ward} ({ws.durability}/4)
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                );
+              })()}
+
               {/* Optional hero wave abilities */}
               {!state.heroWaveAbilityUsed && (
                 <View style={styles.optionalAction}>

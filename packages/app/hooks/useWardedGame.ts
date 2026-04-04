@@ -7,7 +7,7 @@ import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warde
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, repairWard,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, repairWard, nightRepairWard,
   jardirYoung_spearStrike, rojerYoung_melody, leeshaYoung_cataplasme,
   removeWard, swapWards,
   getThreatForecast, resolveWardPassives,
@@ -32,6 +32,7 @@ export interface WardedGameController {
   doFortify: (wardType: WardType, targetLocationId: LocationId) => void;
   doGather: (locationId: LocationId) => void;
   doRepairWard: (locationId: LocationId, slotIndex: number) => void;
+  doNightRepairWard: (locationId: LocationId, slotIndex: number) => boolean;
   doRemoveWard: (locationId: LocationId, slotIndex: number) => void;
   doSwapWards: (locationId: LocationId, slotA: number, slotB: number) => void;
   endDay: () => void;
@@ -153,6 +154,14 @@ export function useWardedGame(): WardedGameController {
     if (!s) return;
     repairWard(s, locationId, slotIndex);
     sync(s);
+  }, [sync]);
+
+  const doNightRepairWard = useCallback((locationId: LocationId, slotIndex: number): boolean => {
+    const s = stateRef.current;
+    if (!s) return false;
+    const ok = nightRepairWard(s, locationId, slotIndex);
+    if (ok) sync(s);
+    return ok;
   }, [sync]);
 
   const doRemoveWard = useCallback((locationId: LocationId, slotIndex: number) => {
@@ -502,7 +511,7 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame, startCampaignGame: startCampaignGameFn, applyCampaignEffects: applyCampaignEffectsFn, startNewDay,
-    doCraft, doFortify, doGather, doRepairWard, doRemoveWard, doSwapWards, endDay,
+    doCraft, doFortify, doGather, doRepairWard, doNightRepairWard, doRemoveWard, doSwapWards, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
     // Young heroes

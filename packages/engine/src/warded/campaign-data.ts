@@ -279,9 +279,9 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     desert_spear: { name: '', startPop: 0 },
   },
   preplacedWards: [
-    { locationId: 'cutters_hollow', ward: 'fire' },
     { locationId: 'cutters_hollow', ward: 'stone' },
-    { locationId: 'miln', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'wind' },
+    { locationId: 'miln', ward: 'stone' },
   ],
 
   introDialogue: [
@@ -299,6 +299,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
       lines: [
         { speaker: 'leesha_young', text: "Bruna, les wards de la place du marché sont usés. Le bois est pourri par la pluie.", emotion: 'scared' },
         { speaker: 'bruna', text: "Je sais, petite. Mais ces idiots de bûcherons refusent de les refaire. Trop occupés à couper du bois.", emotion: 'angry' },
+        { speaker: 'bruna', text: "On n'a que deux types de runes fiables : la Pierre, qui repousse les démons, et le Vent, qui les dévie. C'est tout ce que le village connaît.", emotion: 'neutral' },
         { speaker: 'leesha_young', text: "Et si je préparais des onguents de renforcement ? Ça pourrait tenir quelques nuits de plus.", emotion: 'determined' },
         { speaker: 'bruna', text: "Ha ! Tu apprends vite. Fais-le. Et prépare aussi des cataplasmes — on en aura besoin.", emotion: 'neutral' },
       ],
@@ -620,10 +621,11 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     desert_spear: { name: '', startPop: 0 },
     lakton: { name: '', startPop: 0 },
   },
+  availableWards: ['stone', 'wind'] as WardType[],
   preplacedWards: [
-    { locationId: 'cutters_hollow', ward: 'fire' },
     { locationId: 'cutters_hollow', ward: 'stone' },
-    { locationId: 'miln', ward: 'wind' },
+    { locationId: 'cutters_hollow', ward: 'wind' },
+    { locationId: 'miln', ward: 'stone' },
   ],
 
   introDialogue: [
@@ -639,7 +641,8 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       id: 'intro_2', background: 'inn',
       lines: [
-        { speaker: 'narrator', text: "Mais cette nuit, les wards de l'auberge ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
+        { speaker: 'narrator', text: "L'auberge est protégée par les seuls wards que connaissent les villageois : Pierre et Vent. Des défenses simples, juste assez pour repousser les corelings." },
+        { speaker: 'narrator', text: "Mais cette nuit, les wards ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
         { speaker: 'rojer_young', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
         { speaker: 'narrator', text: "Jessum sourit à son fils, mais ses yeux sont terrifiés." },
         { speaker: 'narrator', text: "Et puis la nuit tombe." },
@@ -1011,8 +1014,9 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
       id: 'l2_intro', background: 'forest_village',
       lines: [
         { speaker: 'narrator', text: "Les jours qui suivirent furent les plus longs de sa vie. Le village entier pleura Bruna, mais le deuil n'arrête pas les corelings." },
-        { speaker: 'leesha_young', text: "Je ne suis pas prête... mais je suis tout ce qu'ils ont.", emotion: 'determined' },
-        { speaker: 'narrator', text: "Cette nuit, les démons seront plus nombreux que jamais. Et Leesha devra prouver qu'elle est digne de l'héritage de Bruna." },
+        { speaker: 'leesha_young', text: "Dans le livre de Bruna, j'ai trouvé des schémas que je n'avais jamais vus. Des runes de Feu — une connaissance oubliée depuis des générations.", emotion: 'hopeful' },
+        { speaker: 'leesha_young', text: "Ces wards ne repoussent pas les démons. Ils les brûlent. Si je peux les reproduire...", emotion: 'determined' },
+        { speaker: 'narrator', text: "Armée des runes de Pierre, de Vent, et désormais de Feu, Leesha devra prouver qu'elle est digne de l'héritage de Bruna." },
       ],
     },
   ],
@@ -1344,6 +1348,8 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
         { speaker: 'arrick', text: "...", emotion: 'sad' },
         { speaker: 'narrator', text: "Arrick meurt trois jours plus tard. Et Rojer Halfgrip, seize ans, doigts mutilés, se retrouve seul au monde." },
         { speaker: 'rojer_young', text: "Qu'est-ce que je fais maintenant ?", emotion: 'scared' },
+        { speaker: 'narrator', text: "L'aubergiste lui laisse une chambre. En échange, Rojer aide à entretenir les wards — pierre, vent, et les rares runes de feu qu'un Messager de passage a gravées l'an dernier." },
+        { speaker: 'rojer_young', text: "Quand je joue près des wards, j'ai l'impression que les symboles vibrent. Comme si la musique et les runes parlaient la même langue.", emotion: 'hopeful' },
       ],
     },
   ],
