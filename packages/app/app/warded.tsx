@@ -677,6 +677,12 @@ export default function WardedGameScreen() {
   // This is handled by rendering the overlay conditionally below.
 
   const handleLocationPress = (locId: LocationId) => {
+    // Inspect mode has HIGHEST priority — always open detail
+    if (inspectMode) {
+      setInspectMode(false);
+      setSelectedLocation(locId);
+      return;
+    }
     // CRITICAL 2: During night positioning, tap moves presence instead of opening detail
     if (isNight && state.waveNumber === 0 && !state.presenceMoveUsed) {
       ctrl.doMovePresence(locId);
@@ -686,12 +692,6 @@ export default function WardedGameScreen() {
     if (mistWalkMode) {
       ctrl.doMistWalk(locId);
       setMistWalkMode(false);
-      return;
-    }
-    // Inspect mode: always open detail
-    if (inspectMode) {
-      setInspectMode(false);
-      setSelectedLocation(locId);
       return;
     }
     // DAY: auto-fortify if reserves + location has empty slot + AP
