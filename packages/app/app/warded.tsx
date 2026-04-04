@@ -434,21 +434,21 @@ export default function WardedGameScreen() {
     }
   }, [campaignChapter, state?.phase, state?.turnNumber, campaignDaysProcessed]);
 
-  // Random day event trigger (after campaign events)
+  // Random day event trigger (campaign mode only, after fixed campaign events)
   useEffect(() => {
-    if (!state || state.phase !== 'day') return;
-    if (campaignDayEvent) return; // wait for campaign event first
+    if (!campaignChapter || !state || state.phase !== 'day') return;
+    if (campaignDayEvent) return; // wait for fixed campaign event first
     const dayNum = state.turnNumber;
     if (randomEventShownDays[dayNum] || dayNum <= 1) return; // skip day 1
-    // 50% chance of random event
-    if (Math.random() < 0.5) {
+    // 30% chance of random event when no fixed event for this day
+    if (Math.random() < 0.3) {
       const event = RANDOM_DAY_EVENTS[Math.floor(Math.random() * RANDOM_DAY_EVENTS.length)];
       setRandomEvent(event);
       setRandomEventShownDays(prev => ({ ...prev, [dayNum]: true }));
     } else {
       setRandomEventShownDays(prev => ({ ...prev, [dayNum]: true }));
     }
-  }, [state?.phase, state?.turnNumber, campaignDayEvent]);
+  }, [state?.phase, state?.turnNumber, campaignDayEvent, campaignChapter]);
 
   // Campaign: handle day event choice
   const handleCampaignChoice = useCallback((choiceId: string) => {
@@ -593,7 +593,12 @@ export default function WardedGameScreen() {
       <SafeAreaView style={[styles.container, state.victory ? styles.victoryBg : styles.defeatBg]}>
         <View style={styles.gameOverBox}>
           <Text style={styles.gameOverEmoji}>{state.victory ? '🌅' : '💀'}</Text>
-          <Text style={styles.gameOverTitle}>{state.victory ? "L'AUBE SE LEVE" : 'LA NUIT GAGNE'}</Text>
+          <Text style={styles.gameOverTitle}>{state.victory ? (isEndlessMode ? 'FIN DE LA SURVIE' : "L'AUBE SE LÈVE") : 'LA NUIT GAGNE'}</Text>
+          {isEndlessMode && (
+            <Text style={{ color: warded.accent, fontSize: wardedFonts.xl, fontWeight: 'bold', marginTop: 4 }}>
+              {gameStats.current.nightsSurvived} nuits survivées
+            </Text>
+          )}
           {state.victory && (() => {
             const score = calculateScore(state);
             return (
@@ -617,11 +622,11 @@ export default function WardedGameScreen() {
           <View style={styles.statsGrid}>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.nightsSurvived}</Text>
-              <Text style={styles.statsLabel}>Nuits survecues</Text>
+              <Text style={styles.statsLabel}>Nuits survécues</Text>
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.wardsCrafted}</Text>
-              <Text style={styles.statsLabel}>Wards fabriquees</Text>
+              <Text style={styles.statsLabel}>Wards fabriquées</Text>
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.activationsUsed}</Text>
@@ -629,7 +634,7 @@ export default function WardedGameScreen() {
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.demonsKilled}</Text>
-              <Text style={styles.statsLabel}>Demons tues</Text>
+              <Text style={styles.statsLabel}>Démons tués</Text>
             </View>
           </View>
           <View style={styles.gameOverBtns}>
@@ -842,7 +847,12 @@ export default function WardedGameScreen() {
           </View>
         </View>
         <View style={styles.headerRight}>
-          <Text style={styles.phaseText}>{isDay ? '☀ JOUR' : '🌙 NUIT'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={styles.phaseText}>{isDay ? '☀ JOUR' : '🌙 NUIT'}</Text>
+            <TouchableOpacity onPress={() => audio.toggleMute()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={{ fontSize: 18 }}>{audio.muted ? '🔇' : '🔊'}</Text>
+            </TouchableOpacity>
+          </View>
           {isDay && <Text style={[styles.apText, { fontSize: 18 }]}>AP: {state.hero.ap}</Text>}
           {isNight && <Text style={styles.waveText}>Vague {state.waveNumber}/3</Text>}
           <Text style={[styles.apText, { color: state.hero.hp > 5 ? warded.success : warded.danger }]}>

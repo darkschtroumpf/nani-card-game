@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, ImageBackg
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../theme-warded';
-import { WARD_COSTS, WARD_PASSIVES, WARD_ACTIVES, WARD_COMBOS, TRIPLE_WARD_COMBOS, DEMON_TYPES, WARD_LINK_PROFILES } from '../../engine/src/warded/constants';
+import { WARD_COSTS, WARD_COMBOS, TRIPLE_WARD_COMBOS, DEMON_TYPES, WARD_LINK_PROFILES } from '../../engine/src/warded/constants';
 import type { WardType, DemonType } from '../../engine/src/warded/types';
 
 const BG_NIGHT = require('../assets/images/bg_night.png');
@@ -31,6 +31,22 @@ const WARD_NAMES: Record<WardType, string> = {
 
 const DEMON_NAMES: Record<DemonType, string> = {
   flame: 'Flamme', wood: 'Bois', wind: 'Vent', water: 'Eau', rock: 'Roche', mind: 'Esprit',
+};
+
+const WARD_PASSIVES_FR: Record<WardType, string> = {
+  fire: 'Inflige 1 dégât à tous les démons de ce lieu chaque vague',
+  stone: '+2 défense à ce lieu',
+  wind: 'Redirige 1 démon non-verrouillé vers un lieu adjacent avant le combat',
+  light: 'Révèle les types exacts de démons ciblant ce lieu',
+  bone: "Soigne 1 population à l'aube (si en dessous du max)",
+};
+
+const WARD_ACTIVES_FR: Record<WardType, { name: string; effect: string }> = {
+  fire: { name: 'Brasier', effect: 'Inflige 3 dégâts à 1 démon' },
+  stone: { name: 'Rempart', effect: '0 dégâts de démons cette vague' },
+  wind: { name: 'Bourrasque', effect: "Redirige jusqu'à 3 démons non-verrouillés" },
+  light: { name: 'Éclat', effect: '1 dégât à tous + réarrange 1 démon' },
+  bone: { name: 'Soin', effect: 'Soigne 2 population (max)' },
 };
 
 type Tab = 'wards' | 'demons' | 'combos';
@@ -72,8 +88,8 @@ export default function CodexScreen() {
           <>
             {(['fire', 'stone', 'wind', 'light', 'bone'] as WardType[]).map(w => {
               const cost = WARD_COSTS[w];
-              const passive = WARD_PASSIVES[w];
-              const active = WARD_ACTIVES[w];
+              const passive = WARD_PASSIVES_FR[w];
+              const active = WARD_ACTIVES_FR[w];
               const link = WARD_LINK_PROFILES[w];
               return (
                 <View key={w} style={[styles.card, { borderColor: wardColor(w) + '60' }]}>

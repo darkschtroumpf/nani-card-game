@@ -63,6 +63,14 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>📚 Codex</Text>
           <Text style={styles.buttonDesc}>Runes, Demons, Combos — tout savoir</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { borderColor: warded.textDark }]}
+          onPress={() => router.push('/settings')}
+        >
+          <Text style={styles.buttonText}>⚙ Parametres</Text>
+          <Text style={styles.buttonDesc}>Reinitialiser, credits</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.version}>v3.0.0 — The Demon's Cycle</Text>

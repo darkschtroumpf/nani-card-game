@@ -18,6 +18,7 @@ export default function RootLayout() {
         <Stack.Screen name="warded" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="campaign" options={{ headerShown: false }} />
         <Stack.Screen name="codex" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
     </>
   );

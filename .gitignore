@@ -12,3 +12,19 @@ dist/
 *.mobileprovision
 *.orig.*
 web-build/
+
+# Music assets (too large for git)
+music/
+
+# Design/rules docs at root
+NANI_CLASH_PATCH.md
+NANI_CLASH_RULES.md
+NANI_DOJO_RULES.md
+GAME_RULES.md
+UX_REVIEW*.md
+WARDED_MAN_RULES.md
+WARDED_MAN_V2.md
+WARDED_MAN_V3.md
+
+# Claude config
+.claude/
