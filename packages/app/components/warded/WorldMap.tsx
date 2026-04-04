@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Animated } from 'react-native';
+import { useRef, useEffect } from 'react';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, LocationId, DemonAtLocation } from '../../../engine/src/warded/types';
 
@@ -39,6 +40,8 @@ interface Props {
   forecast?: Record<string, string>;
   isPositioning?: boolean;
   activationsUsedAt?: LocationId[];
+  lastActivatedLocation?: LocationId | null;
+  lastDamagedLocations?: LocationId[];
 }
 
 function forecastBorderColor(level?: string): string {
@@ -59,7 +62,30 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
   south: { top: 1, left: 0.5 },
 };
 
-export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt }: Props) {
+export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt, lastActivatedLocation, lastDamagedLocations }: Props) {
+  // Activation glow animation
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (lastActivatedLocation) {
+      glowAnim.setValue(1);
+      Animated.timing(glowAnim, { toValue: 0, duration: 800, useNativeDriver: true }).start();
+    }
+  }, [lastActivatedLocation]);
+
+  // Damage shake animation
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (lastDamagedLocations && lastDamagedLocations.length > 0) {
+      Animated.sequence([
+        Animated.timing(shakeAnim, { toValue: 4, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -4, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 3, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -3, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [lastDamagedLocations]);
+
   return (
     <View style={[styles.mapContainer, { width: MAP_SIZE, height: MAP_SIZE }]}>
       {/* Connection lines (hide if endpoint is hidden) */}
@@ -93,13 +119,32 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
         const threatLevel = forecast?.[loc.id];
         const threatBorder = forecastBorderColor(threatLevel);
 
+        const isJustActivated = lastActivatedLocation === loc.id;
+        const isJustDamaged = lastDamagedLocations?.includes(loc.id) ?? false;
+
         return (
-          <TouchableOpacity
+          <Animated.View
             key={loc.id}
+            style={[
+              { position: 'absolute' },
+              isJustActivated && { opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
+              isJustDamaged && { transform: [{ translateX: shakeAnim }] },
+            ]}
+          >
+          {isJustActivated && (
+            <Animated.View style={{
+              position: 'absolute', top: -6, left: -6, right: -6, bottom: -6,
+              borderRadius: 18, borderWidth: 2, borderColor: warded.accent,
+              opacity: glowAnim,
+              shadowColor: warded.accent, shadowOpacity: 0.8, shadowRadius: 16, elevation: 10,
+            }} />
+          )}
+          <TouchableOpacity
             style={[
               styles.locationNode,
               {
                 width: nodeSize,
+                position: 'relative',
                 top: pos.top * (MAP_SIZE - nodeSize),
                 left: pos.left * (MAP_SIZE - nodeSize),
                 borderColor: isSelected ? warded.accent : isPresence ? warded.accent : threatBorder,
@@ -191,6 +236,7 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
               </View>
             )}
           </TouchableOpacity>
+          </Animated.View>
         );
       })}
     </View>

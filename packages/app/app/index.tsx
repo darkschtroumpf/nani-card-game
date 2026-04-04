@@ -55,6 +55,14 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>Survie</Text>
           <Text style={styles.buttonDesc}>Mode infini — Combien de nuits survivras-tu ?</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { borderColor: warded.textDim }]}
+          onPress={() => router.push('/codex')}
+        >
+          <Text style={styles.buttonText}>Codex</Text>
+          <Text style={styles.buttonDesc}>Runes, Demons, Combos — tout savoir</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.version}>v0.7.0 — The Demon's Cycle</Text>
