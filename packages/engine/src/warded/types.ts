@@ -106,6 +106,7 @@ export interface DemonAtLocation {
   demon: DemonCard;
   currentStrength: number; // after Swarm, Prince, damage
   swarmed: boolean;
+  revealed: boolean; // Light ward passive reveals demon type to player
 }
 
 // --- Heroes ---

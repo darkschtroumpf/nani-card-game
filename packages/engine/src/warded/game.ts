@@ -518,7 +518,7 @@ function spawnDemons(state: GameState): void {
         const wTarget = windLocs[w % windLocs.length];
         state.demonsAtLocations[wTarget].push({
           demon: { type: 'wind', strength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), targetLocation: wTarget, isLocked: false, isBoss: false, isPrinceUpgraded: false },
-          currentStrength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), swarmed: false,
+          currentStrength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), swarmed: false, revealed: false,
         });
       }
       continue;
@@ -526,7 +526,7 @@ function spawnDemons(state: GameState): void {
 
     state.demonsAtLocations[finalTarget].push({
       demon: { type: demonType, strength, targetLocation: finalTarget, isLocked: demonDef.isLocked, isBoss: demonDef.isBoss, isPrinceUpgraded: false },
-      currentStrength: strength, swarmed: false,
+      currentStrength: strength, swarmed: false, revealed: false,
     });
   }
 
@@ -695,6 +695,13 @@ export function resolveWardPassives(state: GameState): string[] {
         }
 
         case 'light': {
+          // Reveal all demon types at this location
+          for (const d of demons) {
+            if (!d.revealed) {
+              d.revealed = true;
+            }
+          }
+          events.push(`✦ ${loc.name}: Lumière révèle ${demons.length} démon(s).`);
           break;
         }
 
@@ -951,8 +958,8 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
   const powerBonus = state.hero.wardPowerBonus ?? 0;
 
   switch (combo.name) {
-    case 'Magma Ward': {
-      // Eruption: 4 dmg to strongest + 3 defense
+    case 'Magma': {
+      // Éruption: 4 dmg to strongest + 3 defense
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
         const dmg = 4 + presenceBonus + powerBonus;
@@ -968,13 +975,30 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       events.push('+3 défense cette vague.');
       break;
     }
-    case 'Storm Ward': {
-      // Tempest: rearrange up to 3 demons between any locations
-      events.push('Tempest: réarrangement de démons disponible.');
+    case 'Tempête': {
+      // Ouragan: rearrange up to 3 demons between any locations
+      const tempRedirectables = demons.filter(d => !d.demon.isLocked && !d.demon.isBoss);
+      const tempCount = Math.min(3, tempRedirectables.length);
+      for (let i = 0; i < tempCount; i++) {
+        const d = tempRedirectables[i];
+        const adjIds = getAdjacentIds(locId);
+        const target = adjIds.reduce((best, a) => {
+          const c = (state.demonsAtLocations[a] ?? []).length;
+          const bc = (state.demonsAtLocations[best] ?? []).length;
+          return c < bc ? a : best;
+        }, adjIds[0]);
+        const idx = demons.indexOf(d);
+        if (idx >= 0) {
+          demons.splice(idx, 1);
+          state.demonsAtLocations[target].push(d);
+          events.push(`Ouragan: ${d.demon.type} redirigé vers ${getLocation(state, target).name}.`);
+        }
+      }
+      if (tempCount === 0) events.push('Ouragan: aucun démon redistribuable.');
       break;
     }
-    case 'Infernal Fortress': {
-      // Cataclysm: 5 dmg to strongest + immune + redirect all non-locked
+    case 'Cataclysme': {
+      // Cataclysme: 5 dmg to strongest + immune + redirect all non-locked
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
         const dmg = 5 + presenceBonus + powerBonus;
@@ -999,8 +1023,8 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       }
       break;
     }
-    case 'Sacred Beacon': {
-      // Divine Light: 4 dmg to all + heal 2 + purge str<=3
+    case 'Lumière Divine': {
+      // Lumière Divine: 4 dmg to all + heal 2 + purge str<=3
       const dmg = 4 + presenceBonus + powerBonus;
       for (let i = demons.length - 1; i >= 0; i--) {
         demons[i].currentStrength -= dmg;
@@ -1014,16 +1038,16 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       events.push(`Divine Light: +2 Pop à ${loc.name}.`);
       break;
     }
-    case 'Tempest Sanctum': {
-      // Grand Restoration: heal all 2 pop + rearrange non-boss
+    case 'Grand Sanctuaire': {
+      // Grande Restauration: heal all 2 pop + rearrange non-boss
       for (const l of state.locations) {
         if (!l.fallen) l.population = Math.min(l.maxPopulation, l.population + 2);
       }
       events.push('Grand Restoration: +2 Pop partout!');
       break;
     }
-    case 'Eternal Bastion': {
-      // Last Stand: 4 dmg to strongest + immune + heal 3
+    case 'Bastion Éternel': {
+      // Dernier Rempart: 4 dmg to strongest + immune + heal 3
       if (demons.length > 0) {
         const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
         const dmg = 4 + presenceBonus + powerBonus;
@@ -1040,7 +1064,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       events.push(`+3 Pop et immunité à ${loc.name}.`);
       break;
     }
-    case 'Storm Nexus': {
+    case 'Nexus': {
       // Apocalypse: 3 dmg to all here + all adjacent
       const dmg = 3 + presenceBonus + powerBonus;
       for (let i = demons.length - 1; i >= 0; i--) {
@@ -1063,6 +1087,196 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
         }
       }
       events.push(`Apocalypse: ${dmg} dégâts ici et aux lieux adjacents!`);
+      break;
+    }
+    case 'Inferno': {
+      // Tempête de Feu: 2 dmg to all here + adjacent locations
+      const dmg = 2 + presenceBonus + powerBonus;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        demons[i].currentStrength -= dmg;
+        if (demons[i].currentStrength <= 0) {
+          events.push(`${demons[i].demon.type} détruit par Tempête de Feu!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      for (const adjId of getAdjacentIds(locId)) {
+        const adjDemons = state.demonsAtLocations[adjId];
+        for (let i = adjDemons.length - 1; i >= 0; i--) {
+          adjDemons[i].currentStrength -= dmg;
+          if (adjDemons[i].currentStrength <= 0) {
+            events.push(`${adjDemons[i].demon.type} détruit à ${getLocation(state, adjId).name}!`);
+            onDemonKilled(state, adjId);
+            adjDemons.splice(i, 1);
+          }
+        }
+      }
+      events.push(`Tempête de Feu: ${dmg} dégâts ici et adjacents!`);
+      break;
+    }
+    case 'Forteresse': {
+      // Rempart: immunity this wave + attract 1 demon from each adjacent
+      (loc as any)._bulwarkActive = true;
+      for (const adjId of getAdjacentIds(locId)) {
+        const adjDemons = state.demonsAtLocations[adjId];
+        const pullable = adjDemons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss);
+        if (pullable >= 0) {
+          const [pulled] = adjDemons.splice(pullable, 1);
+          demons.push(pulled);
+          events.push(`Rempart attire ${pulled.demon.type} de ${getLocation(state, adjId).name}.`);
+        }
+      }
+      events.push(`Rempart: immunité cette vague à ${loc.name}.`);
+      break;
+    }
+    case 'Renouveau': {
+      // Restauration: heal 1 pop everywhere + redirect 2 demons
+      for (const l of state.locations) {
+        if (!l.fallen && l.population < l.maxPopulation) {
+          l.population++;
+        }
+      }
+      events.push('Restauration: +1 Pop partout!');
+      const renewRedirect = demons.filter(d => !d.demon.isLocked && !d.demon.isBoss);
+      for (let i = 0; i < Math.min(2, renewRedirect.length); i++) {
+        const d = renewRedirect[i];
+        const adjIds = getAdjacentIds(locId);
+        const target = adjIds.reduce((best, a) => {
+          return (state.demonsAtLocations[a]?.length ?? 0) < (state.demonsAtLocations[best]?.length ?? 0) ? a : best;
+        }, adjIds[0]);
+        const idx = demons.indexOf(d);
+        if (idx >= 0) {
+          demons.splice(idx, 1);
+          state.demonsAtLocations[target].push(d);
+          events.push(`Restauration: ${d.demon.type} redirigé vers ${getLocation(state, target).name}.`);
+        }
+      }
+      break;
+    }
+    case 'Sentinelle':
+    case 'Révélation': {
+      // Jugement/Illumination: 2 defense + 2 dmg to all revealed demons
+      (loc as any)._comboDefense = ((loc as any)._comboDefense ?? 0) + 2;
+      const revealDmg = 2 + presenceBonus + powerBonus;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        if (demons[i].revealed) {
+          demons[i].currentStrength -= revealDmg;
+          if (demons[i].currentStrength <= 0) {
+            events.push(`${demons[i].demon.type} jugé et détruit!`);
+            onDemonKilled(state, locId);
+            demons.splice(i, 1);
+          }
+        }
+      }
+      events.push(`${combo.activeName}: +2 défense + ${revealDmg} dégâts aux démons révélés.`);
+      break;
+    }
+    case 'Sanctuaire': {
+      // Refuge: heal 3 pop + immunity
+      loc.population = Math.min(loc.maxPopulation, loc.population + 3);
+      (loc as any)._bulwarkActive = true;
+      events.push(`Refuge: +3 Pop et immunité à ${loc.name}.`);
+      break;
+    }
+    case 'Phare': {
+      // Éclat Solaire: 3 dmg + reveal all at this location
+      const phareDmg = 3 + presenceBonus + powerBonus;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        demons[i].revealed = true;
+        demons[i].currentStrength -= phareDmg;
+        if (demons[i].currentStrength <= 0) {
+          events.push(`${demons[i].demon.type} détruit par Éclat Solaire!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      events.push(`Éclat Solaire: ${phareDmg} dégâts + révélation à ${loc.name}.`);
+      break;
+    }
+    case 'Consécration': {
+      // Purification: purge all demons with str <= 2
+      for (let i = demons.length - 1; i >= 0; i--) {
+        if (demons[i].currentStrength <= 2) {
+          events.push(`${demons[i].demon.type} purifié (str ${demons[i].currentStrength})!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      events.push(`Purification: tous les démons faibles purifiés.`);
+      break;
+    }
+    case 'Bûcher': {
+      // Crémation: 3 dmg to all, heal 1 pop per kill
+      const bucherDmg = 3 + presenceBonus + powerBonus;
+      let kills = 0;
+      for (let i = demons.length - 1; i >= 0; i--) {
+        demons[i].currentStrength -= bucherDmg;
+        if (demons[i].currentStrength <= 0) {
+          kills++;
+          events.push(`${demons[i].demon.type} incinéré!`);
+          onDemonKilled(state, locId);
+          demons.splice(i, 1);
+        }
+      }
+      if (kills > 0) {
+        const healPop = Math.min(kills, loc.maxPopulation - loc.population);
+        loc.population += healPop;
+        events.push(`Crémation: ${bucherDmg} dégâts à tous, +${healPop} Pop.`);
+      } else {
+        events.push(`Crémation: ${bucherDmg} dégâts à tous les démons.`);
+      }
+      break;
+    }
+    case 'Déviation': {
+      // Bourrasque: redirect up to 3 non-locked demons
+      const devRedirect = demons.filter(d => !d.demon.isLocked && !d.demon.isBoss);
+      const devCount = Math.min(3, devRedirect.length);
+      for (let i = 0; i < devCount; i++) {
+        const d = devRedirect[i];
+        const adjIds = getAdjacentIds(locId);
+        const target = adjIds.reduce((best, a) => {
+          return (state.demonsAtLocations[a]?.length ?? 0) < (state.demonsAtLocations[best]?.length ?? 0) ? a : best;
+        }, adjIds[0]);
+        const idx = demons.indexOf(d);
+        if (idx >= 0) {
+          demons.splice(idx, 1);
+          state.demonsAtLocations[target].push(d);
+          events.push(`Bourrasque: ${d.demon.type} redirigé vers ${getLocation(state, target).name}.`);
+        }
+      }
+      if (devCount === 0) events.push('Bourrasque: aucun démon redistribuable.');
+      break;
+    }
+    case 'Soufflet': {
+      // Brasier: 4 dmg to strongest (no redirect)
+      if (demons.length > 0) {
+        const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        const dmg = 4 + presenceBonus + powerBonus;
+        strongest.currentStrength -= dmg;
+        events.push(`Brasier: ${dmg} dégâts à ${strongest.demon.type}.`);
+        if (strongest.currentStrength <= 0) {
+          demons.splice(demons.indexOf(strongest), 1);
+          events.push(`${strongest.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        }
+      }
+      break;
+    }
+    case 'Forge': {
+      // Forge: 3 dmg + 2 defense
+      if (demons.length > 0) {
+        const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        const dmg = 3 + presenceBonus + powerBonus;
+        strongest.currentStrength -= dmg;
+        events.push(`Forge: ${dmg} dégâts à ${strongest.demon.type}.`);
+        if (strongest.currentStrength <= 0) {
+          demons.splice(demons.indexOf(strongest), 1);
+          events.push(`${strongest.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        }
+      }
+      (loc as any)._comboDefense = ((loc as any)._comboDefense ?? 0) + 2;
+      events.push('+2 défense cette vague.');
       break;
     }
     default:
@@ -1222,10 +1436,30 @@ export function endNight(state: GameState): void {
       for (const d of demons) {
         d.currentStrength += 1;
       }
-      // Horde check
+      // Horde check — fallen location demons attack adjacent
       if (loc.fallenNightsAgo >= HORDE_FORMATION_NIGHTS) {
         addLog(state, `HORDE se forme à ${loc.name}! Les démons attaquent un lieu adjacent!`, true);
-        // TODO: Horde attacks adjacent
+        const adjIds = getAdjacentIds(loc.id);
+        const aliveAdj = adjIds.filter(a => {
+          const adjLoc = getLocation(state, a);
+          return adjLoc && !adjLoc.fallen && adjLoc.maxPopulation > 0;
+        });
+        if (aliveAdj.length > 0) {
+          // Attack the adjacent with highest population
+          const targetId = aliveAdj.reduce((best, a) => {
+            return getLocation(state, a).population > getLocation(state, best).population ? a : best;
+          }, aliveAdj[0]);
+          const targetLoc = getLocation(state, targetId);
+          const hordeDmg = demons.reduce((sum, d) => sum + Math.max(1, d.currentStrength), 0);
+          const popLoss = Math.min(targetLoc.population, Math.ceil(hordeDmg / 3));
+          targetLoc.population -= popLoss;
+          addLog(state, `La Horde de ${loc.name} inflige ${popLoss} pertes à ${targetLoc.name}! (Pop: ${targetLoc.population}/${targetLoc.maxPopulation})`, true);
+          if (targetLoc.population <= 0) {
+            targetLoc.fallen = true;
+            targetLoc.fallenNightsAgo = 0;
+            addLog(state, `${targetLoc.name} TOMBE sous l'assaut de la Horde!`, true);
+          }
+        }
       }
     }
   }
