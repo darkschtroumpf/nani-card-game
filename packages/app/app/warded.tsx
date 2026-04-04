@@ -1591,6 +1591,7 @@ export default function WardedGameScreen() {
             style={[styles.phaseBtn, { marginTop: 20, borderColor: warded.accent }]}
             onPress={() => {
               setShowLevelUp(false);
+              setSelectedLocation(null);
               ctrl.startNewDay();
             }}
           >
