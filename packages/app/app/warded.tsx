@@ -69,7 +69,7 @@ import LocationDetail from '../components/warded/LocationDetail';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
 import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS, RANDOM_DAY_EVENTS } from '../../engine/src/warded/constants';
-import { analyzeMesh, getAllDirectionalCombos } from '../../engine/src/warded/game';
+import { analyzeMesh, getAllDirectionalCombos, calculateScore } from '../../engine/src/warded/game';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campaign-types';
 
@@ -144,9 +144,9 @@ const TUTORIAL_STEPS: { text: string; buttonLabel: string }[] = [
   { text: "Les bordures colorées montrent les menaces de la nuit. ROUGE = danger ! Prépare tes défenses.", buttonLabel: "Compris" },
   { text: "Tape sur un lieu pour voir ses défenses et agir.", buttonLabel: "Suivant" },
   { text: "Fabrique un ward pour protéger tes cités. Chaque ward a un effet unique.", buttonLabel: "Suivant" },
-  { text: "Place ton ward sur un lieu. Les combos de 2 wards sont plus puissants !", buttonLabel: "Suivant" },
+  { text: "Place ton ward sur un lieu. L'ordre des runes compte ! Deux runes adjacentes créent un COMBO si leurs liens sont assez forts. Intervertis-les pour optimiser ton maillage.", buttonLabel: "Suivant" },
   { text: "Prêt ? Lance la nuit pour affronter les démons !", buttonLabel: "Suivant" },
-  { text: "Tape un lieu wardé pour activer ses défenses contre les démons.", buttonLabel: "Suivant" },
+  { text: "Tape un lieu wardé pour activer ses défenses. Si un combo est actif, il se déclenche automatiquement !", buttonLabel: "Suivant" },
   { text: "Résous les dégâts pour voir ce qui a survécu. Bonne chance !", buttonLabel: "Suivant" },
 ];
 
@@ -328,6 +328,7 @@ export default function WardedGameScreen() {
   const [mistWalkMode, setMistWalkMode] = useState(false);
   const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
   const [showComboPanel, setShowComboPanel] = useState(true);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight'>('waning');
   const firstNightSeen = useRef(false);
 
   // FIX 3: Game stats tracking
@@ -372,8 +373,8 @@ export default function WardedGameScreen() {
   // Game starts when hero is selected (or campaign auto-starts)
   const handleStartGame = useCallback((heroId: HeroId) => {
     setInitialized(true);
-    ctrl.startGame(heroId, 'waning');
-  }, [ctrl]);
+    ctrl.startGame(heroId, selectedDifficulty);
+  }, [ctrl, selectedDifficulty]);
 
   // Campaign auto-start with smooth transition
   useEffect(() => {
@@ -521,14 +522,37 @@ export default function WardedGameScreen() {
           })}
 
           {selectedHero && (
-            <TouchableOpacity
-              style={[styles.heroStartBtn, { borderColor: HERO_LORE[selectedHero].color, backgroundColor: HERO_LORE[selectedHero].color + '20' }]}
-              onPress={() => handleStartGame(selectedHero)}
-            >
-              <Text style={[styles.heroStartBtnText, { color: HERO_LORE[selectedHero].color }]}>
-                Commencer avec {HEROES.find(h => h.id === selectedHero)?.name}
-              </Text>
-            </TouchableOpacity>
+            <>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                {([
+                  { key: 'new_moon' as const, label: 'Facile', sub: '2 nuits', color: '#4CAF50' },
+                  { key: 'waning' as const, label: 'Normal', sub: '3 nuits', color: '#FFD740' },
+                  { key: 'midnight' as const, label: 'Difficile', sub: '4 nuits', color: '#FF5252' },
+                ]).map(d => (
+                  <TouchableOpacity
+                    key={d.key}
+                    style={{
+                      flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center',
+                      borderWidth: selectedDifficulty === d.key ? 2 : 1,
+                      borderColor: selectedDifficulty === d.key ? d.color : warded.border,
+                      backgroundColor: selectedDifficulty === d.key ? d.color + '15' : 'transparent',
+                    }}
+                    onPress={() => setSelectedDifficulty(d.key)}
+                  >
+                    <Text style={{ color: selectedDifficulty === d.key ? d.color : warded.textDim, fontWeight: 'bold', fontSize: wardedFonts.sm }}>{d.label}</Text>
+                    <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{d.sub}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                style={[styles.heroStartBtn, { borderColor: HERO_LORE[selectedHero].color, backgroundColor: HERO_LORE[selectedHero].color + '20' }]}
+                onPress={() => handleStartGame(selectedHero)}
+              >
+                <Text style={[styles.heroStartBtnText, { color: HERO_LORE[selectedHero].color }]}>
+                  Commencer avec {HEROES.find(h => h.id === selectedHero)?.name}
+                </Text>
+              </TouchableOpacity>
+            </>
           )}
         </ScrollView>
       </SafeAreaView>
@@ -546,6 +570,14 @@ export default function WardedGameScreen() {
         <View style={styles.gameOverBox}>
           <Text style={styles.gameOverEmoji}>{state.victory ? '🌅' : '💀'}</Text>
           <Text style={styles.gameOverTitle}>{state.victory ? "L'AUBE SE LEVE" : 'LA NUIT GAGNE'}</Text>
+          {state.victory && (() => {
+            const score = calculateScore(state);
+            return (
+              <Text style={{ fontSize: 32, marginVertical: 4 }}>
+                {score.stars >= 1 ? '★' : '☆'}{score.stars >= 2 ? '★' : '☆'}{score.stars >= 3 ? '★' : '☆'}
+              </Text>
+            );
+          })()}
           <Text style={styles.gameOverSub}>
             {state.victory
               ? `${state.hero.name} a protégé les cités!`
@@ -1625,7 +1657,8 @@ export default function WardedGameScreen() {
             try {
               const raw = await AsyncStorage.getItem('@warded_campaign_save');
               const save = raw ? JSON.parse(raw) : createNewSave();
-              const updated = updateSaveAfterChapter(save, state, campaignChapter.id);
+              const score = calculateScore(state);
+              const updated = updateSaveAfterChapter(save, state, campaignChapter.id, score.stars);
               // Also save campaign flags for branching narrative
               if (state.campaignFlags) {
                 updated.flags = { ...updated.flags, ...state.campaignFlags };

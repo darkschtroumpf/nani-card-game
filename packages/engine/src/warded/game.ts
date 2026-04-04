@@ -7,7 +7,7 @@ import type {
   DemonCard, DemonAtLocation, DemonType, DemonSurgeType,
   Hero, HeroId, ResourceStockpile, ResourceType, LogEntry,
   Difficulty, WardCombo, TripleWardCombo, SongType, Consumable, ThreatLevel,
-  MeshAnalysis, MeshTier, LinkConnection,
+  MeshAnalysis, MeshTier, LinkConnection, ChapterScore,
 } from './types';
 import {
   LOCATIONS, ADJACENCY, WARD_COSTS, WARD_COMBOS, TRIPLE_WARD_COMBOS,
@@ -226,8 +226,6 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     wardReserves: [],
     mode,
     chapter: 1,
-    skillPoints: 0,
-    questsCompleted: [],
     // Ward chain progression
     availableWards: mode === 'quick' ? [...WARD_TYPES] : ['stone', 'wind'],
     maxComboSize: mode === 'quick' ? 3 : 2,
@@ -2178,4 +2176,21 @@ export function leesha_bloodPotion(state: GameState): string[] {
 
   addLog(state, 'Blood Potion! 2 consommables gratuits (-4 HP).', true);
   return [`🩸 Blood Potion: +1 Healing Potion + 1 Firespit (-4 HP, HP: ${state.hero.hp})`];
+}
+
+// ============================================================
+// Scoring
+// ============================================================
+
+export function calculateScore(state: GameState): ChapterScore {
+  const noLocationFell = state.locations
+    .filter(l => l.maxPopulation > 0)
+    .every(l => !l.fallen);
+  const heroHealthy = state.hero.hp > state.hero.maxHp * 0.5;
+
+  let stars: 1 | 2 | 3 = 1; // completed
+  if (noLocationFell) stars = 2;
+  if (noLocationFell && heroHealthy) stars = 3;
+
+  return { stars, noLocationFell, heroHealthy };
 }

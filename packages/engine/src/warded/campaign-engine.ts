@@ -180,6 +180,7 @@ export function createNewSave(): CampaignSaveState {
   return {
     currentChapter: 1,
     completedChapters: [],
+    chapterStars: {},
     flags: {},
     choiceHistory: {},
     heroLevels: { arlen: 1, arlen_young: 1, jardir: 1, jardir_young: 1, rojer: 1, rojer_young: 1, leesha: 1, leesha_young: 1 },
@@ -189,11 +190,13 @@ export function createNewSave(): CampaignSaveState {
 }
 
 /** Update save after completing a chapter */
-export function updateSaveAfterChapter(save: CampaignSaveState, state: GameState, chapterId: number): CampaignSaveState {
+export function updateSaveAfterChapter(save: CampaignSaveState, state: GameState, chapterId: number, stars?: 1 | 2 | 3): CampaignSaveState {
+  const existingStars = save.chapterStars?.[chapterId] ?? 0;
   return {
     ...save,
     currentChapter: chapterId + 1,
     completedChapters: [...save.completedChapters, chapterId],
+    chapterStars: { ...(save.chapterStars ?? {}), [chapterId]: Math.max(existingStars, stars ?? 1) as 1 | 2 | 3 },
     heroLevels: { ...save.heroLevels, [state.hero.id]: state.hero.level },
     heroMaxHp: { ...save.heroMaxHp, [state.hero.id]: state.hero.maxHp },
     wardPowerBonus: state.hero.wardPowerBonus,

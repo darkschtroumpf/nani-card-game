@@ -993,12 +993,23 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
 
   introDialogue: [
     {
+      id: 'l2_bruna_death', background: 'bruna_hut',
+      lines: [
+        { speaker: 'narrator', text: "La chandelle s'était éteinte dans la nuit. Quand Leesha entra dans la cabane à l'aube, elle sut tout de suite." },
+        { speaker: 'leesha_young', text: "Bruna...?", emotion: 'scared' },
+        { speaker: 'narrator', text: "La vieille herboriste gisait dans son lit, immobile. Un sourire paisible sur les lèvres, comme si la mort n'avait été qu'une vieille connaissance venue lui rendre visite." },
+        { speaker: 'bruna', text: "...", emotion: 'sad' },
+        { speaker: 'narrator', text: "Ses mains ridées serraient encore le livre de wards qu'elle avait légué à Leesha. Cent ans de savoir, transmis en quelques saisons." },
+        { speaker: 'leesha_young', text: "Tu m'avais dit que tu serais toujours là. Tu m'avais promis...", emotion: 'sad' },
+        { speaker: 'narrator', text: "Mais les promesses des mortels n'engagent que les vivants. Et Leesha était désormais seule." },
+      ],
+    },
+    {
       id: 'l2_intro', background: 'forest_village',
       lines: [
-        { speaker: 'narrator', text: "Bruna est morte. La vieille herboriste s'est éteinte dans son sommeil, un sourire aux lèvres." },
-        { speaker: 'narrator', text: "Leesha est seule maintenant. La seule à connaître les herbes, les onguents, et les secrets des wards." },
-        { speaker: 'leesha_young', text: "Je ne suis pas prête...", emotion: 'scared' },
-        { speaker: 'narrator', text: "Mais les corelings ne se soucient pas de sa peur. Et cette nuit, ils seront plus nombreux que jamais." },
+        { speaker: 'narrator', text: "Les jours qui suivirent furent les plus longs de sa vie. Le village entier pleura Bruna, mais le deuil n'arrête pas les corelings." },
+        { speaker: 'leesha_young', text: "Je ne suis pas prête... mais je suis tout ce qu'ils ont.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Cette nuit, les démons seront plus nombreux que jamais. Et Leesha devra prouver qu'elle est digne de l'héritage de Bruna." },
       ],
     },
   ],
@@ -2016,6 +2027,18 @@ export const CHAPTER_FINAL: ChapterDefinition = {
         { speaker: 'arlen_young', text: "Depuis la chute. Oui. Je les ai retrouvés. À Anoch Sun.", emotion: 'determined' },
         { speaker: 'rojer_young', text: "Et moi qui croyais être spécial avec mon luth... Enchanté. Rojer Halfgrip, Jongleur.", emotion: 'neutral' },
       ],
+      nextNodeId: 'f_intro_jardir',
+    },
+    {
+      id: 'f_intro_jardir', background: 'krasia',
+      lines: [
+        { speaker: 'narrator', text: "Un cor de guerre retentit à la lisière sud. Des guerriers en robes blanches émergent de la forêt, lances au poing." },
+        { speaker: 'jardir_young', text: "Arlen! Par Everam, tu es vivant. J'ai mené mes Sharum à travers le désert en suivant les corelings.", emotion: 'determined' },
+        { speaker: 'arlen_young', text: "Jardir... Tu es venu.", emotion: 'hopeful' },
+        { speaker: 'jardir_young', text: "Sharak Ka — la Première Guerre — ne se gagne pas seul. Mes guerriers tiendront la lisière sud.", emotion: 'determined' },
+        { speaker: 'leesha_young', text: "Des Krasiens ? Ici ? Je ne sais pas si les villageois—", emotion: 'scared' },
+        { speaker: 'jardir_young', text: "Cette nuit, il n'y a pas de Krasiens ni de Thésiens. Il n'y a que des humains. Et des démons.", emotion: 'angry' },
+      ],
       nextNodeId: 'f_intro_3',
     },
     {
@@ -2024,7 +2047,9 @@ export const CHAPTER_FINAL: ChapterDefinition = {
         { speaker: 'leesha_young', text: "Les corelings convergent vers le village. Plus que jamais. Comme une armée.", emotion: 'scared' },
         { speaker: 'arlen_young', text: "Alors on va se battre. Plus de wards passifs. Plus de peur. Cette nuit, c'est nous qui attaquons.", emotion: 'determined' },
         { speaker: 'rojer_young', text: "Ma musique peut les ralentir. Les troubler. Si je joue pendant que vous combattez...", emotion: 'determined' },
+        { speaker: 'jardir_young', text: "Mes Sharum protégeront les flancs. Everam est avec nous.", emotion: 'determined' },
         { speaker: 'leesha_young', text: "Et mes réseaux de wards peuvent canaliser l'énergie. Ensemble, nous pouvons tenir.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Quatre héros. Quatre chemins. Réunis pour la première fois dans la nuit la plus sombre d'Ala." },
         { speaker: 'narrator', text: "Cinq nuits. Cinq nuits pour prouver que l'humanité peut se relever. Que la peur n'est pas une fatalité." },
       ],
     },

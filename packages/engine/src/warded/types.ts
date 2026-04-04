@@ -171,8 +171,6 @@ export interface GameState {
   // Campaign
   mode: 'quick' | 'campaign';
   chapter: number;
-  skillPoints: number;
-  questsCompleted: string[];
   campaignModifiers?: {
     extraDemonsPerWave: number;
     demonStrengthBonus: number;
@@ -223,6 +221,14 @@ export type DemonSurgeType =
 // --- Threat Forecast ---
 
 export type ThreatLevel = 'low' | 'medium' | 'high' | 'extreme';
+
+// --- Score / Stars ---
+
+export interface ChapterScore {
+  stars: 1 | 2 | 3;
+  noLocationFell: boolean;
+  heroHealthy: boolean; // HP > 50% at end
+}
 
 // --- Quick Mode Difficulty ---
 

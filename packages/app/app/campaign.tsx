@@ -155,7 +155,10 @@ export default function CampaignScreen() {
                       <Text style={styles.cardChapter}>{chapter.title}</Text>
                       <Text style={styles.cardSub}>{chapter.subtitle}</Text>
                     </View>
-                    {isCompleted && <Text style={styles.check}>✓</Text>}
+                    {isCompleted && (() => {
+                      const s = save?.chapterStars?.[chapter.id] ?? 1;
+                      return <Text style={styles.check}>{s >= 1 ? '★' : '☆'}{s >= 2 ? '★' : '☆'}{s >= 3 ? '★' : '☆'}</Text>;
+                    })()}
                     {!isUnlocked && <Text style={styles.check}>🔒</Text>}
                   </TouchableOpacity>
                 );

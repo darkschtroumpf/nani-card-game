@@ -86,6 +86,7 @@ export interface CampaignModifiers {
 export interface CampaignSaveState {
   currentChapter: number;
   completedChapters: number[];
+  chapterStars: Record<number, 1 | 2 | 3>;
   flags: Record<string, boolean | number>;
   choiceHistory: Record<string, string>;
   heroLevels: Record<HeroId, number>;
