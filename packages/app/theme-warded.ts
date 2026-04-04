@@ -73,10 +73,10 @@ export const warded = {
 } as const;
 
 export const wardedFonts = {
-  xs: 9,
-  sm: 11,
-  md: 13,
-  lg: 16,
+  xs: 10,
+  sm: 12,
+  md: 14,
+  lg: 17,
   xl: 22,
   xxl: 28,
   title: 36,

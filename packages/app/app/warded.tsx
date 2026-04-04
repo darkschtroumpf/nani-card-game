@@ -342,7 +342,16 @@ export default function WardedGameScreen() {
   useEffect(() => { audio.playMusic('menu'); }, []);
   useEffect(() => {
     if (!state) return;
-    if (state.gameOver) { audio.playMusic(state.victory ? 'victory' : 'defeat'); return; }
+    if (state.gameOver) {
+      audio.playMusic(state.victory ? 'victory' : 'defeat');
+      // Save endless high score
+      if (isEndlessMode && gameStats.current.nightsSurvived > endlessHighScore) {
+        const newScore = gameStats.current.nightsSurvived;
+        setEndlessHighScore(newScore);
+        AsyncStorage.setItem('@warded_endless_highscore', String(newScore)).catch(() => {});
+      }
+      return;
+    }
     if (campaignDayEvent) { audio.playMusic('vn_dramatic'); return; }
     if (state.phase === 'day') audio.playMusic('day_calm');
     else audio.playMusic('night_combat');
@@ -354,6 +363,16 @@ export default function WardedGameScreen() {
   // Combat animations
   const [lastActivatedLoc, setLastActivatedLoc] = useState<string | null>(null);
   const [lastDamagedLocs, setLastDamagedLocs] = useState<string[]>([]);
+
+  // Endless high score
+  const [endlessHighScore, setEndlessHighScore] = useState(0);
+  useEffect(() => {
+    if (isEndlessMode) {
+      AsyncStorage.getItem('@warded_endless_highscore').then(v => {
+        if (v) setEndlessHighScore(parseInt(v) || 0);
+      }).catch(() => {});
+    }
+  }, [isEndlessMode]);
 
   // Pause menu on Android back button
   const [showPauseMenu, setShowPauseMenu] = useState(false);
@@ -588,6 +607,13 @@ export default function WardedGameScreen() {
               ? `${state.hero.name} a protégé les cités!`
               : state.defeatReason ?? 'Les ténèbres recouvrent Ala.'}
           </Text>
+          {isEndlessMode && (
+            <Text style={{ color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold', marginTop: 4 }}>
+              {gameStats.current.nightsSurvived > endlessHighScore
+                ? `🏆 Nouveau record ! ${gameStats.current.nightsSurvived} nuits`
+                : `Record: ${Math.max(endlessHighScore, gameStats.current.nightsSurvived)} nuits`}
+            </Text>
+          )}
           <View style={styles.statsGrid}>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.nightsSurvived}</Text>

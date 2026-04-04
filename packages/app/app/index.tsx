@@ -65,7 +65,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.version}>v0.7.0 — The Demon's Cycle</Text>
+      <Text style={styles.version}>v3.0.0 — The Demon's Cycle</Text>
     </ImageBackground>
   );
 }

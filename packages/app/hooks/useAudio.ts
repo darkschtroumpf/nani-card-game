@@ -76,16 +76,23 @@ export function useAudio() {
     currentTrackRef.current = track; // set immediately to block duplicates
 
     try {
-      // Stop and unload ALL previous sounds
+      // Fade out previous track for smooth transition
       const prev = musicRef.current;
       musicRef.current = null;
       if (prev) {
-        try { await prev.stopAsync(); } catch {}
+        try {
+          // Quick fade-out over 400ms
+          for (let vol = 0.3; vol > 0; vol -= 0.06) {
+            await prev.setVolumeAsync(Math.max(0, vol));
+            await new Promise(r => setTimeout(r, 50));
+          }
+          await prev.stopAsync();
+        } catch {}
         try { await prev.unloadAsync(); } catch {}
       }
 
       // Small delay to ensure previous track is fully released
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 50));
 
       // Load and play new track
       const { sound } = await Audio.Sound.createAsync(

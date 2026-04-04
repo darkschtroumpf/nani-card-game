@@ -3,15 +3,17 @@
     "name": "The Demon's Cycle",
     "slug": "demons-cycle",
     "owner": "darkschtroumpf",
-    "version": "2.2.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ward_fire.png",
     "userInterfaceStyle": "dark",
     "scheme": "demonscycle",
+    "description": "Protège l'humanité des démons avec des runes magiques. Basé sur le roman The Warded Man de Peter V. Brett.",
+    "githubUrl": "https://github.com/darkschtroumpf/nani-card-game",
     "splash": {
       "image": "./assets/images/bg_night.png",
       "resizeMode": "cover",
-      "backgroundColor": "#0a0a18"
+      "backgroundColor": "#0a0a0f"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,10 +21,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0a0a18",
+        "backgroundColor": "#0a0a0f",
         "foregroundImage": "./assets/images/ward_fire.png"
       },
-      "package": "com.darkschtroumpf.demonscycle"
+      "package": "com.darkschtroumpf.demonscycle",
+      "versionCode": 10
     },
     "web": {
       "favicon": "./assets/images/ward_fire.png",

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, DemonAtLocation, WardType, MeshAnalysis, WardCombo } from '../../../engine/src/warded/types';
 import { WARD_TYPES } from '../../../engine/src/warded/constants';
@@ -47,7 +47,7 @@ interface Props {
   activeCombos?: WardCombo[];
 }
 
-export default function LocationDetail({
+function LocationDetailInner({
   location, demons, isPresence, isNight, onClose,
   onCraft, onFortify, onGather, onActivateWard,
   availableWardReserves, availableWards, canCraft, canFortify, canGather, canActivate,
@@ -496,3 +496,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+const LocationDetail = memo(LocationDetailInner);
+export default LocationDetail;

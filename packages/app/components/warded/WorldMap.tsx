@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, Animated } from 'react-native';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, memo } from 'react';
 import { warded, wardedFonts, wardColor, demonColor, WARD_SYMBOLS, DEMON_SYMBOLS } from '../../theme-warded';
 import type { Location, LocationId, DemonAtLocation } from '../../../engine/src/warded/types';
 
@@ -62,7 +62,7 @@ const POSITIONS: Record<string, { top: number; left: number }> = {
   south: { top: 1, left: 0.5 },
 };
 
-export default function WorldMap({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt, lastActivatedLocation, lastDamagedLocations }: Props) {
+function WorldMapInner({ locations, presenceLocation, demonsAtLocations, selectedLocation, onLocationPress, isNight, forecast, isPositioning, activationsUsedAt, lastActivatedLocation, lastDamagedLocations }: Props) {
   // Activation glow animation
   const glowAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -461,3 +461,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+const WorldMap = memo(WorldMapInner);
+export default WorldMap;
