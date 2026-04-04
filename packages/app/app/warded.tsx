@@ -739,9 +739,9 @@ export default function WardedGameScreen() {
     setLastDamagedLocs(damaged);
     setTimeout(() => setLastDamagedLocs([]), 400);
 
-    // Build clear per-location report
+    // Build clear per-location report (skip hidden locations)
     const report: string[] = [];
-    state.locations.forEach(l => {
+    state.locations.filter(l => !(l.fallen && l.maxPopulation === 0)).forEach(l => {
       const before = beforePop[l.id] ?? 0;
       const after = l.population;
       const dmg = before - after;
@@ -978,8 +978,8 @@ export default function WardedGameScreen() {
       {/* FIX 6: Global threat vs defense summary during night */}
       {isNight && !selectedLoc && (() => {
         const totalDemonStr = Object.values(state.demonsAtLocations).flat().reduce((s, d) => s + d.currentStrength, 0);
-        const totalWardCount = state.locations.filter(l => !l.fallen).reduce((s, l) => s + l.wards.filter(ws => ws.ward).length, 0);
-        const totalPop = state.locations.filter(l => !l.fallen).reduce((s, l) => s + l.population, 0);
+        const totalWardCount = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).reduce((s, l) => s + l.wards.filter(ws => ws.ward).length, 0);
+        const totalPop = state.locations.filter(l => !l.fallen && l.maxPopulation > 0).reduce((s, l) => s + l.population, 0);
         const ratio = totalDemonStr > 0 ? totalWardCount / totalDemonStr : 1;
         const statusColor = ratio >= 0.8 ? warded.success : ratio >= 0.4 ? warded.warning : warded.danger;
         const statusLabel = ratio >= 0.8 ? 'Defenses solides' : ratio >= 0.4 ? 'En danger' : 'Critique !';
@@ -1110,8 +1110,8 @@ export default function WardedGameScreen() {
                         l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
                       const canAfford = !!bestLoc;
 
-                      const maxWood = Math.max(...state.locations.filter(l => !l.fallen).map(l => l.stockpile.wood));
-                      const maxInk = Math.max(...state.locations.filter(l => !l.fallen).map(l => l.stockpile.ink));
+                      const maxWood = Math.max(...state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => l.stockpile.wood));
+                      const maxInk = Math.max(...state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => l.stockpile.ink));
                       const needsWood = cost.wood > 0 && maxWood < cost.wood;
                       const needsInk = cost.ink > 0 && maxInk < cost.ink;
 
@@ -1219,7 +1219,7 @@ export default function WardedGameScreen() {
             <View style={styles.actionSection}>
               <Text style={styles.actionLabel}>👑 Sharum ({(state.hero.jardir_warriors ?? []).length} déployés) — tape un lieu</Text>
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-                {state.locations.filter(l => !l.fallen).map(l => (
+                {state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => (
                   <TouchableOpacity key={l.id} style={[styles.phaseBtn, { borderColor: '#FF5252', paddingHorizontal: 10 }]}
                     onPress={() => { ctrl.doDeployWarrior(l.id); setActionFlash('#FF5252'); setTimeout(() => setActionFlash(null), 400); }}>
                     <Text style={[styles.phaseBtnText, { color: '#FF5252', fontSize: 11 }]}>
@@ -1394,7 +1394,7 @@ export default function WardedGameScreen() {
               {/* Show what happened during auto-activation */}
               <View style={styles.waveRecap}>
                 <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Défenses activées</Text>
-                {state.locations.filter(l => !l.fallen).map(l => {
+                {state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => {
                   const demons = (state.demonsAtLocations[l.id] ?? []);
                   const totalStr = demons.reduce((s, d) => s + d.currentStrength, 0);
                   const hasWards = l.wards[0].ward || l.wards[1].ward;
@@ -1472,10 +1472,13 @@ export default function WardedGameScreen() {
               {/* Wind redirect (interactive) */}
               {!damageResolved && (() => {
                 const hasWindWard = state.locations.some(l => !l.fallen && l.wards.some(ws => ws.ward === 'wind'));
-                const redirectableDemons = Object.entries(state.demonsAtLocations).flatMap(([locId, demons]) =>
-                  demons.map((d, i) => ({ locId: locId as LocationId, demon: d, index: i }))
-                    .filter(d => !d.demon.demon.isLocked && !d.demon.demon.isBoss && d.demon.demon.type !== 'wind')
-                );
+                const visibleLocIds = new Set(state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => l.id));
+                const redirectableDemons = Object.entries(state.demonsAtLocations)
+                  .filter(([locId]) => visibleLocIds.has(locId as LocationId))
+                  .flatMap(([locId, demons]) =>
+                    demons.map((d, i) => ({ locId: locId as LocationId, demon: d, index: i }))
+                      .filter(d => !d.demon.demon.isLocked && !d.demon.demon.isBoss && d.demon.demon.type !== 'wind')
+                  );
                 if (!hasWindWard || redirectableDemons.length === 0) return null;
 
                 return (
@@ -1487,7 +1490,7 @@ export default function WardedGameScreen() {
                           Envoyer {windRedirectDemon ? state.demonsAtLocations[windRedirectDemon.locId]?.[windRedirectDemon.demonIndex]?.demon.type : ''} vers :
                         </Text>
                         <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-                          {state.locations.filter(l => !l.fallen && l.id !== windRedirectDemon?.locId).map(l => (
+                          {state.locations.filter(l => !l.fallen && l.maxPopulation > 0 && l.id !== windRedirectDemon?.locId).map(l => (
                             <TouchableOpacity key={l.id}
                               style={[styles.phaseBtn, { borderColor: '#81D4FA', paddingHorizontal: 10 }]}
                               onPress={() => {
