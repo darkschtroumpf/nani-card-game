@@ -7,7 +7,7 @@ import { warded, wardedFonts } from '../theme-warded';
 import { useAudio } from '../hooks/useAudio';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
-import { createNewSave, getTotalStars, getSpentStars } from '../../engine/src/warded/campaign-engine';
+import { createNewSave, getTotalStars, getSpentStars, migrateSave } from '../../engine/src/warded/campaign-engine';
 import { TALENTS } from '../../engine/src/warded/constants';
 import type { ChapterDefinition, CampaignSaveState } from '../../engine/src/warded/campaign-types';
 import type { HeroId, TalentDefinition } from '../../engine/src/warded/types';
@@ -70,10 +70,7 @@ export default function CampaignScreen() {
   const loadSave = async () => {
     try {
       const raw = await AsyncStorage.getItem(SAVE_KEY);
-      const parsed = raw ? JSON.parse(raw) : createNewSave();
-      // Backward compat: ensure new fields exist on old saves
-      if (!parsed.chapterStars) parsed.chapterStars = {};
-      if (!parsed.unlockedTalents) parsed.unlockedTalents = [];
+      const parsed = raw ? migrateSave(JSON.parse(raw)) : createNewSave();
       setSave(parsed);
     } catch {
       setSave(createNewSave());

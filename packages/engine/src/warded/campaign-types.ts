@@ -84,6 +84,7 @@ export interface CampaignModifiers {
 // --- Save State ---
 
 export interface CampaignSaveState {
+  saveVersion: number; // for migration
   currentChapter: number;
   completedChapters: number[];
   chapterStars: Record<number, 1 | 2 | 3>;

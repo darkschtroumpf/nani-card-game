@@ -464,7 +464,7 @@ export function startWave(state: GameState): void {
 }
 
 function spawnDemons(state: GameState): void {
-  const baseCount = DEMONS_PER_WAVE[state.nightNumber] ?? 6;
+  const baseCount = DEMONS_PER_WAVE[state.nightNumber] ?? Math.min(12, 6 + Math.floor((state.nightNumber - 12) / 2));
   let count = baseCount;
 
   // Surge modifiers
@@ -1567,7 +1567,7 @@ export function endNight(state: GameState): void {
 
 export function getThreatForecast(state: GameState): Record<LocationId, ThreatLevel> {
   const forecast: Record<LocationId, ThreatLevel> = {} as any;
-  const demonsPerWave = DEMONS_PER_WAVE[state.nightNumber] ?? 6;
+  const demonsPerWave = DEMONS_PER_WAVE[state.nightNumber] ?? Math.min(12, 6 + Math.floor((state.nightNumber - 12) / 2));
 
   for (const loc of state.locations) {
     if (loc.fallen) { forecast[loc.id] = 'low'; continue; }

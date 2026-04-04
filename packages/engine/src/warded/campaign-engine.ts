@@ -193,9 +193,34 @@ export function applyCampaignEffects(state: GameState, effects: CampaignEffect[]
   return messages;
 }
 
+const CURRENT_SAVE_VERSION = 2;
+
+/** Migrate old saves to current format */
+export function migrateSave(save: Partial<CampaignSaveState>): CampaignSaveState {
+  const migrated = { ...save } as CampaignSaveState;
+
+  // v0/v1 → v2: add missing fields
+  if (!migrated.saveVersion || migrated.saveVersion < 2) {
+    if (!migrated.chapterStars) migrated.chapterStars = {};
+    if (!migrated.unlockedTalents) migrated.unlockedTalents = [];
+    migrated.saveVersion = 2;
+  }
+
+  // Ensure all required fields exist
+  if (!migrated.completedChapters) migrated.completedChapters = [];
+  if (!migrated.flags) migrated.flags = {};
+  if (!migrated.choiceHistory) migrated.choiceHistory = {};
+  if (!migrated.heroLevels) migrated.heroLevels = { arlen: 1, arlen_young: 1, jardir: 1, jardir_young: 1, rojer: 1, rojer_young: 1, leesha: 1, leesha_young: 1 } as any;
+  if (!migrated.heroMaxHp) migrated.heroMaxHp = { arlen: 10, arlen_young: 8, jardir: 10, jardir_young: 9, rojer: 10, rojer_young: 7, leesha: 10, leesha_young: 8 } as any;
+  if (migrated.wardPowerBonus === undefined) migrated.wardPowerBonus = 0;
+
+  return migrated;
+}
+
 /** Create initial save state */
 export function createNewSave(): CampaignSaveState {
   return {
+    saveVersion: 2,
     currentChapter: 1,
     completedChapters: [],
     chapterStars: {},
