@@ -201,6 +201,13 @@ export interface GameState {
   maxComboSize: 2 | 3;
   fireCanKill: boolean;
 
+  // Talent effects (applied from campaign save)
+  talentEffects: {
+    extraActivations: number;
+    resourceBonus: number;
+    healDawn: number;
+  };
+
   // Ward usage tracking (for adaptive demons)
   wardUsageStats: Record<WardType, number>;
 

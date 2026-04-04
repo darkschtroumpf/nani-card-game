@@ -351,6 +351,10 @@ export default function WardedGameScreen() {
   // FIX 5: Damage report overlay
   const [damageReport, setDamageReport] = useState<string[] | null>(null);
 
+  // Combat animations
+  const [lastActivatedLoc, setLastActivatedLoc] = useState<string | null>(null);
+  const [lastDamagedLocs, setLastDamagedLocs] = useState<string[]>([]);
+
   // Pause menu on Android back button
   const [showPauseMenu, setShowPauseMenu] = useState(false);
   useEffect(() => {
@@ -698,6 +702,9 @@ export default function WardedGameScreen() {
     // FIX 4: warm yellow flash on activate
     setActionFlash('#FFAA00');
     setTimeout(() => setActionFlash(null), 400);
+    // Combat animation: glow on activated location
+    setLastActivatedLoc(locId);
+    setTimeout(() => setLastActivatedLoc(null), 900);
     if (tutorialStep === 5) setTutorialStep(6);
   };
 
@@ -712,6 +719,10 @@ export default function WardedGameScreen() {
     setDamageResolved(true);
     setActionFlash('#FF3333');
     setTimeout(() => setActionFlash(null), 400);
+    // Combat animation: shake damaged locations
+    const damaged = state.locations.filter(l => !l.fallen && (state.demonsAtLocations[l.id] ?? []).length > 0).map(l => l.id);
+    setLastDamagedLocs(damaged);
+    setTimeout(() => setLastDamagedLocs([]), 400);
 
     // Build clear per-location report
     const report: string[] = [];
@@ -886,6 +897,8 @@ export default function WardedGameScreen() {
         forecast={isDay && forecast ? forecast : undefined}
         isPositioning={isNight && state.waveNumber === 0}
         activationsUsedAt={state.activationsUsedAt}
+        lastActivatedLocation={lastActivatedLoc as any}
+        lastDamagedLocations={lastDamagedLocs as any}
       />
 
       {/* Location detail (if selected) */}

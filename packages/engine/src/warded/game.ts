@@ -230,6 +230,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     availableWards: mode === 'quick' ? [...WARD_TYPES] : ['stone', 'wind'],
     maxComboSize: mode === 'quick' ? 3 : 2,
     fireCanKill: mode === 'quick',
+    talentEffects: { extraActivations: 0, resourceBonus: 0, healDawn: 0 },
     wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0 },
     maxNights: difficulty === 'endless' ? 999 : 3,
     minStandingLocations: mode === 'quick' ? (difficulty === 'endless' ? 1 : 3) : 1,
@@ -315,9 +316,10 @@ export function processDawn(state: GameState): void {
     }
   }
 
-  // Hero dawn heal
+  // Hero dawn heal (base 2 + talent bonus)
+  const dawnHeal = 2 + (state.talentEffects?.healDawn ?? 0);
   if (state.hero.hp < state.hero.maxHp) {
-    state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 2);
+    state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + dawnHeal);
   }
 
   // Reset AP and surge of will
@@ -387,10 +389,11 @@ export function gather(state: GameState, locationId: LocationId): boolean {
   const loc = getLocation(state, locationId);
   if (loc.fallen) return false;
 
-  loc.stockpile[loc.primaryResource] = Math.min(6, loc.stockpile[loc.primaryResource] + 2);
+  const gatherAmount = 2 + (state.talentEffects?.resourceBonus ?? 0);
+  loc.stockpile[loc.primaryResource] = Math.min(6, loc.stockpile[loc.primaryResource] + gatherAmount);
   state.hero.ap--;
 
-  addLog(state, `Récolte à ${loc.name}: +2 ${loc.primaryResource}.`);
+  addLog(state, `Récolte à ${loc.name}: +${gatherAmount} ${loc.primaryResource}.`);
   return true;
 }
 
@@ -442,7 +445,7 @@ export function movePresence(state: GameState, newLocationId: LocationId): boole
 
 export function startWave(state: GameState): void {
   state.waveNumber++;
-  state.activationsRemaining = wardedLocationCount(state);
+  state.activationsRemaining = wardedLocationCount(state) + (state.talentEffects?.extraActivations ?? 0);
   state.activationsUsedAt = [];
   state.heroWaveAbilityUsed = false;
 
@@ -511,12 +514,13 @@ function spawnDemons(state: GameState): void {
 
     // Wind demons: spawn 2 but spread across locations
     if (demonType === 'wind') {
+      const windStr = 1 + (state.currentSurge === 'blood_moon' ? 1 : 0) + (state.campaignModifiers?.demonStrengthBonus ?? 0);
       const windLocs = shuffle(living.map(l => l.id));
       for (let w = 0; w < 2; w++) {
         const wTarget = windLocs[w % windLocs.length];
         state.demonsAtLocations[wTarget].push({
-          demon: { type: 'wind', strength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), targetLocation: wTarget, isLocked: false, isBoss: false, isPrinceUpgraded: false },
-          currentStrength: 1 + (state.currentSurge === 'blood_moon' ? 1 : 0), swarmed: false, revealed: false,
+          demon: { type: 'wind', strength: windStr, targetLocation: wTarget, isLocked: false, isBoss: false, isPrinceUpgraded: false },
+          currentStrength: windStr, swarmed: false, revealed: false,
         });
       }
       continue;
@@ -762,6 +766,12 @@ export function resolveWardPassives(state: GameState): string[] {
           break;
         }
       }
+    }
+
+    // Sentinelle/Révélation combo: reveal demon types (passive)
+    if (comboNames.has('Sentinelle') || comboNames.has('Révélation')) {
+      for (const d of demons) d.revealed = true;
+      events.push(`✦ ${loc.name}: combo révèle ${demons.length} démon(s).`);
     }
 
     // Inferno combo: Fire passive affects adjacent too

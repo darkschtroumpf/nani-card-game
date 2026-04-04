@@ -95,9 +95,9 @@ export function createCampaignGame(chapter: ChapterDefinition, save?: CampaignSa
           state.hero.hp += talent.effect.value;
           break;
         case 'ward_power': state.hero.wardPowerBonus += talent.effect.value; break;
-        case 'heal_dawn': /* handled in processDawn */ break;
-        case 'extra_activation': /* handled in startWave */ break;
-        case 'resource_bonus': /* handled in gather */ break;
+        case 'heal_dawn': state.talentEffects.healDawn += talent.effect.value; break;
+        case 'extra_activation': state.talentEffects.extraActivations += talent.effect.value; break;
+        case 'resource_bonus': state.talentEffects.resourceBonus += talent.effect.value; break;
       }
     }
   }

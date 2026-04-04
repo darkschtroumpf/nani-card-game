@@ -126,8 +126,11 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
           <Animated.View
             key={loc.id}
             style={[
-              { position: 'absolute' },
-              isJustActivated && { opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1] }) },
+              {
+                position: 'absolute',
+                top: pos.top * (MAP_SIZE - nodeSize),
+                left: pos.left * (MAP_SIZE - nodeSize),
+              },
               isJustDamaged && { transform: [{ translateX: shakeAnim }] },
             ]}
           >
@@ -144,9 +147,6 @@ export default function WorldMap({ locations, presenceLocation, demonsAtLocation
               styles.locationNode,
               {
                 width: nodeSize,
-                position: 'relative',
-                top: pos.top * (MAP_SIZE - nodeSize),
-                left: pos.left * (MAP_SIZE - nodeSize),
                 borderColor: isSelected ? warded.accent : isPresence ? warded.accent : threatBorder,
               },
               loc.fallen && styles.locationFallen,
