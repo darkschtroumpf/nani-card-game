@@ -1539,6 +1539,7 @@ export default function WardedGameScreen() {
                   style={[styles.phaseBtn, { backgroundColor: warded.wardLight + '20', borderColor: warded.wardLight }]}
                   onPress={() => {
                     setDamageResolved(false);
+                    setDamageReport(null);
                     setSelectedLocation(null);
                     setWindRedirectDemon(null);
                     setMistWalkMode(false);
