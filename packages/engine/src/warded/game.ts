@@ -1473,6 +1473,12 @@ export function resolveDamage(state: GameState): string[] {
         loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
         events.push(`${loc.name} est TOMBÉ!`);
         addLog(state, `${loc.name} est tombé!`, true);
+        // Hero presence location falls = game over
+        if (locId === state.presenceLocation) {
+          state.gameOver = true;
+          state.victory = false;
+          state.defeatReason = `${loc.name} est tombé — ${state.hero.name} est submergé par les démons!`;
+        }
       }
     } else {
       events.push(`${loc.name}: wards tiennent! (0 dégâts)`);
