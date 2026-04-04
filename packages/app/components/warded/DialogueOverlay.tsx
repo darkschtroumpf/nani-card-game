@@ -250,6 +250,10 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                 {emotionTint !== 'transparent' && (
                   <View style={[styles.activeSprite, { position: 'absolute', backgroundColor: emotionTint, borderRadius: 8 }]} />
                 )}
+                {/* Edge fade: blend sprite into background */}
+                <View style={styles.spriteFadeBottom} />
+                <View style={styles.spriteFadeLeft} />
+                <View style={styles.spriteFadeRight} />
                 {/* Glow behind active speaker */}
                 <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
               </Animated.View>
@@ -348,6 +352,31 @@ const styles = StyleSheet.create({
     width: SCREEN_W * 0.55,
     height: SPRITE_HEIGHT,
     resizeMode: 'contain',
+  },
+  spriteFadeBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: SPRITE_HEIGHT * 0.25,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    opacity: 0.8,
+  },
+  spriteFadeLeft: {
+    position: 'absolute',
+    top: SPRITE_HEIGHT * 0.3,
+    left: 0,
+    bottom: 0,
+    width: SCREEN_W * 0.08,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  spriteFadeRight: {
+    position: 'absolute',
+    top: SPRITE_HEIGHT * 0.3,
+    right: 0,
+    bottom: 0,
+    width: SCREEN_W * 0.08,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   spriteGlow: {
     position: 'absolute',
