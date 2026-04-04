@@ -82,6 +82,9 @@ export const CHAPTER_1: ChapterDefinition = {
           lines: [
             { speaker: 'ragen', text: "Tes wards ne sont pas mauvais pour un gamin, Arlen. Mais ils ne tiendront pas contre un coreling de flamme.", emotion: 'neutral' },
             { speaker: 'arlen_young', text: "Qu'est-ce que je peux faire de mieux ?", emotion: 'determined' },
+            { speaker: 'ragen', text: "D'abord, récolte des ressources. Tape sur un lieu pour voir ce qu'il produit — Bois ou Encre. Ensuite, fabrique un ward avec ces ressources.", emotion: 'neutral' },
+            { speaker: 'ragen', text: "Ensuite, place ton ward sur un lieu. L'ordre compte ! Deux runes côte à côte peuvent former un combo plus puissant.", emotion: 'determined' },
+            { speaker: 'ragen', text: "La nuit, tu devras activer tes défenses en tapant sur les lieux wardés. Chaque lieu ne s'active qu'une fois par vague.", emotion: 'neutral' },
             { speaker: 'ragen', text: "J'ai du matériel de rechange. Je peux t'aider à renforcer la place du village, ou tu gardes tes forces pour la ferme.", emotion: 'neutral' },
           ],
           choices: [
