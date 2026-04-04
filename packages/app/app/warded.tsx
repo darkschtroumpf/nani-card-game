@@ -770,6 +770,7 @@ export default function WardedGameScreen() {
     if (tutorialStep === 4) setTutorialStep(5);
     gameStats.current.nightsSurvived++;
     audio.playSfx('night_fall');
+    setSelectedLocation(null); // Clear location detail on phase change
     setShowNightTransition(true);
     setTimeout(() => {
       setShowNightTransition(false);
@@ -1536,6 +1537,7 @@ export default function WardedGameScreen() {
                   style={[styles.phaseBtn, { backgroundColor: warded.wardLight + '20', borderColor: warded.wardLight }]}
                   onPress={() => {
                     setDamageResolved(false);
+                    setSelectedLocation(null);
                     if (state.waveNumber < 3) {
                       ctrl.doStartWave();
                     } else {
