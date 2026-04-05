@@ -38,7 +38,7 @@ export const CHAPTER_1: ChapterDefinition = {
       background: 'village_sunset',
       lines: [
         { speaker: 'narrator', text: "292 AR. Le soleil descend sur Tibbet's Brook, un hameau isolé dans les plaines fertiles de Thesa." },
-        { speaker: 'narrator', text: "Ici, comme partout dans le monde, la vie s'organise autour d'une seule certitude : quand la nuit tombe, les corelings montent." },
+        { speaker: 'narrator', text: "Ici, comme partout dans le monde, la vie s'organise autour d'une seule certitude : quand la nuit tombe, les chtoniens montent." },
         { speaker: 'narrator', text: "Des créatures de flamme, de pierre et de vent surgissent du sol dès que l'obscurité est complète. Seuls les wards — d'anciens symboles magiques — les tiennent à distance." },
       ],
       nextNodeId: 'intro_2',
@@ -81,7 +81,7 @@ export const CHAPTER_1: ChapterDefinition = {
           id: 'day1_1',
           background: 'messenger',
           lines: [
-            { speaker: 'ragen', text: "Tes wards ne sont pas mauvais pour un gamin, Arlen. Mais ils ne tiendront pas contre un coreling de flamme.", emotion: 'neutral' },
+            { speaker: 'ragen', text: "Tes wards ne sont pas mauvais pour un gamin, Arlen. Mais ils ne tiendront pas contre un chtonien de flamme.", emotion: 'neutral' },
             { speaker: 'arlen_young', text: "Qu'est-ce que je peux faire de mieux ?", emotion: 'determined' },
             { speaker: 'ragen', text: "D'abord, récolte des ressources. Tape sur un lieu pour voir ce qu'il produit — Bois ou Encre. Ensuite, fabrique un ward avec ces ressources.", emotion: 'neutral' },
             { speaker: 'ragen', text: "Ensuite, place ton ward sur un lieu. L'ordre compte ! Deux runes côte à côte peuvent former un combo plus puissant.", emotion: 'determined' },
@@ -122,7 +122,7 @@ export const CHAPTER_1: ChapterDefinition = {
             { speaker: 'narrator', text: "La deuxième nuit a été rude. Des traces de griffes marquent la clôture. Les wards ont tenu, mais de justesse." },
             { speaker: 'silvy', text: "Jeph, la voisine Harl dit que ses wards à lui ont failli céder. Il demande de l'aide.", emotion: 'scared' },
             { speaker: 'jeph', text: "C'est pas notre problème. Chacun protège sa maison.", emotion: 'angry' },
-            { speaker: 'arlen_young', text: "Si les wards de Harl cèdent, les corelings viendront ensuite chez nous. On devrait l'aider.", emotion: 'determined' },
+            { speaker: 'arlen_young', text: "Si les wards de Harl cèdent, les chtoniens viendront ensuite chez nous. On devrait l'aider.", emotion: 'determined' },
             { speaker: 'jeph', text: "Tu veux jouer au héros ? Comme ton grand-père ? Regarde où ça l'a mené.", emotion: 'angry' },
           ],
           choices: [
@@ -202,7 +202,7 @@ export const CHAPTER_1: ChapterDefinition = {
       id: 'victory_1',
       background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "L'aube du quatrième jour. Les corelings se dissolvent dans la lumière, laissant des traînées noirâtres sur le sol." },
+        { speaker: 'narrator', text: "L'aube du quatrième jour. Les chtoniens se dissolvent dans la lumière, laissant des traînées noirâtres sur le sol." },
         { speaker: 'narrator', text: "Tibbet's Brook a tenu. Trois nuits. Les wards ont craqué, plié, mais n'ont pas rompu." },
         { speaker: 'silvy', text: "C'est fini... Arlen, c'est fini.", emotion: 'sad' },
         { speaker: 'arlen_young', text: "Oui, mère.", emotion: 'neutral' },
@@ -247,13 +247,13 @@ export const CHAPTER_1: ChapterDefinition = {
       background: 'village_burning',
       lines: [
         { speaker: 'narrator', text: "Les wards cèdent. Un par un, les symboles s'éteignent comme des bougies dans le vent." },
-        { speaker: 'narrator', text: "Les corelings se précipitent dans les brèches. Des démons de flamme embrasent la grange. Un démon de pierre fracasse la clôture." },
+        { speaker: 'narrator', text: "Les chtoniens se précipitent dans les brèches. Des démons de flamme embrasent la grange. Un démon de pierre fracasse la clôture." },
         { speaker: 'jeph', text: "Non... non, non, non...", emotion: 'scared' },
         { speaker: 'silvy', text: "ARLEN ! COURS ! COURS, MON FILS !", emotion: 'scared' },
         { speaker: 'narrator', text: "Arlen court dans l'obscurité. Derrière lui, les hurlements. Devant lui, le vide." },
         { speaker: 'narrator', text: "Son père n'a pas bougé. Paralysé par la terreur, comme toujours. Jusqu'à la fin." },
         { speaker: 'arlen_young', text: "Plus jamais...", emotion: 'angry' },
-        { speaker: 'narrator', text: "Arlen Bales fuit seul dans la nuit, poursuivi par les corelings et le souvenir de la lâcheté de son père." },
+        { speaker: 'narrator', text: "Arlen Bales fuit seul dans la nuit, poursuivi par les chtoniens et le souvenir de la lâcheté de son père." },
         { speaker: 'narrator', text: "Chapitre 1 — Échec" },
       ],
     },
@@ -465,7 +465,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
       lines: [
         { speaker: 'narrator', text: "Fort Krasia. La cité du désert. Ici, les hommes ne se cachent pas des démons. Ils les combattent." },
         { speaker: 'narrator', text: "Chaque nuit, les guerriers Sharum descendent dans le Maze — un labyrinthe de tunnels sous la ville, piégé de wards." },
-        { speaker: 'narrator', text: "C'est dans le Maze que les corelings montent. C'est dans le Maze qu'on les tue." },
+        { speaker: 'narrator', text: "C'est dans le Maze que les chtoniens montent. C'est dans le Maze qu'on les tue." },
       ],
       nextNodeId: 'intro_2',
     },
@@ -488,7 +488,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
         id: 'j_day1', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "Entre les nuits de combat, les Sharum réparent les wards du Maze et aiguisent leurs lances." },
-          { speaker: 'jardir_young', text: "Les wards du couloir sud sont faibles. Si les corelings percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "Les wards du couloir sud sont faibles. Si les chtoniens percent, ils atteindront les nie'Sharum.", emotion: 'determined' },
           { speaker: 'drillmaster', text: "Tu veux dépenser nos guerriers à renforcer les wards, ou garder tes forces pour le combat ?", emotion: 'neutral' },
         ],
         choices: [
@@ -585,7 +585,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
   victoryDialogue: [{
     id: 'j_victory', background: 'krasia',
     lines: [
-      { speaker: 'narrator', text: "L'aube. Les corelings se retirent dans les profondeurs. Le Maze tient." },
+      { speaker: 'narrator', text: "L'aube. Les chtoniens se retirent dans les profondeurs. Le Maze tient." },
       { speaker: 'drillmaster', text: "Trois nuits. Et le gamin des rues est toujours debout.", emotion: 'neutral' },
       { speaker: 'jardir_young', text: "Je ne suis plus un gamin.", emotion: 'determined' },
       { speaker: 'narrator', text: "Le Drillmaster hoche la tête. Pour la première fois, il regarde Jardir avec respect." },
@@ -596,7 +596,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
   defeatDialogue: [{
     id: 'j_defeat', background: 'maze',
     lines: [
-      { speaker: 'narrator', text: "Le Maze cède. Les corelings remontent vers la surface." },
+      { speaker: 'narrator', text: "Le Maze cède. Les chtoniens remontent vers la surface." },
       { speaker: 'drillmaster', text: "REPLI ! TOUS EN HAUT !", emotion: 'angry' },
       { speaker: 'narrator', text: "Jardir est le dernier à remonter. Derrière lui, les tunnels résonnent de hurlements." },
       { speaker: 'jardir_young', text: "Un jour, je reviendrai. Et ce jour-là, les démons trembleront.", emotion: 'angry' },
@@ -645,7 +645,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       id: 'intro_2', background: 'inn',
       lines: [
-        { speaker: 'narrator', text: "L'auberge est protégée par les seuls wards que connaissent les villageois : Pierre et Vent. Des défenses simples, juste assez pour repousser les corelings." },
+        { speaker: 'narrator', text: "L'auberge est protégée par les seuls wards que connaissent les villageois : Pierre et Vent. Des défenses simples, juste assez pour repousser les chtoniens." },
         { speaker: 'narrator', text: "Mais cette nuit, les wards ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
         { speaker: 'rojer_young', text: "Papa, pourquoi tu joues si fort ?", emotion: 'scared' },
         { speaker: 'narrator', text: "Jessum sourit à son fils, mais ses yeux sont terrifiés." },
@@ -694,7 +694,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "La nuit dernière, Rojer a joué du violon pendant l'attaque. Et quelque chose d'étrange s'est passé." },
           { speaker: 'rojer_young', text: "Arrick... quand je jouais, les démons... ils se sont arrêtés. Juste un instant.", emotion: 'hopeful' },
-          { speaker: 'arrick', text: "Tu délires, gamin. La musique n'arrête pas les corelings.", emotion: 'angry' },
+          { speaker: 'arrick', text: "Tu délires, gamin. La musique n'arrête pas les chtoniens.", emotion: 'angry' },
           { speaker: 'rojer_young', text: "Je sais ce que j'ai vu.", emotion: 'determined' },
         ],
         choices: [
@@ -760,7 +760,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       { speaker: 'narrator', text: "Les villageois le regardent avec un mélange de crainte et d'admiration. Un garçon qui chante aux démons." },
       { speaker: 'arrick', text: "Ce que tu as fait cette nuit... c'est impossible.", emotion: 'scared' },
       { speaker: 'rojer_young', text: "Et pourtant.", emotion: 'determined' },
-      { speaker: 'narrator', text: "Rojer Inn. Le Jongleur de Fidèle. L'homme dont la musique fait trembler les corelings." },
+      { speaker: 'narrator', text: "Rojer Inn. Le Jongleur de Fidèle. L'homme dont la musique fait trembler les chtoniens." },
     ],
   }],
 
@@ -890,9 +890,9 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a2_day2', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "Deuxième nuit survécue. Arlen n'a presque pas dormi. Les grattements des corelings contre les wards résonnent encore dans sa tête." },
+          { speaker: 'narrator', text: "Deuxième nuit survécue. Arlen n'a presque pas dormi. Les grattements des chtoniens contre les wards résonnent encore dans sa tête." },
           { speaker: 'narrator', text: "Le prochain relais est censé être à une demi-journée de marche. Mais la route est en mauvais état." },
-          { speaker: 'arlen_young', text: "Il y a des traces de corelings partout. Plus que la nuit dernière.", emotion: 'scared' },
+          { speaker: 'arlen_young', text: "Il y a des traces de chtoniens partout. Plus que la nuit dernière.", emotion: 'scared' },
         ],
         choices: [
           {
@@ -924,7 +924,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Dernier jour. Les tours de Fort Miln se dressent à l'horizon, énormes, imposantes. Des murs couverts de wards par milliers." },
           { speaker: 'arlen_young', text: "On y est presque... une dernière nuit.", emotion: 'hopeful' },
-          { speaker: 'narrator', text: "Mais cette nuit sera la plus dangereuse. La plaine devant Miln est dégagée — aucun couvert, aucun relais. Les corelings de vent y sont particulièrement actifs." },
+          { speaker: 'narrator', text: "Mais cette nuit sera la plus dangereuse. La plaine devant Miln est dégagée — aucun couvert, aucun relais. Les chtoniens de vent y sont particulièrement actifs." },
         ],
         choices: [
           {
@@ -968,7 +968,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
     {
       id: 'a2_defeat', background: 'village_burning',
       lines: [
-        { speaker: 'narrator', text: "Les wards cèdent dans la plaine. Les corelings de vent fondent sur le campement." },
+        { speaker: 'narrator', text: "Les wards cèdent dans la plaine. Les chtoniens de vent fondent sur le campement." },
         { speaker: 'narrator', text: "Arlen court vers les lumières de Miln. Les murs sont si proches qu'il peut voir les wards briller." },
         { speaker: 'narrator', text: "Mais la nuit est plus rapide que lui." },
         { speaker: 'narrator', text: "Chapitre 5 — Échec" },
@@ -1019,7 +1019,7 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
     {
       id: 'l2_intro', background: 'forest_village',
       lines: [
-        { speaker: 'narrator', text: "Les jours qui suivirent furent les plus longs de sa vie. Le village entier pleura Bruna, mais le deuil n'arrête pas les corelings." },
+        { speaker: 'narrator', text: "Les jours qui suivirent furent les plus longs de sa vie. Le village entier pleura Bruna, mais le deuil n'arrête pas les chtoniens." },
         { speaker: 'leesha_young', text: "Dans le livre de Bruna, j'ai trouvé des schémas que je n'avais jamais vus. Des runes de Feu — une connaissance oubliée depuis des générations.", emotion: 'hopeful' },
         { speaker: 'leesha_young', text: "Ces wards ne repoussent pas les démons. Ils les brûlent. Si je peux les reproduire...", emotion: 'determined' },
         { speaker: 'narrator', text: "Armée des runes de Pierre, de Vent, et désormais de Feu, Leesha devra prouver qu'elle est digne de l'héritage de Bruna." },
@@ -1093,7 +1093,7 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
       dialogueNodes: [{
         id: 'l2_day3', background: 'forest_village',
         lines: [
-          { speaker: 'narrator', text: "Dernière nuit. Les corelings sont de plus en plus agressifs, comme s'ils sentaient la faiblesse du village." },
+          { speaker: 'narrator', text: "Dernière nuit. Les chtoniens sont de plus en plus agressifs, comme s'ils sentaient la faiblesse du village." },
           { speaker: 'leesha_young', text: "J'ai trouvé quelque chose dans les notes de Bruna. Une recette d'onguent qui renforce temporairement les wards.", emotion: 'hopeful' },
           { speaker: 'leesha_young', text: "Mais il faut toutes mes herbes. Si ça ne marche pas, je n'aurai plus rien pour soigner les blessés.", emotion: 'scared' },
         ],
@@ -1208,7 +1208,7 @@ export const CHAPTER_JARDIR_2: ChapterDefinition = {
         id: 'j2_day1', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "La première nuit sous le commandement de Jardir. Les pertes ont été lourdes, mais le Maze tient." },
-          { speaker: 'jardir_young', text: "Les wards de l'Aile Ouest sont faibles. Les corelings de pierre les fracturent à chaque assaut.", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "Les wards de l'Aile Ouest sont faibles. Les chtoniens de pierre les fracturent à chaque assaut.", emotion: 'determined' },
           { speaker: 'drillmaster', text: "On peut envoyer des nie'Sharum renforcer les wards, ou les garder pour porter les blessés.", emotion: 'neutral' },
         ],
         choices: [
@@ -1238,14 +1238,14 @@ export const CHAPTER_JARDIR_2: ChapterDefinition = {
         id: 'j2_day2', background: 'maze',
         lines: [
           { speaker: 'narrator', text: "Deuxième nuit passée. Jardir n'a pas dormi. Il parcourt les couloirs, lance au poing, encourageant chaque guerrier." },
-          { speaker: 'jardir_young', text: "J'ai repéré un passage que les corelings utilisent pour contourner nos wards. Si on le piège avec du feu...", emotion: 'determined' },
+          { speaker: 'jardir_young', text: "J'ai repéré un passage que les chtoniens utilisent pour contourner nos wards. Si on le piège avec du feu...", emotion: 'determined' },
           { speaker: 'drillmaster', text: "C'est risqué. Tu devras poser les wards toi-même, au plus profond du Maze.", emotion: 'neutral' },
         ],
         choices: [
           {
             id: 'trap_passage',
             label: "Descendre piéger le passage avec des wards de feu",
-            hint: "+1 Ward de Feu à la Fosse, -2 HP (embuscade de corelings)",
+            hint: "+1 Ward de Feu à la Fosse, -2 HP (embuscade de chtoniens)",
             effects: [
               { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
               { type: 'hero_hp_change', delta: -2 },
@@ -1288,7 +1288,7 @@ export const CHAPTER_JARDIR_2: ChapterDefinition = {
   defeatDialogue: [{
     id: 'j2_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Le Maze s'effondre. Les corelings submergent les guerriers, couloir après couloir." },
+      { speaker: 'narrator', text: "Le Maze s'effondre. Les chtoniens submergent les guerriers, couloir après couloir." },
       { speaker: 'drillmaster', text: "Repli ! REPLI ! Scellez les tunnels !", emotion: 'scared' },
       { speaker: 'jardir_young', text: "Non... Je ne fuirai pas. Everam, donne-moi la force...", emotion: 'angry' },
       { speaker: 'narrator', text: "Mais Everam ne répond pas. Le Maze est perdu. Et avec lui, le rêve de Jardir." },
@@ -1343,7 +1343,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
         { speaker: 'arrick', text: "Tais-toi, gamin. Je t'ai tout appris. Sans moi, tu ne serais rien.", emotion: 'angry' },
         { speaker: 'rojer_young', text: "Je sais, maître.", emotion: 'sad' },
         { speaker: 'narrator', text: "Mais cette nuit, tout va changer. Arrick, ivre, sortira de l'auberge après le coucher du soleil pour chercher une bouteille oubliée." },
-        { speaker: 'narrator', text: "Les corelings n'attendent que ça." },
+        { speaker: 'narrator', text: "Les chtoniens n'attendent que ça." },
       ],
       nextNodeId: 'r2_intro_3',
     },
@@ -1399,7 +1399,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
         id: 'r2_day2', background: 'road',
         lines: [
           { speaker: 'narrator', text: "La nuit dernière, Rojer a découvert quelque chose d'étrange. Quand il joue certaines mélodies, les démons hésitent. Ils s'arrêtent." },
-          { speaker: 'rojer_young', text: "C'est dans la musique. Il y a quelque chose dans les harmoniques... Les corelings les entendent différemment.", emotion: 'hopeful' },
+          { speaker: 'rojer_young', text: "C'est dans la musique. Il y a quelque chose dans les harmoniques... Les chtoniens les entendent différemment.", emotion: 'hopeful' },
           { speaker: 'narrator', text: "Si Rojer peut affiner cette technique, il pourrait ralentir les démons. Mais il faut pratiquer — et pratiquer, c'est s'exposer." },
         ],
         choices: [
@@ -1438,7 +1438,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
     {
       id: 'r2_victory_2', background: 'road',
       lines: [
-        { speaker: 'narrator', text: "Les voyageurs sur la route parlent d'un jeune jongleur qui joue une musique étrange — une musique qui fait reculer les corelings." },
+        { speaker: 'narrator', text: "Les voyageurs sur la route parlent d'un jeune jongleur qui joue une musique étrange — une musique qui fait reculer les chtoniens." },
         { speaker: 'narrator', text: "Rojer Halfgrip. Le Jongleur. L'homme qui chante pour les démons." },
         { speaker: 'rojer_young', text: "La route est longue, Arrick. Mais je ne m'arrêterai pas.", emotion: 'determined' },
       ],
@@ -1448,7 +1448,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
   defeatDialogue: [{
     id: 'r2_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les wards cèdent. Les corelings déferlent sur Riverbridge." },
+      { speaker: 'narrator', text: "Les wards cèdent. Les chtoniens déferlent sur Riverbridge." },
       { speaker: 'rojer_young', text: "Non ! Pas encore ! Pas comme quand j'étais enfant !", emotion: 'scared' },
       { speaker: 'narrator', text: "Rojer court dans la nuit, serrant le luth d'Arrick contre sa poitrine. L'histoire se répète : un enfant seul dans le noir." },
       { speaker: 'narrator', text: "Chapitre 8 — Échec" },
@@ -1555,7 +1555,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "La nuit précédente, quelque chose d'étrange s'est produit. Un démon de roche, plus grand que les autres, se dressait sur la colline au-dessus du campement." },
           { speaker: 'narrator', text: "Il manquait un bras. Et il regardait Arlen. Pas comme une proie — comme un ennemi qu'on reconnaît." },
-          { speaker: 'arlen', text: "Ce coreling de roche... Il était déjà là la nuit d'avant, sur la route de Miln avec Ragen. Le même. J'en suis sûr.", emotion: 'determined' },
+          { speaker: 'arlen', text: "Ce chtonien de roche... Il était déjà là la nuit d'avant, sur la route de Miln avec Ragen. Le même. J'en suis sûr.", emotion: 'determined' },
           { speaker: 'narrator', text: "One Arm. Un démon ancien, marqué par un combat passé. Et il traque Arlen." },
         ],
         choices: [
@@ -1672,7 +1672,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
   defeatDialogue: [{
     id: 'a3_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les wards cèdent dans la nuit. Sans abri, sur la route ouverte, les corelings convergent. One Arm mène la charge." },
+      { speaker: 'narrator', text: "Les wards cèdent dans la nuit. Sans abri, sur la route ouverte, les chtoniens convergent. One Arm mène la charge." },
       { speaker: 'arlen', text: "Non... Il y avait une erreur dans le tracé. UNE erreur...", emotion: 'angry' },
       { speaker: 'narrator', text: "La route ne pardonne pas. Le Messager Arlen Bales ne livrera jamais son courrier." },
       { speaker: 'narrator', text: "Chapitre 9 — Échec" },
@@ -1737,7 +1737,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
         { speaker: 'narrator', text: "Au crépuscule, un son étrange flotte dans l'air. Un violon. Quelqu'un joue près du campement des réfugiés." },
         { speaker: 'narrator', text: "Un jeune homme aux cheveux roux, la main gauche mutilée, joue avec une grâce qui semble impossible vu ses blessures." },
         { speaker: 'leesha', text: "Les réfugiés se calment quand il joue. Les enfants arrêtent de pleurer. Même le vent semble retenir son souffle.", emotion: 'hopeful' },
-        { speaker: 'narrator', text: "La nuit tombe. Les corelings montent. Mais le violon continue." },
+        { speaker: 'narrator', text: "La nuit tombe. Les chtoniens montent. Mais le violon continue." },
       ],
     },
   ],
@@ -1749,9 +1749,9 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
         id: 'l3_day1', background: 'road',
         lines: [
           { speaker: 'narrator', text: "Première nuit sur la route. Leesha a tenu le campement, mais les wards tracés à la hâte ont failli céder au nord." },
-          { speaker: 'leesha', text: "Ce garçon au violon... Quand il jouait, j'ai vu les corelings de vent hésiter. S'arrêter. Comme s'ils écoutaient.", emotion: 'hopeful' },
+          { speaker: 'leesha', text: "Ce garçon au violon... Quand il jouait, j'ai vu les chtoniens de vent hésiter. S'arrêter. Comme s'ils écoutaient.", emotion: 'hopeful' },
           { speaker: 'rojer', text: "Rojer Halfgrip. Jongleur. Et oui, les démons écoutent. Ils n'aiment pas quand je m'arrête.", emotion: 'neutral' },
-          { speaker: 'leesha', text: "Ce n'est pas possible. La musique n'a aucun effet sur les corelings. Aucun texte de Bruna ne mentionne—", emotion: 'scared' },
+          { speaker: 'leesha', text: "Ce n'est pas possible. La musique n'a aucun effet sur les chtoniens. Aucun texte de Bruna ne mentionne—", emotion: 'scared' },
           { speaker: 'rojer', text: "Peut-être que votre Bruna n'avait pas toutes les réponses.", emotion: 'determined' },
         ],
         choices: [
@@ -1784,7 +1784,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Angiers est en vue. Leesha passe la matinée dans les archives de l'Académie, feuilletant des textes que personne n'a lus depuis des générations." },
           { speaker: 'leesha', text: "Les wards de lumière... Ils ne sont pas dans les livres de Bruna. Ils sont ici, dans les archives d'Angiers. Quelqu'un les a cachés.", emotion: 'hopeful' },
-          { speaker: 'narrator', text: "Les wards de lumière. Ils ne repoussent pas — ils éclairent ce que les autres wards ne voient pas. Ils révèlent la faiblesse des corelings." },
+          { speaker: 'narrator', text: "Les wards de lumière. Ils ne repoussent pas — ils éclairent ce que les autres wards ne voient pas. Ils révèlent la faiblesse des chtoniens." },
           { speaker: 'leesha', text: "C'est la pièce manquante. Avec la lumière, le feu et la pierre ne sont plus des murs. Ce sont des armes.", emotion: 'determined' },
         ],
         choices: [
@@ -1911,7 +1911,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
     {
       id: 'j3_intro_1', background: 'maze',
       lines: [
-        { speaker: 'narrator', text: "Le Maze gronde. Depuis des semaines, les corelings poussent plus profond, plus fort. Les Sharum reculent, couloir après couloir." },
+        { speaker: 'narrator', text: "Le Maze gronde. Depuis des semaines, les chtoniens poussent plus profond, plus fort. Les Sharum reculent, couloir après couloir." },
         { speaker: 'narrator', text: "Le Sharum Ka Jardir tient la ligne. Mais les pertes s'accumulent, et les guerriers murmurent que les démons préparent quelque chose." },
         { speaker: 'jardir', text: "Quelque chose les attire vers la brèche ouest. Ils creusent. Ils cherchent quelque chose sous le Maze.", emotion: 'determined' },
       ],
@@ -1931,7 +1931,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
       id: 'j3_intro_3', background: 'krasia',
       lines: [
         { speaker: 'jardir', text: "La Lance de Kaji. L'arme du premier Shar'Dama Ka. Elle existe vraiment.", emotion: 'determined' },
-        { speaker: 'narrator', text: "Jardir saisit la lance. Les wards s'illuminent au contact de sa main. Et dans les tunnels au-dessus, les corelings hurlent de rage." },
+        { speaker: 'narrator', text: "Jardir saisit la lance. Les wards s'illuminent au contact de sa main. Et dans les tunnels au-dessus, les chtoniens hurlent de rage." },
         { speaker: 'narrator', text: "Cette nuit, pour la première fois dans l'histoire vivante de Krasia, un démon mourra dans le Maze. Définitivement." },
       ],
     },
@@ -1943,7 +1943,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
       dialogueNodes: [{
         id: 'j3_day1', background: 'maze',
         lines: [
-          { speaker: 'narrator', text: "La lance a tué un coreling de flamme. Pas repoussé — tué. Son corps s'est dissous en fumée noire, et il n'est pas remonté du sol." },
+          { speaker: 'narrator', text: "La lance a tué un chtonien de flamme. Pas repoussé — tué. Son corps s'est dissous en fumée noire, et il n'est pas remonté du sol." },
           { speaker: 'jardir', text: "Les guerriers ont vu. Pour la première fois, un démon est mort dans le Maze. Mort pour de vrai.", emotion: 'determined' },
           { speaker: 'drillmaster', text: "Les hommes sont galvanisés. Mais la brèche ouest s'élargit. Il faut choisir où concentrer nos forces.", emotion: 'neutral' },
         ],
@@ -2043,7 +2043,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
     {
       id: 'j3_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "Le Maze tient. Et cette fois, les corelings ne se sont pas simplement retirés — certains sont morts. Définitivement." },
+        { speaker: 'narrator', text: "Le Maze tient. Et cette fois, les chtoniens ne se sont pas simplement retirés — certains sont morts. Définitivement." },
         { speaker: 'jardir', text: "Les guerriers ont vu ce que la Lance peut faire. Ils n'ont plus peur. Ils ont faim.", emotion: 'determined' },
         { speaker: 'drillmaster', text: "Sharum Ka... Les hommes parlent de toi comme du Délivreur.", emotion: 'hopeful' },
       ],
@@ -2107,7 +2107,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
       lines: [
         { speaker: 'narrator', text: "Rojer Halfgrip marche seul depuis des semaines. De village en village, il joue pour payer son repas et un abri wardé pour la nuit." },
         { speaker: 'narrator', text: "Mais sa musique a changé. Ce n'est plus du divertissement. C'est devenu autre chose — quelque chose que même Rojer ne comprend pas entièrement." },
-        { speaker: 'rojer', text: "Chaque type de démon réagit à une mélodie différente. Les corelings de vent fuient les aigus. Ceux de flamme ralentissent avec les graves.", emotion: 'hopeful' },
+        { speaker: 'rojer', text: "Chaque type de démon réagit à une mélodie différente. Les chtoniens de vent fuient les aigus. Ceux de flamme ralentissent avec les graves.", emotion: 'hopeful' },
       ],
       nextNodeId: 'r3_intro_2',
     },
@@ -2138,7 +2138,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
         id: 'r3_day1', background: 'inn',
         lines: [
           { speaker: 'narrator', text: "Première nuit. Rojer a joué jusqu'à l'aube. Ses doigts saignent — deux seulement sur la main gauche, mais ils ont tenu." },
-          { speaker: 'rojer', text: "J'ai trouvé une nouvelle mélodie cette nuit. Un rythme syncopé. Les corelings de pierre se figent quand je la joue.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "J'ai trouvé une nouvelle mélodie cette nuit. Un rythme syncopé. Les chtoniens de pierre se figent quand je la joue.", emotion: 'hopeful' },
           { speaker: 'leesha', text: "Les fréquences que tu produis interfèrent avec leur structure cristalline. C'est fascinant.", emotion: 'hopeful' },
           { speaker: 'rojer', text: "Tu peux traduire ça en langue humaine ?", emotion: 'neutral' },
           { speaker: 'leesha', text: "Ta musique casse les démons de pierre. Continue.", emotion: 'determined' },
@@ -2206,7 +2206,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
           { speaker: 'narrator', text: "Dernière nuit à Boisrouge. Rojer et Leesha ont décidé de voyager ensemble vers Cutter's Hollow." },
           { speaker: 'rojer', text: "J'ai une mélodie pour chaque type de démon maintenant. Flamme, vent, pierre. Chacun a sa faiblesse sonore.", emotion: 'determined' },
           { speaker: 'leesha', text: "Et moi, j'ai les wards de lumière pour révéler ceux qui se cachent. Ensemble, on couvre tout.", emotion: 'determined' },
-          { speaker: 'narrator', text: "La dernière nuit sera la plus dure. Les corelings semblent savoir que Rojer va partir. Ils sont furieux." },
+          { speaker: 'narrator', text: "La dernière nuit sera la plus dure. Les chtoniens semblent savoir que Rojer va partir. Ils sont furieux." },
         ],
         choices: [
           {
@@ -2245,7 +2245,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
       id: 'r3_victory_2', background: 'road',
       lines: [
         { speaker: 'leesha', text: "Tu viens à Cutter's Hollow, alors ?", emotion: 'neutral' },
-        { speaker: 'rojer', text: "Pourquoi pas. Un village qui a une herboriste géniale et un jongleur dément ? Les corelings n'ont aucune chance.", emotion: 'hopeful' },
+        { speaker: 'rojer', text: "Pourquoi pas. Un village qui a une herboriste géniale et un jongleur dément ? Les chtoniens n'ont aucune chance.", emotion: 'hopeful' },
         { speaker: 'narrator', text: "Rojer Halfgrip. Le Jongleur dont les mélodies font trembler les démons. Il a trouvé sa voie — et une alliée." },
       ],
     },
@@ -2254,7 +2254,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
   defeatDialogue: [{
     id: 'r3_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les cordes du violon se brisent une à une. Sans musique, les corelings déferlent sur Boisrouge." },
+      { speaker: 'narrator', text: "Les cordes du violon se brisent une à une. Sans musique, les chtoniens déferlent sur Boisrouge." },
       { speaker: 'rojer', text: "Non... Pas les cordes. Pas maintenant...", emotion: 'scared' },
       { speaker: 'narrator', text: "Le silence revient. Et avec le silence, les démons." },
       { speaker: 'narrator', text: "Chapitre 12 — Échec" },
@@ -2308,7 +2308,7 @@ export const CHAPTER_ARLEN_4: ChapterDefinition = {
     {
       id: 'a4_intro_2', background: 'ruins',
       lines: [
-        { speaker: 'arlen', text: "Le guide dit que personne ne revient du désert profond. Que les corelings du sable sont les pires de tous.", emotion: 'determined' },
+        { speaker: 'arlen', text: "Le guide dit que personne ne revient du désert profond. Que les chtoniens du sable sont les pires de tous.", emotion: 'determined' },
         { speaker: 'narrator', text: "Un vieux Krasien nommé Abban — marchand, pas guerrier — a accepté de guider Arlen. Pour un prix exorbitant, bien sûr." },
         { speaker: 'arlen', text: "Abban, ces ruines sur la carte... Tu les as déjà vues ?", emotion: 'hopeful' },
         { speaker: 'narrator', text: "Abban secoue la tête. Personne n'est assez fou pour venir ici. Sauf Arlen." },
@@ -2449,7 +2449,7 @@ export const CHAPTER_ARLEN_4: ChapterDefinition = {
   defeatDialogue: [{
     id: 'a4_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Le sable engloutit le campement. One Arm mène la charge des corelings du désert. Il n'y a nulle part où fuir." },
+      { speaker: 'narrator', text: "Le sable engloutit le campement. One Arm mène la charge des chtoniens du désert. Il n'y a nulle part où fuir." },
       { speaker: 'arlen', text: "Le désert ne rend pas ses secrets... et il ne rend pas ses morts non plus.", emotion: 'angry' },
       { speaker: 'narrator', text: "La carte d'Anoch Sun est perdue dans les dunes. Personne ne trouvera la cité." },
       { speaker: 'narrator', text: "Chapitre 13 — Échec" },
@@ -2519,7 +2519,7 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Première nuit avec le réseau. Les wards ont tenu — et plus que tenu. Quand un ward faiblissait, les autres le soutenaient." },
           { speaker: 'leesha', text: "Ça fonctionne. L'énergie se redistribue. Un ward qui cède ne crée plus de brèche — les voisins compensent.", emotion: 'hopeful' },
-          { speaker: 'narrator', text: "Mais les corelings s'adaptent. Ils attaquent maintenant en plusieurs points simultanément, testant le réseau." },
+          { speaker: 'narrator', text: "Mais les chtoniens s'adaptent. Ils attaquent maintenant en plusieurs points simultanément, testant le réseau." },
         ],
         choices: [
           {
@@ -2551,7 +2551,7 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Leesha passe la journée dans l'atelier, les mains tachées d'encre noire, traçant des wards d'os pour la première fois." },
           { speaker: 'leesha', text: "Bruna avait raison d'avoir peur. Les wards d'os ne sont pas comme les autres. Ils sont... vivants. Ils aspirent l'énergie.", emotion: 'scared' },
-          { speaker: 'leesha', text: "Mais intégrés au réseau, ils pourraient transformer les défenses du village. Les corelings qui touchent le réseau seraient drainés.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Mais intégrés au réseau, ils pourraient transformer les défenses du village. Les chtoniens qui touchent le réseau seraient drainés.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -2617,7 +2617,7 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
     {
       id: 'l4_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "L'aube. Le réseau a tenu. Cutter's Hollow est intact — et pour la première fois, les corelings ont été repoussés sans qu'un seul ward ne cède." },
+        { speaker: 'narrator', text: "L'aube. Le réseau a tenu. Cutter's Hollow est intact — et pour la première fois, les chtoniens ont été repoussés sans qu'un seul ward ne cède." },
         { speaker: 'leesha', text: "Le réseau fonctionne. Les wards ne sont plus des barrières isolées. Ils sont un organisme vivant.", emotion: 'determined' },
       ],
       nextNodeId: 'l4_victory_2',
@@ -2683,7 +2683,7 @@ export const CHAPTER_JARDIR_4: ChapterDefinition = {
       lines: [
         { speaker: 'narrator', text: "Fort Krasia. Les tribus se déchirent. Majah contre Kaji, Mehnding contre Sharach. Chaque nuit, le Maze perd des guerriers — pas face aux démons, mais face aux rivalités." },
         { speaker: 'narrator', text: "Jardir a la Lance de Kaji. Il a la foi d'Inevera. Et il a une vision : unir toutes les tribus sous une seule bannière." },
-        { speaker: 'jardir', text: "Krasia se meurt. Pas à cause des démons — à cause de notre propre stupidité. Les tribus se battent entre elles pendant que les corelings rient dans le noir.", emotion: 'angry' },
+        { speaker: 'jardir', text: "Krasia se meurt. Pas à cause des démons — à cause de notre propre stupidité. Les tribus se battent entre elles pendant que les chtoniens rient dans le noir.", emotion: 'angry' },
       ],
       nextNodeId: 'j4_intro_2',
     },
@@ -2738,7 +2738,7 @@ export const CHAPTER_JARDIR_4: ChapterDefinition = {
       dialogueNodes: [{
         id: 'j4_day2', background: 'maze',
         lines: [
-          { speaker: 'narrator', text: "La nuit a été terrible. Les corelings ont attaqué en masse, comme s'ils sentaient la division des tribus." },
+          { speaker: 'narrator', text: "La nuit a été terrible. Les chtoniens ont attaqué en masse, comme s'ils sentaient la division des tribus." },
           { speaker: 'jardir', text: "Vous voyez ? Divisés, nous mourrons un par un. Unis, nous tiendrons.", emotion: 'angry' },
           { speaker: 'narrator', text: "Les guerriers Majah ont combattu aux côtés des Kaji cette nuit. Pour la première fois, deux tribus dans le même Maze." },
           { speaker: 'jardir', text: "Le désert ne me suffit plus. Les démons ne sont pas seulement ici. Ils sont partout. Au nord, les gens se cachent derrière leurs murs.", emotion: 'determined' },
@@ -2805,7 +2805,7 @@ export const CHAPTER_JARDIR_4: ChapterDefinition = {
           { speaker: 'narrator', text: "Dernière nuit à Fort Krasia. Demain, l'armée krasienne marchera vers le nord. Vers l'inconnu." },
           { speaker: 'jardir', text: "Nous marcherons vers le nord. Nous trouverons les peuples qui se cachent derrière leurs murs. Et nous les forcerons à se battre.", emotion: 'determined' },
           { speaker: 'inevera', text: "Ou nous les libérerons. Selon comment ils le voient.", emotion: 'neutral' },
-          { speaker: 'narrator', text: "La horde de corelings attaque une dernière fois, comme pour empêcher Jardir de partir." },
+          { speaker: 'narrator', text: "La horde de chtoniens attaque une dernière fois, comme pour empêcher Jardir de partir." },
         ],
         choices: [
           {
@@ -2909,7 +2909,7 @@ export const CHAPTER_ROJER_4: ChapterDefinition = {
       id: 'r4_intro_2', background: 'inn',
       lines: [
         { speaker: 'narrator', text: "Le luthier hésite. Il baisse la voix." },
-        { speaker: 'narrator', text: "De l'os de coreling, murmure-t-il. Trouvé dans le désert. Personne n'en veut — les gens disent que c'est maudit." },
+        { speaker: 'narrator', text: "De l'os de chtonien, murmure-t-il. Trouvé dans le désert. Personne n'en veut — les gens disent que c'est maudit." },
         { speaker: 'rojer', text: "Maudit ? Ou wardé ?", emotion: 'determined' },
         { speaker: 'narrator', text: "Rojer porte la flûte à ses lèvres. La première note qui en sort fait trembler l'air. Les wards du chariot vibrent en résonance." },
         { speaker: 'leesha', text: "Rojer... Les wards réagissent à ta musique. L'os de démon amplifie les fréquences.", emotion: 'hopeful' },
@@ -2920,7 +2920,7 @@ export const CHAPTER_ROJER_4: ChapterDefinition = {
       id: 'r4_intro_3', background: 'village_sunset',
       lines: [
         { speaker: 'narrator', text: "Rojer achète la flûte. Ce soir-là, il joue pour la première fois avec un instrument en os de démon." },
-        { speaker: 'narrator', text: "Le son est différent. Plus profond. Plus vrai. Comme si la musique touchait directement l'essence des corelings." },
+        { speaker: 'narrator', text: "Le son est différent. Plus profond. Plus vrai. Comme si la musique touchait directement l'essence des chtoniens." },
         { speaker: 'rojer', text: "Avec le violon, je les calmais. Avec la flûte, je les commande.", emotion: 'determined' },
       ],
     },
@@ -2932,7 +2932,7 @@ export const CHAPTER_ROJER_4: ChapterDefinition = {
       dialogueNodes: [{
         id: 'r4_day1', background: 'forest_village',
         lines: [
-          { speaker: 'narrator', text: "Première nuit avec la flûte d'os. Les corelings n'ont pas simplement hésité — certains ont reculé. Reculé et fui." },
+          { speaker: 'narrator', text: "Première nuit avec la flûte d'os. Les chtoniens n'ont pas simplement hésité — certains ont reculé. Reculé et fui." },
           { speaker: 'rojer', text: "Le violon les calme. La flûte les terrifie. C'est l'os de démon — il résonne avec leur propre essence.", emotion: 'hopeful' },
           { speaker: 'leesha', text: "Si tu combines violon et flûte, tu pourrais couvrir toute la gamme. Calmer certains, repousser d'autres.", emotion: 'determined' },
           { speaker: 'rojer', text: "La triple technique. Violon de la main droite, flûte de la gauche, et la voix. Trois armes.", emotion: 'determined' },
@@ -3001,7 +3001,7 @@ export const CHAPTER_ROJER_4: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Cutter's Hollow est en vue. Les lumières du village brillent à travers les arbres. Mais la dernière nuit sera la pire." },
           { speaker: 'rojer', text: "On y est presque, Leesha. Une dernière nuit.", emotion: 'determined' },
-          { speaker: 'leesha', text: "Les corelings de cette forêt sont furieux. Ils sentent la flûte d'os. Elle les met en rage.", emotion: 'scared' },
+          { speaker: 'leesha', text: "Les chtoniens de cette forêt sont furieux. Ils sentent la flûte d'os. Elle les met en rage.", emotion: 'scared' },
           { speaker: 'rojer', text: "Tant mieux. Les démons en rage font des erreurs.", emotion: 'determined' },
         ],
         choices: [
@@ -3051,7 +3051,7 @@ export const CHAPTER_ROJER_4: ChapterDefinition = {
   defeatDialogue: [{
     id: 'r4_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "La flûte d'os se brise dans la mêlée. Le son meurt. Et sans musique, les corelings n'ont plus peur de rien." },
+      { speaker: 'narrator', text: "La flûte d'os se brise dans la mêlée. Le son meurt. Et sans musique, les chtoniens n'ont plus peur de rien." },
       { speaker: 'rojer', text: "La flûte... Non... C'était la seule...", emotion: 'scared' },
       { speaker: 'narrator', text: "Les portes de Cutter's Hollow étaient si proches. Mais la nuit est implacable." },
       { speaker: 'narrator', text: "Chapitre 16 — Échec" },
@@ -3108,7 +3108,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
         { speaker: 'arlen_young', text: "C'est réel. Anoch Sun. La plus grande cité de l'ancien monde.", emotion: 'hopeful' },
         { speaker: 'narrator', text: "Les murs sont couverts de wards — mais pas les wards défensifs que connaît Arlen. Ce sont des wards de combat. Des wards qui tuent." },
         { speaker: 'arlen_young', text: "Des wards d'os... Je n'ai jamais vu ça. Ils drainent la force vitale des démons.", emotion: 'hopeful' },
-        { speaker: 'narrator', text: "Mais la nuit tombe sur le désert. Et dans les ruines d'Anoch Sun, les corelings sont anciens. Puissants. Furieux qu'on viole leur domaine." },
+        { speaker: 'narrator', text: "Mais la nuit tombe sur le désert. Et dans les ruines d'Anoch Sun, les chtoniens sont anciens. Puissants. Furieux qu'on viole leur domaine." },
       ],
       nextNodeId: 'a4_intro_3',
     },
@@ -3192,7 +3192,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a4_day3', background: 'ruins',
         lines: [
-          { speaker: 'narrator', text: "Troisième nuit. Les corelings sont de plus en plus nombreux, comme si toute la horde du désert convergeait vers Anoch Sun." },
+          { speaker: 'narrator', text: "Troisième nuit. Les chtoniens sont de plus en plus nombreux, comme si toute la horde du désert convergeait vers Anoch Sun." },
           { speaker: 'arlen_young', text: "Ils sentent que je suis là. Ils sentent les wards. Ça les met en rage.", emotion: 'determined' },
           { speaker: 'narrator', text: "Arlen regarde les wards gravés dans le sarcophage. Une idée folle germe dans son esprit." },
           { speaker: 'arlen_young', text: "Si je grave les wards dans ma propre peau... Je deviendrais une arme vivante.", emotion: 'determined' },
@@ -3227,7 +3227,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
     {
       id: 'a4_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "L'aube se lève sur Anoch Sun. Les dunes se teintent d'or. Les corelings s'enfoncent dans le sable, vaincus une fois de plus." },
+        { speaker: 'narrator', text: "L'aube se lève sur Anoch Sun. Les dunes se teintent d'or. Les chtoniens s'enfoncent dans le sable, vaincus une fois de plus." },
         { speaker: 'narrator', text: "Arlen est couvert de blessures. Ses bras portent des wards fraîchement gravés dans sa peau, encore rouges de sang." },
         { speaker: 'arlen_young', text: "Je les ai. Tous les wards. Pierre, vent, feu, lumière, os. Les wards de combat des anciens.", emotion: 'determined' },
       ],
@@ -3247,7 +3247,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
   defeatDialogue: [{
     id: 'a4_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les wards d'Anoch Sun sont trop anciens, trop fragiles. Un par un, ils s'effondrent sous l'assaut des corelings du désert." },
+      { speaker: 'narrator', text: "Les wards d'Anoch Sun sont trop anciens, trop fragiles. Un par un, ils s'effondrent sous l'assaut des chtoniens du désert." },
       { speaker: 'arlen_young', text: "Non ! J'étais si près... Les wards de combat... Tout ce savoir, perdu à nouveau...", emotion: 'angry' },
       { speaker: 'narrator', text: "Le sable engloutit Anoch Sun. Et avec elle, le dernier espoir de l'humanité de se relever." },
       { speaker: 'narrator', text: "Chapitre 17 — Échec" },
@@ -3512,7 +3512,7 @@ export const CHAPTER_JARDIR_5: ChapterDefinition = {
       dialogueNodes: [{
         id: 'j5_day1', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "Première nuit hors du désert. Les corelings des plaines sont différents — plus rapides, plus sournois. Les Sharum ne sont pas habitués." },
+          { speaker: 'narrator', text: "Première nuit hors du désert. Les chtoniens des plaines sont différents — plus rapides, plus sournois. Les Sharum ne sont pas habitués." },
           { speaker: 'jardir_young', text: "Ces démons frappent et disparaissent. Comme des lâches.", emotion: 'angry' },
           { speaker: 'narrator', text: "Des éclaireurs rapportent un village fortifié au nord. Les habitants ont barricadé les portes à la vue de l'armée krasienne." },
         ],
@@ -3529,7 +3529,7 @@ export const CHAPTER_JARDIR_5: ChapterDefinition = {
           },
           {
             id: 'negotiate',
-            label: "Envoyer Abban négocier — offrir protection contre les corelings",
+            label: "Envoyer Abban négocier — offrir protection contre les chtoniens",
             hint: "+1 Ward de Lumière et +1 Ward d'Os au Village des Plaines",
             effects: [
               { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
@@ -3544,7 +3544,7 @@ export const CHAPTER_JARDIR_5: ChapterDefinition = {
       dialogueNodes: [{
         id: 'j5_day2', background: 'refugees',
         lines: [
-          { speaker: 'narrator', text: "La marche continue. Des réfugiés fuyant les corelings croisent la colonne. Ils regardent les Sharum avec terreur." },
+          { speaker: 'narrator', text: "La marche continue. Des réfugiés fuyant les chtoniens croisent la colonne. Ils regardent les Sharum avec terreur." },
           { speaker: 'jardir_young', text: "Ils nous craignent plus que les démons. Quelle ironie.", emotion: 'sad' },
           { speaker: 'narrator', text: "Un chef de tribu des plaines s'avance. Il propose une alliance — ou un ultimatum. Jardir ne saisit pas bien les nuances du dialecte du nord." },
         ],
@@ -3657,7 +3657,7 @@ export const CHAPTER_JARDIR_5: ChapterDefinition = {
   defeatDialogue: [{
     id: 'j5_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les corelings des plaines sont trop nombreux, trop rapides. La colonne de marche se disloque dans la nuit." },
+      { speaker: 'narrator', text: "Les chtoniens des plaines sont trop nombreux, trop rapides. La colonne de marche se disloque dans la nuit." },
       { speaker: 'jardir_young', text: "Reformez les rangs ! REFORMEZ LES RANGS !", emotion: 'angry' },
       { speaker: 'narrator', text: "Le désert avale ses enfants. L'armée de Krasia ne verra jamais le nord." },
       { speaker: 'narrator', text: "Chapitre 19 — Échec" },
@@ -3845,7 +3845,7 @@ export const CHAPTER_ROJER_5: ChapterDefinition = {
   defeatDialogue: [{
     id: 'r5_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "La corde du violon casse. La flûte glisse des doigts ensanglantés. Le silence tombe — et dans le silence, les corelings hurlent." },
+      { speaker: 'narrator', text: "La corde du violon casse. La flûte glisse des doigts ensanglantés. Le silence tombe — et dans le silence, les chtoniens hurlent." },
       { speaker: 'rojer_young', text: "Non... pas maintenant... pas comme ça...", emotion: 'scared' },
       { speaker: 'narrator', text: "Sans musique, les wards s'éteignent un par un. Et Cutter's Hollow sombre dans la nuit." },
       { speaker: 'narrator', text: "Chapitre 20 — Échec" },
@@ -3911,7 +3911,7 @@ export const CHAPTER_ARLEN_6: ChapterDefinition = {
       id: 'a6_intro_3', background: 'village_sunset',
       lines: [
         { speaker: 'arlen_young', text: "Je ne suis pas venu pour qu'on me regarde. Je suis venu pour vous apprendre à vous battre.", emotion: 'determined' },
-        { speaker: 'narrator', text: "Il trace un ward de combat sur un poteau de bois. Le bois se met à luire. Les corelings qui rôdent à la lisière reculent." },
+        { speaker: 'narrator', text: "Il trace un ward de combat sur un poteau de bois. Le bois se met à luire. Les chtoniens qui rôdent à la lisière reculent." },
         { speaker: 'arlen_young', text: "Trois cents ans de peur. Ça se termine ici.", emotion: 'angry' },
       ],
     },
@@ -3923,7 +3923,7 @@ export const CHAPTER_ARLEN_6: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a6_day1', background: 'forest_village',
         lines: [
-          { speaker: 'narrator', text: "La première nuit avec l'Homme-Rune. Les corelings ont attaqué — et pour la première fois, un homme les a repoussés à mains nues." },
+          { speaker: 'narrator', text: "La première nuit avec l'Homme-Rune. Les chtoniens ont attaqué — et pour la première fois, un homme les a repoussés à mains nues." },
           { speaker: 'arlen_young', text: "Les wards de combat absorbent l'énergie des démons. Plus ils frappent fort, plus je deviens puissant.", emotion: 'determined' },
           { speaker: 'leesha_young', text: "C'est fascinant. Et terrifiant. Arlen, tu ne peux pas combattre seul chaque nuit. Ton corps a des limites.", emotion: 'scared' },
         ],
@@ -3941,7 +3941,7 @@ export const CHAPTER_ARLEN_6: ChapterDefinition = {
           },
           {
             id: 'solo_hunt',
-            label: "Chasser les corelings seul à la lisière — réduire leur nombre",
+            label: "Chasser les chtoniens seul à la lisière — réduire leur nombre",
             hint: "-2 démons par vague, -3 HP (combat direct)",
             effects: [
               { type: 'extra_demons', count: -2 },
@@ -4024,7 +4024,7 @@ export const CHAPTER_ARLEN_6: ChapterDefinition = {
         id: 'a6_day4', background: 'village_sunset',
         lines: [
           { speaker: 'narrator', text: "Le crépuscule. Arlen se tient sur la barricade nord. Les wards sur sa peau pulsent doucement, en rythme avec ceux des murs." },
-          { speaker: 'arlen_young', text: "Je les sens. Les corelings. Ils rassemblent leurs forces. Ce soir, ils viendront en masse.", emotion: 'determined' },
+          { speaker: 'arlen_young', text: "Je les sens. Les chtoniens. Ils rassemblent leurs forces. Ce soir, ils viendront en masse.", emotion: 'determined' },
           { speaker: 'narrator', text: "Il ferme les yeux. Les wards brillent plus fort. Quand il les rouvre, ses pupilles luisent d'une lumière surnaturelle." },
         ],
         choices: [
@@ -4134,7 +4134,7 @@ export const CHAPTER_LEESHA_6: ChapterDefinition = {
         { speaker: 'narrator', text: "Les carnets de Leesha sont couverts de schémas. Les wards d'Arlen, disséqués, analysés, cartographiés." },
         { speaker: 'leesha_young', text: "Ses wards offensifs créent un flux d'énergie. Mon réseau défensif canalise ce flux. Si je relie les deux...", emotion: 'hopeful' },
         { speaker: 'leesha_young', text: "Le village entier deviendrait un organisme vivant. Un réseau qui se défend, qui attaque, qui guérit.", emotion: 'determined' },
-        { speaker: 'narrator', text: "Il ne reste plus qu'à le construire. En pleine guerre. Sous les assauts des corelings." },
+        { speaker: 'narrator', text: "Il ne reste plus qu'à le construire. En pleine guerre. Sous les assauts des chtoniens." },
       ],
     },
   ],
@@ -4274,7 +4274,7 @@ export const CHAPTER_LEESHA_6: ChapterDefinition = {
     lines: [
       { speaker: 'narrator', text: "Le réseau surcharge. Les wards explosent en chaîne — trop d'énergie, trop de connexions. Ce qui devait protéger détruit." },
       { speaker: 'leesha_young', text: "Non ! Le réseau... J'ai mal calculé les flux... C'est ma faute...", emotion: 'scared' },
-      { speaker: 'narrator', text: "Le cœur du village s'arrête. Et dans le silence, les corelings se déversent." },
+      { speaker: 'narrator', text: "Le cœur du village s'arrête. Et dans le silence, les chtoniens se déversent." },
       { speaker: 'narrator', text: "Chapitre 22 — Échec" },
     ],
   }],
@@ -4378,7 +4378,7 @@ export const CHAPTER_JARDIR_6: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Inevera jette les os de démon. Les symboles qu'ils forment la font pâlir sous son voile." },
           { speaker: 'jardir_young', text: "Que vois-tu ?", emotion: 'neutral' },
-          { speaker: 'narrator', text: "Un silence. Puis : Un démon ancien. Il vient. Pas un coreling ordinaire — un esprit. Un maître." },
+          { speaker: 'narrator', text: "Un silence. Puis : Un démon ancien. Il vient. Pas un chtonien ordinaire — un esprit. Un maître." },
           { speaker: 'jardir_young', text: "Sharak Ka. La vraie guerre commence.", emotion: 'determined' },
         ],
         choices: [
@@ -4411,7 +4411,7 @@ export const CHAPTER_JARDIR_6: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Un incident. Un Sharum a frappé un bûcheron. Le bûcheron a répondu avec sa hache. Du sang a coulé." },
           { speaker: 'jardir_young', text: "La discipline de mes hommes n'excuse pas leur mépris. Mais vos bûcherons doivent apprendre le respect.", emotion: 'angry' },
-          { speaker: 'arlen_young', text: "Jardir. On n'a pas le temps pour ça. Les corelings ne font pas de différence entre un Krasien et un Thésien.", emotion: 'determined' },
+          { speaker: 'arlen_young', text: "Jardir. On n'a pas le temps pour ça. Les chtoniens ne font pas de différence entre un Krasien et un Thésien.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -4475,7 +4475,7 @@ export const CHAPTER_JARDIR_6: ChapterDefinition = {
     {
       id: 'j6_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "L'aube. Les Sharum et les bûcherons se tiennent côte à côte parmi les cendres des corelings. Le sang se mêle — krasien et thésien, indistinct." },
+        { speaker: 'narrator', text: "L'aube. Les Sharum et les bûcherons se tiennent côte à côte parmi les cendres des chtoniens. Le sang se mêle — krasien et thésien, indistinct." },
         { speaker: 'jardir_young', text: "Everam soit loué. Sharak Ka a forgé ce que la diplomatie n'aurait jamais pu créer.", emotion: 'hopeful' },
       ],
       nextNodeId: 'j6_victory_2',
@@ -4735,7 +4735,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       id: 'f_intro_1', background: 'forest_village',
       lines: [
         { speaker: 'narrator', text: "Cutter's Hollow. Le village de bûcherons au cœur de la forêt. C'est ici que tout a commencé — et c'est ici que tout va se décider." },
-        { speaker: 'narrator', text: "Des réfugiés affluent de toute la région. Les corelings sont plus agressifs que jamais, comme s'ils sentaient quelque chose changer." },
+        { speaker: 'narrator', text: "Des réfugiés affluent de toute la région. Les chtoniens sont plus agressifs que jamais, comme s'ils sentaient quelque chose changer." },
         { speaker: 'narrator', text: "Et au milieu du chaos, un homme arrive. Couvert de wards tatoués sur chaque centimètre de peau. Les yeux brûlants de détermination." },
       ],
       nextNodeId: 'f_intro_2',
@@ -4754,7 +4754,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       id: 'f_intro_jardir', background: 'krasia',
       lines: [
         { speaker: 'narrator', text: "Un cor de guerre retentit à la lisière sud. Des guerriers en robes blanches émergent de la forêt, lances au poing." },
-        { speaker: 'jardir_young', text: "Arlen! Par Everam, tu es vivant. J'ai mené mes Sharum à travers le désert en suivant les corelings.", emotion: 'determined' },
+        { speaker: 'jardir_young', text: "Arlen! Par Everam, tu es vivant. J'ai mené mes Sharum à travers le désert en suivant les chtoniens.", emotion: 'determined' },
         { speaker: 'arlen_young', text: "Jardir... Tu es venu.", emotion: 'hopeful' },
         { speaker: 'jardir_young', text: "Sharak Ka — la Première Guerre — ne se gagne pas seul. Mes guerriers tiendront la lisière sud.", emotion: 'determined' },
         { speaker: 'leesha_young', text: "Des Krasiens ? Ici ? Je ne sais pas si les villageois—", emotion: 'scared' },
@@ -4765,7 +4765,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
     {
       id: 'f_intro_3', background: 'village_sunset',
       lines: [
-        { speaker: 'leesha_young', text: "Les corelings convergent vers le village. Plus que jamais. Comme une armée.", emotion: 'scared' },
+        { speaker: 'leesha_young', text: "Les chtoniens convergent vers le village. Plus que jamais. Comme une armée.", emotion: 'scared' },
         { speaker: 'arlen_young', text: "Alors on va se battre. Plus de wards passifs. Plus de peur. Cette nuit, c'est nous qui attaquons.", emotion: 'determined' },
         { speaker: 'rojer_young', text: "Ma musique peut les ralentir. Les troubler. Si je joue pendant que vous combattez...", emotion: 'determined' },
         { speaker: 'jardir_young', text: "Mes Sharum protégeront les flancs. Everam est avec nous.", emotion: 'determined' },
@@ -4782,7 +4782,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       dialogueNodes: [{
         id: 'f_day1', background: 'forest_village',
         lines: [
-          { speaker: 'narrator', text: "Première nuit passée. Les corelings ont été repoussés — pour la première fois, par la force, pas par la peur." },
+          { speaker: 'narrator', text: "Première nuit passée. Les chtoniens ont été repoussés — pour la première fois, par la force, pas par la peur." },
           { speaker: 'arlen_young', text: "Les wards de combat fonctionnent. Mais les villageois ne savent pas se battre. Si les wards cèdent, ils paniquent.", emotion: 'determined' },
           { speaker: 'leesha_young', text: "Je peux former les femmes à tracer des wards de secours. Ou je continue mes recherches sur les combinaisons triples.", emotion: 'determined' },
         ],
@@ -4815,8 +4815,8 @@ export const CHAPTER_FINAL: ChapterDefinition = {
         id: 'f_day2', background: 'refugees',
         lines: [
           { speaker: 'narrator', text: "Un convoi de réfugiés arrive de l'ouest. Parmi eux, des blessés et des enfants." },
-          { speaker: 'refugee', text: "Notre village a été rasé. Les corelings... ils étaient organisés. Comme s'ils avaient un chef.", emotion: 'scared' },
-          { speaker: 'arlen_young', text: "Un chef coreling. Un démon ancien. C'est lui qui dirige l'assaut contre Cutter's Hollow.", emotion: 'angry' },
+          { speaker: 'refugee', text: "Notre village a été rasé. Les chtoniens... ils étaient organisés. Comme s'ils avaient un chef.", emotion: 'scared' },
+          { speaker: 'arlen_young', text: "Un chef chtonien. Un démon ancien. C'est lui qui dirige l'assaut contre Cutter's Hollow.", emotion: 'angry' },
           { speaker: 'rojer_young', text: "Je peux aller à la lisière sud jouer pour les ralentir. Ma musique les perturbe. Mais je serai exposé.", emotion: 'determined' },
         ],
         choices: [
@@ -4878,7 +4878,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       dialogueNodes: [{
         id: 'f_day4', background: 'village_sunset',
         lines: [
-          { speaker: 'narrator', text: "Dernière nuit. Le ciel est rouge sang. Les corelings grondent dans la forêt, plus nombreux que jamais." },
+          { speaker: 'narrator', text: "Dernière nuit. Le ciel est rouge sang. Les chtoniens grondent dans la forêt, plus nombreux que jamais." },
           { speaker: 'arlen_young', text: "Cette nuit, ils enverront tout. Le démon ancien viendra en personne. Je le sens.", emotion: 'determined' },
           { speaker: 'leesha_young', text: "J'ai préparé un onguent de ward concentré. On peut l'appliquer sur les défenses... ou sur toi, Arlen.", emotion: 'neutral' },
           { speaker: 'rojer_young', text: "Si on renforce Arlen, il pourra affronter le démon ancien. Mais le village sera plus vulnérable.", emotion: 'scared' },
@@ -4915,7 +4915,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       id: 'f_victory_1', background: 'dawn_victory',
       lines: [
         { speaker: 'narrator', text: "L'aube. La cinquième aube. Et Cutter's Hollow tient debout." },
-        { speaker: 'narrator', text: "La forêt est silencieuse. Pour la première fois depuis des générations, les corelings n'ont pas gagné. Ils ont été battus." },
+        { speaker: 'narrator', text: "La forêt est silencieuse. Pour la première fois depuis des générations, les chtoniens n'ont pas gagné. Ils ont été battus." },
         { speaker: 'narrator', text: "Au centre du village, Arlen Bales se tient debout. Couvert de sang — le sien et celui des démons. Les wards sur sa peau brillent encore." },
       ],
       nextNodeId: 'f_victory_2',

@@ -836,7 +836,7 @@ export default function WardedGameScreen() {
           <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.4)' }} />
           <Text style={styles.transitionEmoji}>🌙</Text>
           <Text style={styles.transitionText}>LA NUIT TOMBE</Text>
-          <Text style={styles.transitionSub}>Les ténèbres s'éveillent... Les corelings montent de la terre.</Text>
+          <Text style={styles.transitionSub}>Les ténèbres s'éveillent... Les chtoniens montent de la terre.</Text>
         </ImageBackground>
       )}
 

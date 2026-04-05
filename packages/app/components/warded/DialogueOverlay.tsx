@@ -245,17 +245,18 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                   opacity: spriteAnim,
                 },
               ]}>
-                <View style={{ overflow: 'hidden', borderRadius: 12 }}>
+                <View style={{ overflow: 'hidden' }}>
                   <Image source={sprite} style={styles.activeSprite} />
-                  {/* Emotion color overlay — clipped to image bounds */}
+                  {/* Emotion color overlay */}
                   {emotionTint !== 'transparent' && (
                     <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: emotionTint }} />
                   )}
+                  {/* Edge fades — blend sprite seamlessly into background */}
+                  <View style={styles.spriteFadeBottom} />
+                  <View style={styles.spriteFadeTop} />
+                  <View style={styles.spriteFadeLeft} />
+                  <View style={styles.spriteFadeRight} />
                 </View>
-                {/* Edge fade: blend sprite into background */}
-                <View style={styles.spriteFadeBottom} />
-                <View style={styles.spriteFadeLeft} />
-                <View style={styles.spriteFadeRight} />
                 {/* Glow behind active speaker */}
                 <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
               </Animated.View>
@@ -360,25 +361,32 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: SPRITE_HEIGHT * 0.25,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    opacity: 0.8,
+    height: SPRITE_HEIGHT * 0.35,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  spriteFadeTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: SPRITE_HEIGHT * 0.2,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   spriteFadeLeft: {
     position: 'absolute',
-    top: SPRITE_HEIGHT * 0.3,
+    top: 0,
     left: 0,
     bottom: 0,
-    width: SCREEN_W * 0.08,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: SCREEN_W * 0.12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   spriteFadeRight: {
     position: 'absolute',
-    top: SPRITE_HEIGHT * 0.3,
+    top: 0,
     right: 0,
     bottom: 0,
-    width: SCREEN_W * 0.08,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    width: SCREEN_W * 0.12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   spriteGlow: {
     position: 'absolute',
