@@ -16,11 +16,17 @@ const HERO_JARDIR = require('../assets/images/hero_jardir.png');
 const HERO_ROJER = require('../assets/images/hero_rojer.png');
 const HERO_LEESHA = require('../assets/images/hero_leesha.png');
 
+const HERO_ARLEN_YOUNG = require('../assets/images/hero_arlen_young.png');
+
 const HERO_IMAGES: Record<string, any> = {
   arlen: HERO_ARLEN,
+  arlen_young: HERO_ARLEN_YOUNG,
   jardir: HERO_JARDIR,
+  jardir_young: HERO_JARDIR,
   rojer: HERO_ROJER,
+  rojer_young: HERO_ROJER,
   leesha: HERO_LEESHA,
+  leesha_young: HERO_LEESHA,
 };
 
 // Hero selection lore & gameplay descriptions
@@ -34,7 +40,7 @@ const HERO_LORE: Record<string, { emoji: string; lore: string; gameplay: string;
   jardir: {
     emoji: '👑',
     lore: 'Ahmann Jardir, le Shar\'Dama Ka — Celui Qui Voit dans la Nuit. Chef guerrier de Krasia, il mène ses Sharum au combat avec une ferveur divine.',
-    gameplay: 'Commandant militaire. Déploie des guerriers Sharum (force 2) sur la carte. Crown of Kaji booste tous les guerriers de +2. Rally renforce un guerrier à la Présence.',
+    gameplay: 'Commandant militaire. Déploie des guerriers Sharum (force 2) sur la carte. Couronne de Kaji booste tous les guerriers de +2. Rally renforce un guerrier à la Présence.',
     color: '#FF5252',
   },
   rojer: {
@@ -963,7 +969,7 @@ export default function WardedGameScreen() {
       {mistWalkMode && (
         <View style={{ backgroundColor: '#9b30ff20', borderWidth: 1, borderColor: '#9b30ff', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 4 }}>
           <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
-            ⚡ MIST WALK — Tape un lieu pour te téléporter
+            ⚡ MARCHE BRUMEUSE — Tape un lieu pour te téléporter
           </Text>
           <TouchableOpacity onPress={() => setMistWalkMode(false)}>
             <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, textAlign: 'center', marginTop: 2 }}>Annuler</Text>
@@ -1147,8 +1153,27 @@ export default function WardedGameScreen() {
         </View>
       )}
 
-      {/* Action bar — day: shown on toggle; night: always shown; hidden when detail open */}
-      {(isNight || showActionBar) && !selectedLoc && (
+      {/* Night floating action button (when bar hidden) */}
+      {isNight && !showActionBar && !selectedLoc && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 4 }}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: warded.bgCard, borderWidth: 1, borderColor: warded.danger, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 }}
+            onPress={() => setShowActionBar(true)}
+          >
+            <Text style={{ fontSize: 16 }}>⚔</Text>
+            <Text style={{ color: warded.danger, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>Combat (AP: {state.hero.ap})</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: 'center', backgroundColor: warded.bgCard, borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
+            onPress={() => setInspectMode(!inspectMode)}
+          >
+            <Text style={{ fontSize: 16 }}>🔍</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Action bar — shown on toggle, hidden when detail open */}
+      {showActionBar && !selectedLoc && (
       <ScrollView style={styles.actionBar} contentContainerStyle={styles.actionBarContent} showsVerticalScrollIndicator={true}>
           {/* Day ONLY: craft wards */}
           {isDay && (
@@ -1338,7 +1363,7 @@ export default function WardedGameScreen() {
               {state.hero.ap >= 2 && (state.hero.jardir_warriors ?? []).length > 0 && (
                 <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#FFD740', backgroundColor: '#FFD74015' }]}
                   onPress={() => { ctrl.doCrownOfKaji(); setActionFlash('#FFD740'); setTimeout(() => setActionFlash(null), 400); }}>
-                  <Text style={[styles.phaseBtnText, { color: '#FFD740' }]}>👑 Crown of Kaji (2 AP) — tous les guerriers +2</Text>
+                  <Text style={[styles.phaseBtnText, { color: '#FFD740' }]}>👑 Couronne de Kaji (2 AP) — tous les guerriers +2</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -1410,7 +1435,7 @@ export default function WardedGameScreen() {
               {state.hero.ap >= 3 && (
                 <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#69F0AE', backgroundColor: '#69F0AE15' }]}
                   onPress={() => { ctrl.doGreaterWardCircle(); setActionFlash('#69F0AE'); setTimeout(() => setActionFlash(null), 400); }}>
-                  <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🛡 Greater Ward Circle (3 AP) — wards temporaires partout</Text>
+                  <Text style={[styles.phaseBtnText, { color: '#69F0AE' }]}>🛡 Grand Cercle de Runes (3 AP) — runes temporaires partout</Text>
                 </TouchableOpacity>
               )}
               {(state.hero.leesha_consumables ?? []).length > 0 && (
@@ -1442,7 +1467,7 @@ export default function WardedGameScreen() {
                     const target = state.locations.find(l => !l.fallen && l.wards.some(ws => !ws.ward));
                     if (target) { ctrl.doBloodWard('fire', target.id); setActionFlash('#F44336'); setTimeout(() => setActionFlash(null), 400); }
                   }}>
-                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Blood Ward (-3 HP → ward permanent)</Text>
+                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Rune de Sang (-3 HP → rune permanente)</Text>
                 </TouchableOpacity>
               )}
               {state.hero.id === 'leesha' && state.hero.hp > 5 && (
@@ -1565,7 +1590,7 @@ export default function WardedGameScreen() {
                   <Text style={styles.optionalLabel}>ACTION BONUS (optionnel)</Text>
                   {state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
                     <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.accent, backgroundColor: warded.accent + '15' }]} onPress={ctrl.doWardedFist}>
-                      <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Warded Fist ({state.hero.arlenCharge} dmg)</Text>
+                      <Text style={[styles.phaseBtnText, { color: warded.accent }]}>⚔ Poing Runé ({state.hero.arlenCharge} dmg)</Text>
                     </TouchableOpacity>
                   )}
                   {state.hero.id === 'arlen_young' && (
@@ -1618,7 +1643,7 @@ export default function WardedGameScreen() {
                   {state.hero.id === 'rojer' && state.hero.hp > 4 && (
                     <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336', backgroundColor: '#F4433615' }]}
                       onPress={() => ctrl.doDesperateMelody('lullaby')}>
-                      <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Desperate Melody (-3 HP → chanson bonus)</Text>
+                      <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>🩸 Mélodie Désespérée (-3 HP → chanson bonus)</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1872,9 +1897,26 @@ export default function WardedGameScreen() {
             onPress={() => audio.toggleMute()}>
             <Text style={[styles.phaseBtnText, { color: warded.textDim }]}>{audio.muted ? '🔇 Son désactivé' : '🔊 Son activé'}</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.warning, width: 200 }]}
+            onPress={async () => {
+              // Save current game state
+              try {
+                await AsyncStorage.setItem('@warded_game_autosave', JSON.stringify({
+                  heroId: state.hero.id,
+                  chapter: campaignChapter?.id,
+                  nightNumber: state.nightNumber,
+                  phase: state.phase,
+                  timestamp: Date.now(),
+                }));
+              } catch {}
+              audio.stopMusic();
+              router.replace('/');
+            }}>
+            <Text style={[styles.phaseBtnText, { color: warded.warning }]}>Sauvegarder et quitter</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={[styles.phaseBtn, { borderColor: warded.danger, width: 200 }]}
             onPress={() => { audio.stopMusic(); router.replace('/'); }}>
-            <Text style={[styles.phaseBtnText, { color: warded.danger }]}>Quitter</Text>
+            <Text style={[styles.phaseBtnText, { color: warded.danger }]}>Quitter sans sauvegarder</Text>
           </TouchableOpacity>
         </View>
       )}

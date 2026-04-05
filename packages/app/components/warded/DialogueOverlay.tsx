@@ -246,7 +246,9 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete, resourceS
                   opacity: spriteAnim,
                 },
               ]}>
-                <Image source={sprite} style={styles.activeSprite} />
+                <View style={styles.spriteFrame}>
+                  <Image source={sprite} style={styles.activeSprite} />
+                </View>
                 {/* Glow behind active speaker */}
                 <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
               </Animated.View>
@@ -352,10 +354,22 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 10,
   },
+  spriteFrame: {
+    borderWidth: 4,
+    borderColor: '#8B6914',
+    borderRadius: 8,
+    shadowColor: '#5a4000',
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    shadowOffset: { width: 2, height: 2 },
+    elevation: 8,
+    backgroundColor: '#2a1a08',
+    overflow: 'hidden',
+  },
   activeSprite: {
-    width: SCREEN_W * 0.55,
-    height: SPRITE_HEIGHT,
-    resizeMode: 'contain',
+    width: SCREEN_W * 0.5,
+    height: SPRITE_HEIGHT * 0.9,
+    resizeMode: 'cover',
   },
   spriteFadeBottom: {
     position: 'absolute',
