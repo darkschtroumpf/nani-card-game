@@ -850,15 +850,19 @@ export function emergencyRepairWard(state: GameState, locationId: LocationId, sl
     if ((state as any)._nightRepairUsed) return 'Déjà réparé cette vague.';
     if (state.hero.ap <= 0) return 'Pas assez d\'AP (coût: 1).';
   }
-  // Day: only when 0 AP (uses regular repair instead)
+  // Day: only when 0 AP (costs 1 HP instead)
   if (state.phase === 'day' && state.hero.ap > 0) return 'Utilise tes AP d\'abord.';
+  if (state.phase === 'day' && state.hero.hp <= 1) return 'Pas assez de HP (coût: 1).';
 
   ws.durability = 4;
   if (state.phase === 'night') {
     state.hero.ap--;
     (state as any)._nightRepairUsed = true;
+    addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-1 AP).`, true);
+  } else {
+    state.hero.hp--;
+    addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-1 HP).`, true);
   }
-  addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-1 AP).`, true);
   return null; // success
 }
 

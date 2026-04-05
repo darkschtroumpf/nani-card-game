@@ -1220,17 +1220,16 @@ export default function WardedGameScreen() {
                     if (allDamaged.length === 0) return null;
                     return (
                       <View style={{ marginTop: 4, gap: 4 }}>
-                        <Text style={{ color: warded.warning, fontSize: wardedFonts.xs, fontWeight: 'bold' }}>🔧 Réparation d'urgence</Text>
+                        <Text style={{ color: warded.warning, fontSize: wardedFonts.xs, fontWeight: 'bold' }}>🔧 Réparation d'urgence (−1 HP)</Text>
                         <View style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap' }}>
                           {allDamaged.slice(0, 6).map(({ loc, ws, i }) => {
-                            const cost = 4 - ws.durability;
-                            const canAfford = state.hero.hp > cost;
+                            const canAfford = state.hero.hp > 1;
                             return (
                               <TouchableOpacity key={`${loc.id}-${i}`} disabled={!canAfford}
                                 style={{ borderWidth: 1, borderColor: canAfford ? warded.warning : warded.textDark, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, opacity: canAfford ? 1 : 0.4 }}
                                 onPress={() => { const err = ctrl.doEmergencyRepair(loc.id, i); if (!err) audio.playSfx('heal'); }}>
                                 <Text style={{ color: canAfford ? warded.warning : warded.textDark, fontSize: wardedFonts.xs }}>
-                                  {ws.ward} @{loc.name.split(' ')[0]} ({ws.durability}/4) −{cost}HP
+                                  {ws.ward} @{loc.name.split(' ')[0]} ({ws.durability}/4)
                                 </Text>
                               </TouchableOpacity>
                             );
@@ -1537,11 +1536,10 @@ export default function WardedGameScreen() {
                 if (damagedWards.length === 0) return null;
                 return (
                   <View style={styles.optionalAction}>
-                    <Text style={styles.optionalLabel}>🔧 RÉPARATION D'URGENCE (1 par vague)</Text>
+                    <Text style={styles.optionalLabel}>🔧 RÉPARATION D'URGENCE (−1 AP, 1 par vague)</Text>
                     <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
                       {damagedWards.map(({ ws, i }) => {
-                        const cost = 4 - ws.durability;
-                        const canAfford = state.hero.hp > cost;
+                        const canAfford = state.hero.ap > 0;
                         return (
                           <TouchableOpacity key={i}
                             disabled={!canAfford}
@@ -1551,7 +1549,7 @@ export default function WardedGameScreen() {
                               if (!err) audio.playSfx('heal');
                             }}>
                             <Text style={[styles.phaseBtnText, { color: canAfford ? warded.warning : warded.textDark, fontSize: 11 }]}>
-                              🔧 {ws.ward} ({ws.durability}/4) — {cost} HP
+                              🔧 {ws.ward} ({ws.durability}/4)
                             </Text>
                           </TouchableOpacity>
                         );
