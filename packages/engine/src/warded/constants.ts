@@ -115,7 +115,7 @@ export const WARD_COMBOS: WardCombo[] = [
   { name: 'Inferno', wards: ['wind', 'fire'], minBondStrength: 2, unlockedAtChapter: 3,
     passiveEffect: 'Feu touche aussi le lieu adjacent', activeEffect: '2 dégâts à tous les démons ici + lieux adjacents', activeName: 'Tempête de Feu' },
   { name: 'Forteresse', wards: ['wind', 'stone'], minBondStrength: 2, unlockedAtChapter: 1,
-    passiveEffect: '+3 défense totale', activeEffect: 'Immunité cette vague + attire 1 démon de chaque lieu adjacent', activeName: 'Rempart' },
+    passiveEffect: '+3 défense totale', activeEffect: '+5 défense cette vague + attire 1 démon de chaque lieu adjacent', activeName: 'Rempart' },
   { name: 'Tempête', wards: ['wind', 'light'], minBondStrength: 2, unlockedAtChapter: 4,
     passiveEffect: 'Prévisualise les démons de la prochaine vague', activeEffect: 'Redistribue jusqu\'à 3 démons non-verrouillés entre lieux', activeName: 'Ouragan' },
   { name: 'Renouveau', wards: ['wind', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
@@ -127,7 +127,7 @@ export const WARD_COMBOS: WardCombo[] = [
   { name: 'Sentinelle', wards: ['stone', 'light'], minBondStrength: 2, unlockedAtChapter: 4,
     passiveEffect: '+2 défense + révèle les types d\'attaquants', activeEffect: '2 défense + 2 dégâts à tous les démons révélés', activeName: 'Jugement' },
   { name: 'Sanctuaire', wards: ['stone', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
-    passiveEffect: 'Soigne 1 Pop par vague (pas seulement à l\'aube)', activeEffect: 'Soigne 3 Pop + immunité cette vague', activeName: 'Refuge' },
+    passiveEffect: 'Soigne 1 Pop par vague (pas seulement à l\'aube)', activeEffect: 'Soigne 3 Pop + +4 défense cette vague', activeName: 'Refuge' },
 
   // Light combos (balanced L=2/R=2)
   { name: 'Phare', wards: ['light', 'fire'], minBondStrength: 2, unlockedAtChapter: 4,

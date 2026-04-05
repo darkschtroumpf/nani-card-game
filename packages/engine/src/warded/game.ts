@@ -1230,8 +1230,8 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       break;
     }
     case 'Forteresse': {
-      // Rempart: immunity this wave + attract 1 demon from each adjacent
-      (loc as any)._bulwarkActive = true;
+      // Rempart: +5 defense this wave + attract 1 demon from each adjacent
+      (loc as any)._comboDefense = ((loc as any)._comboDefense ?? 0) + 5;
       for (const adjId of getAdjacentIds(locId)) {
         const adjDemons = state.demonsAtLocations[adjId];
         const pullable = adjDemons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss);
@@ -1241,7 +1241,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
           events.push(`Rempart attire ${pulled.demon.type} de ${getLocation(state, adjId).name}.`);
         }
       }
-      events.push(`Rempart: immunité cette vague à ${loc.name}.`);
+      events.push(`Rempart: +5 défense cette vague à ${loc.name}.`);
       break;
     }
     case 'Renouveau': {
@@ -1287,10 +1287,10 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       break;
     }
     case 'Sanctuaire': {
-      // Refuge: heal 3 pop + immunity
+      // Refuge: heal 3 pop + +4 defense
       loc.population = Math.min(loc.maxPopulation, loc.population + 3);
-      (loc as any)._bulwarkActive = true;
-      events.push(`Refuge: +3 Pop et immunité à ${loc.name}.`);
+      (loc as any)._comboDefense = ((loc as any)._comboDefense ?? 0) + 4;
+      events.push(`Refuge: +3 Pop et +4 défense à ${loc.name}.`);
       break;
     }
     case 'Phare': {
