@@ -13,6 +13,7 @@ import type { ChapterDefinition, CampaignSaveState } from '../../engine/src/ward
 import type { HeroId, TalentDefinition } from '../../engine/src/warded/types';
 
 const BG_NIGHT = require('../assets/images/bg_night.png');
+const MAP_THESA = require('../assets/images/map_thesa.png');
 
 const HERO_IMAGES: Record<string, any> = {
   arlen: require('../assets/images/hero_arlen.png'),
@@ -119,68 +120,134 @@ export default function CampaignScreen() {
     );
   }
 
-  // Act-based layout with cross-hero unlock
+  // Find next chapter to play
+  const nextChapter = CHAPTERS.find(c => save && !save.completedChapters.includes(c.id) && isChapterUnlocked(c, save, CHAPTERS));
+  const [selectedChapter, setSelectedChapter] = useState<ChapterDefinition | null>(null);
+
   const ACT_NAMES: Record<number, string> = {
-    1: 'Acte I — Origines',
-    2: 'Acte II — Croissance',
-    3: 'Acte III — Tournants',
-    4: 'Acte IV — La Quête',
-    5: 'Acte V — Transformation',
-    6: 'Acte VI — Convergence',
-    0: 'Final',
+    1: 'Acte I — Origines', 2: 'Acte II — Croissance', 3: 'Acte III — Tournants',
+    4: 'Acte IV — La Quête', 5: 'Acte V — Transformation', 6: 'Acte VI — Convergence', 0: 'Final',
   };
-  const acts = [1, 2, 3, 4, 5, 6, 0];
 
   return (
     <SafeAreaView style={styles.container}>
-      <ImageBackground source={BG_NIGHT} style={StyleSheet.absoluteFillObject} imageStyle={{ opacity: 0.25 }}>
-        <View style={styles.bgOverlay} />
-      </ImageBackground>
-      <ScrollView contentContainerStyle={styles.selectContainer}>
-        <Text style={styles.title}>CAMPAGNE</Text>
-        <Text style={styles.sub}>25 chapitres — 4 destins entrelacés</Text>
+      {/* Parchment map background */}
+      <Image source={MAP_THESA} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+      <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' }} />
 
-        {acts.map(actNum => {
+      {/* Top bar */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8 }}>
+        <TouchableOpacity onPress={() => router.replace('/')}>
+          <Text style={{ color: warded.text, fontSize: wardedFonts.md }}>← Retour</Text>
+        </TouchableOpacity>
+        <Text style={{ color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold', letterSpacing: 2 }}>CAMPAGNE</Text>
+        <TouchableOpacity onPress={async () => {
+          const fresh = createNewSave();
+          setSave(fresh);
+          await AsyncStorage.setItem(SAVE_KEY, JSON.stringify(fresh));
+        }}>
+          <Text style={{ color: warded.textDim, fontSize: wardedFonts.sm }}>Recommencer</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Chapter list overlay — scrollable */}
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 120, paddingTop: 8 }}>
+        {[1, 2, 3, 4, 5, 6, 0].map(actNum => {
           const actChapters = CHAPTERS.filter(c => c.act === actNum);
           if (actChapters.length === 0) return null;
           const actCompleted = actChapters.every(c => save?.completedChapters.includes(c.id));
           const actProgress = actChapters.filter(c => save?.completedChapters.includes(c.id)).length;
 
           return (
-            <View key={`act-${actNum}`} style={[styles.card, actCompleted && { borderColor: warded.success + '60' }]}>
-              <View style={styles.cardHeader}>
-                <Text style={[styles.cardName, actCompleted && { color: warded.success }]}>
-                  {ACT_NAMES[actNum]} {actCompleted ? '✓' : `(${actProgress}/${actChapters.length})`}
-                </Text>
+            <View key={`act-${actNum}`} style={{ marginBottom: 8 }}>
+              <Text style={{ color: actCompleted ? warded.success : warded.accent, fontSize: wardedFonts.sm, fontWeight: 'bold', letterSpacing: 1, marginBottom: 4 }}>
+                {ACT_NAMES[actNum]} {actCompleted ? '✓' : `(${actProgress}/${actChapters.length})`}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {actChapters.map(chapter => {
+                  const isCompleted = save?.completedChapters.includes(chapter.id);
+                  const unlocked = save ? isChapterUnlocked(chapter, save, CHAPTERS) : chapter.act === 1;
+                  const isNext = nextChapter?.id === chapter.id;
+                  const info = CHARACTER_INFO[chapter.heroId] ?? { name: chapter.heroId, color: warded.accent };
+                  const stars = save?.chapterStars?.[chapter.id] ?? 0;
+                  return (
+                    <TouchableOpacity
+                      key={chapter.id}
+                      disabled={!unlocked}
+                      onPress={() => setSelectedChapter(chapter)}
+                      style={{
+                        width: '48%', backgroundColor: 'rgba(10,10,20,0.85)', borderRadius: 10, padding: 8,
+                        borderWidth: isNext ? 2 : 1,
+                        borderColor: isNext ? warded.accent : isCompleted ? info.color + '60' : unlocked ? warded.border : 'rgba(50,50,60,0.4)',
+                        opacity: unlocked ? 1 : 0.4,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[chapter.heroId] ?? chapter.heroId]} style={{ width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: info.color }} />
+                        <Text style={{ color: info.color, fontSize: wardedFonts.xs, fontWeight: 'bold', flex: 1 }} numberOfLines={1}>{chapter.title}</Text>
+                      </View>
+                      <Text style={{ color: warded.textDim, fontSize: 9, marginTop: 2 }} numberOfLines={1}>{chapter.subtitle}</Text>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 3 }}>
+                        {isCompleted ? <Text style={{ fontSize: 10 }}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</Text> : null}
+                        {isNext && <Text style={{ color: warded.accent, fontSize: 9, fontWeight: 'bold' }}>SUIVANT</Text>}
+                        {!unlocked && <Text style={{ fontSize: 10 }}>🔒</Text>}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
-              {actChapters.map(chapter => {
-                const isCompleted = save?.completedChapters.includes(chapter.id);
-                const unlocked = save ? isChapterUnlocked(chapter, save, CHAPTERS) : chapter.act === 1;
-                const info = CHARACTER_INFO[chapter.heroId] ?? { name: chapter.heroId, color: warded.accent };
-                return (
-                  <TouchableOpacity
-                    key={chapter.id}
-                    style={[styles.chapterRow, !unlocked && { opacity: 0.35 }]}
-                    disabled={!unlocked}
-                    onPress={() => startChapter(chapter)}
-                    activeOpacity={0.8}
-                  >
-                    <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[chapter.heroId] ?? chapter.heroId]} style={[styles.chapterAvatar, { borderColor: info.color }]} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.cardChapter, { color: info.color }]}>{chapter.title}</Text>
-                      <Text style={styles.cardSub}>{chapter.subtitle}</Text>
-                    </View>
-                    {isCompleted && (() => {
-                      const s = save?.chapterStars?.[chapter.id] ?? 1;
-                      return <Text style={styles.check}>{s >= 1 ? '★' : '☆'}{s >= 2 ? '★' : '☆'}{s >= 3 ? '★' : '☆'}</Text>;
-                    })()}
-                    {!unlocked && <Text style={styles.check}>🔒</Text>}
-                  </TouchableOpacity>
-                );
-              })}
             </View>
           );
         })}
+      </ScrollView>
+
+      {/* Continue button — fixed at bottom */}
+      {nextChapter && !selectedChapter && (
+        <View style={{ position: 'absolute', bottom: 20, left: 16, right: 16 }}>
+          <TouchableOpacity
+            style={{ backgroundColor: 'rgba(10,10,20,0.9)', borderWidth: 2, borderColor: warded.accent, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+            onPress={() => startChapter(nextChapter)}
+          >
+            <Text style={{ color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold' }}>▶ Continuer — {nextChapter.title}</Text>
+            <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{nextChapter.subtitle}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Chapter detail overlay */}
+      {selectedChapter && (() => {
+        const isCompleted = save?.completedChapters.includes(selectedChapter.id);
+        const unlocked = save ? isChapterUnlocked(selectedChapter, save, CHAPTERS) : selectedChapter.act === 1;
+        const info = CHARACTER_INFO[selectedChapter.heroId] ?? { name: selectedChapter.heroId, color: warded.accent };
+        const stars = save?.chapterStars?.[selectedChapter.id] ?? 0;
+        return (
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(10,10,20,0.95)', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTopWidth: 2, borderTopColor: info.color + '60', padding: 20 }}>
+            <TouchableOpacity onPress={() => setSelectedChapter(null)} style={{ position: 'absolute', top: 12, right: 16 }}>
+              <Text style={{ color: warded.textDim, fontSize: 18 }}>✕</Text>
+            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[selectedChapter.heroId] ?? selectedChapter.heroId]} style={{ width: 48, height: 48, borderRadius: 24, borderWidth: 2, borderColor: info.color }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: info.color, fontSize: wardedFonts.lg, fontWeight: 'bold' }}>{selectedChapter.title}</Text>
+                <Text style={{ color: warded.textDim, fontSize: wardedFonts.sm }}>{selectedChapter.subtitle}</Text>
+              </View>
+            </View>
+            {isCompleted && <Text style={{ fontSize: 20, marginBottom: 8 }}>{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</Text>}
+            <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, marginBottom: 12 }}>
+              {selectedChapter.nightCount} nuits — {(selectedChapter.availableWards ?? []).join(', ') || 'pierre, vent'}
+            </Text>
+            <TouchableOpacity
+              disabled={!unlocked}
+              style={{ backgroundColor: unlocked ? info.color + '20' : 'transparent', borderWidth: 1, borderColor: unlocked ? info.color : warded.textDark, borderRadius: 12, paddingVertical: 12, alignItems: 'center', opacity: unlocked ? 1 : 0.4 }}
+              onPress={() => { setSelectedChapter(null); startChapter(selectedChapter); }}
+            >
+              <Text style={{ color: unlocked ? info.color : warded.textDark, fontSize: wardedFonts.md, fontWeight: 'bold' }}>
+                {isCompleted ? '🔄 Rejouer' : unlocked ? '▶ Lancer' : '🔒 Verrouillé'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })()}
 
         {/* Talent Tree — collapsible section */}
         {save && (() => {
@@ -236,10 +303,6 @@ export default function CampaignScreen() {
           );
         })()}
 
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace('/')}>
-          <Text style={styles.backText}>← Retour</Text>
-        </TouchableOpacity>
-      </ScrollView>
     </SafeAreaView>
   );
 }
