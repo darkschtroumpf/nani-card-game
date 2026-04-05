@@ -43,6 +43,14 @@ function getAdjacentIds(locationId: LocationId): LocationId[] {
   return ADJACENCY[locationId] ?? [];
 }
 
+/** Adjacent alive locations only (not fallen, not hidden) */
+function getAliveAdjacentIds(locationId: LocationId, state: GameState): LocationId[] {
+  return getAdjacentIds(locationId).filter(id => {
+    const loc = state.locations.find(l => l.id === id);
+    return loc && !loc.fallen && loc.maxPopulation > 0;
+  });
+}
+
 // ============================================================
 // Ward Chain — Mesh Analysis & Directional Combos
 // ============================================================
@@ -725,10 +733,7 @@ export function resolveWardPassives(state: GameState): string[] {
             for (let r = 0; r < redirectCount && demons.length > 0; r++) {
               const redirectable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind');
               if (redirectable < 0) break;
-              const adj = getAdjacentIds(loc.id).filter(a => {
-                const adjLoc = getLocation(state, a);
-                return !adjLoc.fallen && adjLoc.maxPopulation > 0;
-              });
+              const adj = getAliveAdjacentIds(loc.id, state);
               if (adj.length === 0) break;
               let bestAdj = adj[0];
               let bestCount = 99;
@@ -1034,7 +1039,7 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
     case 'wind': {
       // Gale: redirect up to 3 non-locked, non-boss, non-wind demons
       let redirected = 0;
-      const adjacent = getAdjacentIds(locId);
+      const adjacent = getAliveAdjacentIds(locId, state);
       for (let i = demons.length - 1; i >= 0 && redirected < 3; i--) {
         const d = demons[i];
         if (!d.demon.isLocked && !d.demon.isBoss && d.demon.type !== 'wind') {
@@ -1100,7 +1105,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       const tempCount = Math.min(3, tempRedirectables.length);
       for (let i = 0; i < tempCount; i++) {
         const d = tempRedirectables[i];
-        const adjIds = getAdjacentIds(locId);
+        const adjIds = getAliveAdjacentIds(locId, state);
         const target = adjIds.reduce((best, a) => {
           const c = (state.demonsAtLocations[a] ?? []).length;
           const bc = (state.demonsAtLocations[best] ?? []).length;
@@ -1131,7 +1136,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       }
       (loc as any)._bulwarkActive = true;
       // Redirect remaining non-locked
-      const adj = getAdjacentIds(locId);
+      const adj = getAliveAdjacentIds(locId, state);
       for (let i = demons.length - 1; i >= 0; i--) {
         if (!demons[i].demon.isLocked && !demons[i].demon.isBoss) {
           const target = adj[Math.floor(Math.random() * adj.length)];
@@ -1259,7 +1264,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       const renewRedirect = demons.filter(d => !d.demon.isLocked && !d.demon.isBoss);
       for (let i = 0; i < Math.min(2, renewRedirect.length); i++) {
         const d = renewRedirect[i];
-        const adjIds = getAdjacentIds(locId);
+        const adjIds = getAliveAdjacentIds(locId, state);
         const target = adjIds.reduce((best, a) => {
           return (state.demonsAtLocations[a]?.length ?? 0) < (state.demonsAtLocations[best]?.length ?? 0) ? a : best;
         }, adjIds[0]);
@@ -1352,7 +1357,7 @@ function applyComboActive(state: GameState, locId: LocationId, combo: WardCombo 
       const devCount = Math.min(3, devRedirect.length);
       for (let i = 0; i < devCount; i++) {
         const d = devRedirect[i];
-        const adjIds = getAdjacentIds(locId);
+        const adjIds = getAliveAdjacentIds(locId, state);
         const target = adjIds.reduce((best, a) => {
           return (state.demonsAtLocations[a]?.length ?? 0) < (state.demonsAtLocations[best]?.length ?? 0) ? a : best;
         }, adjIds[0]);
