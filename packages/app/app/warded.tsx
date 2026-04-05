@@ -68,7 +68,7 @@ import WorldMap from '../components/warded/WorldMap';
 import LocationDetail from '../components/warded/LocationDetail';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import type { LocationId, WardType, HeroId, Difficulty, SongType, Consumable, DemonAtLocation } from '../../engine/src/warded/types';
-import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS, RANDOM_DAY_EVENTS } from '../../engine/src/warded/constants';
+import { WARD_TYPES, WARD_COSTS, HEROES, SONGS, CONSUMABLE_RECIPES, WARD_COMBOS, WARD_LINK_PROFILES, WARD_PASSIVES, WARD_ACTIVES, RANDOM_DAY_EVENTS } from '../../engine/src/warded/constants';
 import { analyzeMesh, getAllDirectionalCombos, calculateScore } from '../../engine/src/warded/game';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
 import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campaign-types';
@@ -330,6 +330,7 @@ export default function WardedGameScreen() {
   const [showComboPanel, setShowComboPanel] = useState(true);
   const [inspectMode, setInspectMode] = useState(false);
   const [showActionBar, setShowActionBar] = useState(false);
+  const [wardDetail, setWardDetail] = useState<{ ward: WardType; mode: 'craft' | 'reserve'; reserveIndex?: number } | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
@@ -1182,8 +1183,8 @@ export default function WardedGameScreen() {
                         <TouchableOpacity
                           key={w}
                           style={[styles.wardCraftBtn, !canAfford && styles.btnDisabledExplained, { borderColor: wardColor(w) }]}
-                          disabled={!canAfford}
-                          onPress={() => { if (bestLoc) handleCraft(w, bestLoc.id); }}
+                          disabled={false}
+                          onPress={() => setWardDetail({ ward: w, mode: 'craft' })}
                         >
                           <Image source={WARD_IMAGES[w]} style={styles.wardCraftImage} />
                           <Text style={styles.wardCraftName}>{w}</Text>
@@ -1258,10 +1259,11 @@ export default function WardedGameScreen() {
               </View>
               <View style={styles.reserveChips}>
                 {state.wardReserves.map((w, i) => (
-                  <View key={i} style={[styles.reserveChip, { borderColor: wardColor(w) }]}>
+                  <TouchableOpacity key={i} style={[styles.reserveChip, { borderColor: wardColor(w) }]}
+                    onPress={() => setWardDetail({ ward: w, mode: 'reserve', reserveIndex: i })}>
                     <Image source={WARD_IMAGES[w]} style={{ width: 22, height: 22, borderRadius: 11 }} />
                     <Text style={{ color: wardColor(w), fontSize: 9, fontWeight: '600' }}>{w}</Text>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
@@ -1722,6 +1724,96 @@ export default function WardedGameScreen() {
           )}
         </ScrollView>
       )}
+
+      {/* Ward detail overlay — shows before buying or placing */}
+      {wardDetail && (() => {
+        const w = wardDetail.ward;
+        const cost = WARD_COSTS[w];
+        const links = WARD_LINK_PROFILES[w];
+        const passive = WARD_PASSIVES[w];
+        const active = WARD_ACTIVES[w];
+        const color = wardColor(w);
+        const bestLoc = state.locations.find(l => !l.fallen && l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
+        const canAfford = !!bestLoc;
+        // Find possible combos this ward could form
+        const possibleCombos = WARD_COMBOS.filter(c => c.wards.includes(w) && (!c.unlockedAtChapter || c.unlockedAtChapter <= (state.chapter ?? 1)));
+
+        return (
+          <View style={styles.detailOverlayContainer}>
+            <TouchableOpacity style={styles.detailBackdrop} activeOpacity={1} onPress={() => setWardDetail(null)} />
+            <View style={{ backgroundColor: warded.bg + 'f5', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTopWidth: 2, borderTopColor: color + '60', padding: 16, maxHeight: '55%' }}>
+              {/* Header */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                <Image source={WARD_IMAGES[w]} style={{ width: 48, height: 48, borderRadius: 12, borderWidth: 2, borderColor: color }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color, fontSize: wardedFonts.lg, fontWeight: 'bold', textTransform: 'capitalize' }}>{w}</Text>
+                  <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>
+                    {cost.wood > 0 ? `${cost.wood} Bois ` : ''}{cost.ink > 0 ? `${cost.ink} Encre` : ''}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => setWardDetail(null)}>
+                  <Text style={{ color: warded.textDim, fontSize: 20 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Links */}
+              <View style={{ flexDirection: 'row', gap: 16, marginBottom: 8, paddingVertical: 6, paddingHorizontal: 12, backgroundColor: warded.bgCard, borderRadius: 8 }}>
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>Liens Gauche</Text>
+                  <Text style={{ color, fontSize: wardedFonts.xl, fontWeight: 'bold' }}>{links.leftLinks}</Text>
+                </View>
+                <View style={{ width: 1, backgroundColor: warded.border }} />
+                <View style={{ alignItems: 'center', flex: 1 }}>
+                  <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>Liens Droite</Text>
+                  <Text style={{ color, fontSize: wardedFonts.xl, fontWeight: 'bold' }}>{links.rightLinks}</Text>
+                </View>
+              </View>
+
+              {/* Effects */}
+              <View style={{ gap: 4, marginBottom: 8 }}>
+                <Text style={{ color: '#4CAF50', fontSize: wardedFonts.xs, fontWeight: 'bold' }}>PASSIF</Text>
+                <Text style={{ color: warded.text, fontSize: wardedFonts.sm }}>{passive}</Text>
+                <Text style={{ color: '#FF9800', fontSize: wardedFonts.xs, fontWeight: 'bold', marginTop: 4 }}>ACTIF — {active.name}</Text>
+                <Text style={{ color: warded.text, fontSize: wardedFonts.sm }}>{active.effect}</Text>
+              </View>
+
+              {/* Possible combos */}
+              {possibleCombos.length > 0 && (
+                <View style={{ marginBottom: 10 }}>
+                  <Text style={{ color: warded.accent, fontSize: wardedFonts.xs, fontWeight: 'bold' }}>COMBOS POSSIBLES</Text>
+                  {possibleCombos.slice(0, 3).map((c, i) => (
+                    <Text key={i} style={{ color: warded.textDim, fontSize: wardedFonts.xs, marginTop: 2 }}>
+                      ✨ {c.name} ({c.wards.join(' + ')}) — {c.passiveEffect}
+                    </Text>
+                  ))}
+                </View>
+              )}
+
+              {/* Action button */}
+              {wardDetail.mode === 'craft' ? (
+                <TouchableOpacity
+                  disabled={!canAfford || state.hero.ap <= 0}
+                  style={{ backgroundColor: canAfford && state.hero.ap > 0 ? color + '20' : 'transparent', borderWidth: 1, borderColor: canAfford && state.hero.ap > 0 ? color : warded.textDark, borderRadius: 12, paddingVertical: 12, alignItems: 'center', opacity: canAfford && state.hero.ap > 0 ? 1 : 0.4 }}
+                  onPress={() => { if (bestLoc) { handleCraft(w, bestLoc.id); setWardDetail(null); } }}
+                >
+                  <Text style={{ color: canAfford ? color : warded.textDark, fontSize: wardedFonts.md, fontWeight: 'bold' }}>
+                    {state.hero.ap <= 0 ? '⚠ Plus d\'AP' : canAfford ? `⚒ Acheter (1 AP)` : '⚠ Ressources insuffisantes'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={{ backgroundColor: color + '20', borderWidth: 1, borderColor: color, borderRadius: 12, paddingVertical: 12, alignItems: 'center' }}
+                  onPress={() => { setWardDetail(null); }}
+                >
+                  <Text style={{ color, fontSize: wardedFonts.md, fontWeight: 'bold' }}>
+                    📦 Placer — tape un lieu sur la carte
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        );
+      })()}
 
       {/* FIX 3: Event log — hidden by default, toggleable */}
       {events.length > 0 && (
