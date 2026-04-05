@@ -726,11 +726,21 @@ export default function WardedGameScreen() {
     if (tutorialStep === 2) setTutorialStep(3);
   };
 
-  // Wrapped doFortify to advance tutorial
+  // Wrapped doFortify to advance tutorial + combo notification
   const handleFortify = (w: WardType, locId: LocationId) => {
     ctrl.doFortify(w, locId);
     audio.playSfx('ward_place');
     if (tutorialStep === 3) setTutorialStep(4);
+    // Check for new combos at this location
+    const loc = state.locations.find(l => l.id === locId);
+    if (loc) {
+      const combos = getAllDirectionalCombos(loc, state);
+      if (combos.length > 0) {
+        const combo = combos[combos.length - 1]; // newest combo
+        setCombatToast(`✨ Combo ${combo.name} débloqué: ${combo.passiveEffect}`);
+        setTimeout(() => setCombatToast(null), 2500);
+      }
+    }
   };
 
   // Wrapped doActivateWard to advance tutorial

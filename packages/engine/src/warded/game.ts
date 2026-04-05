@@ -317,7 +317,7 @@ export function processDawn(state: GameState): void {
   }
 
   // Hero dawn heal (base 2 + talent bonus)
-  const dawnHeal = 2 + (state.talentEffects?.healDawn ?? 0);
+  const dawnHeal = 1 + (state.talentEffects?.healDawn ?? 0);
   if (state.hero.hp < state.hero.maxHp) {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + dawnHeal);
   }
@@ -449,6 +449,7 @@ export function startWave(state: GameState): void {
   state.activationsUsedAt = [];
   state.heroWaveAbilityUsed = false;
   delete (state as any)._nightRepairUsed;
+  state.hero.ap = 2; // Night AP for hero abilities
 
   // Clear demons from living locations (previous wave's demons are resolved)
   for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {
@@ -835,7 +836,7 @@ export function repairWard(state: GameState, locationId: LocationId, slotIndex: 
   return true;
 }
 
-/** Emergency repair: HP cost scales with damage. 1 per wave (night) or when 0 AP (day). */
+/** Emergency repair: costs 1 AP (night). 1 per wave limit. */
 export function emergencyRepairWard(state: GameState, locationId: LocationId, slotIndex: number): string | null {
   const loc = getLocation(state, locationId);
   if (!loc || loc.fallen) return 'Lieu indisponible.';
@@ -847,19 +848,17 @@ export function emergencyRepairWard(state: GameState, locationId: LocationId, sl
   if (state.phase === 'night') {
     if (locationId !== state.presenceLocation) return 'Trop loin — présence requise.';
     if ((state as any)._nightRepairUsed) return 'Déjà réparé cette vague.';
+    if (state.hero.ap <= 0) return 'Pas assez d\'AP (coût: 1).';
   }
-  // Day: only when 0 AP
+  // Day: only when 0 AP (uses regular repair instead)
   if (state.phase === 'day' && state.hero.ap > 0) return 'Utilise tes AP d\'abord.';
 
-  // Cost scales: 1 HP per missing durability point
-  const missing = 4 - ws.durability;
-  const hpCost = missing; // 1 dur missing = 1 HP, 3 missing = 3 HP
-  if (state.hero.hp <= hpCost) return `Pas assez de HP (coût: ${hpCost}).`;
-
   ws.durability = 4;
-  state.hero.hp -= hpCost;
-  if (state.phase === 'night') (state as any)._nightRepairUsed = true;
-  addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-${hpCost} HP).`, true);
+  if (state.phase === 'night') {
+    state.hero.ap--;
+    (state as any)._nightRepairUsed = true;
+  }
+  addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-1 AP).`, true);
   return null; // success
 }
 
@@ -1660,7 +1659,7 @@ export function endNight(state: GameState): void {
       state.nightNumber++;
       state.hero.level++;
       if (state.hero.wardPowerBonus < 4) state.hero.wardPowerBonus++;
-      state.hero.maxHp += 2;
+      state.hero.maxHp += 1;
       state.hero.hp = Math.min(state.hero.hp + 5, state.hero.maxHp); // heal 5 HP
       if (state.hero.id === 'arlen') {
         state.hero.arlenCharge = Math.min((state.hero.arlenCharge ?? 0) + 1, 3);
@@ -1669,7 +1668,7 @@ export function endNight(state: GameState): void {
         // Warriors heal between nights
         for (const w of (state.hero.jardir_warriors ?? [])) w.strength = Math.min(w.strength + 1, 3);
       }
-      addLog(state, `Nuit ${nightsPlayed} survécue! Niveau ${state.hero.level} — wards +${state.hero.wardPowerBonus} dégâts, +2 HP max`, true);
+      addLog(state, `Nuit ${nightsPlayed} survécue! Niveau ${state.hero.level} — wards +${state.hero.wardPowerBonus} dégâts, +1 HP max`, true);
     }
   }
 
@@ -1715,6 +1714,7 @@ export function getThreatForecast(state: GameState): Record<LocationId, ThreatLe
 
 export function arlenWardedFist(state: GameState): string[] {
   if (state.hero.id !== 'arlen' || state.heroWaveAbilityUsed) return ['Déjà utilisé.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
   const charge = state.hero.arlenCharge ?? 0;
   if (charge <= 0) return ['Pas de charge.'];
 
@@ -1725,6 +1725,7 @@ export function arlenWardedFist(state: GameState): string[] {
   const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
   target.currentStrength -= charge;
 
+  state.hero.ap--;
   state.heroWaveAbilityUsed = true;
   const events = [`Warded Fist: ${charge} dégâts à ${target.demon.type}!`];
 
@@ -1754,6 +1755,7 @@ export function arlenMistWalk(state: GameState, targetLocationId: LocationId): b
 export function arlenYoung_leurre(state: GameState): string[] {
   if (state.hero.id !== 'arlen_young') return ['Arlen jeune uniquement.'];
   if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
 
   const adjacentIds = getAdjacentIds(state.presenceLocation);
   for (const adjId of adjacentIds) {
@@ -1762,6 +1764,7 @@ export function arlenYoung_leurre(state: GameState): string[] {
     if (idx >= 0) {
       const [demon] = demons.splice(idx, 1);
       state.demonsAtLocations[state.presenceLocation].push(demon);
+      state.hero.ap--;
       state.heroWaveAbilityUsed = true;
       const fromName = getLocation(state, adjId).name;
       const toName = getLocation(state, state.presenceLocation).name;
@@ -1779,12 +1782,14 @@ export function arlenYoung_leurre(state: GameState): string[] {
 export function jardirYoung_spearStrike(state: GameState): string[] {
   if (state.hero.id !== 'jardir_young') return ['Jardir jeune uniquement.'];
   if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
 
   const demons = state.demonsAtLocations[state.presenceLocation];
   if (demons.length === 0) return ['Pas de démon à la Présence.'];
 
   const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
   target.currentStrength -= 2;
+  state.hero.ap--;
   state.heroWaveAbilityUsed = true;
 
   const events = [`🔱 Coup de Lance: 2 dégâts à ${target.demon.type}!`];
@@ -1804,12 +1809,14 @@ export function jardirYoung_spearStrike(state: GameState): string[] {
 export function rojerYoung_melody(state: GameState): string[] {
   if (state.hero.id !== 'rojer_young') return ['Rojer jeune uniquement.'];
   if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
 
   const demons = state.demonsAtLocations[state.presenceLocation];
   if (demons.length === 0) return ['Pas de démon à la Présence.'];
 
   const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
   target.currentStrength = Math.max(0, target.currentStrength - 2);
+  state.hero.ap--;
   state.heroWaveAbilityUsed = true;
 
   const events = [`🎵 Mélodie Instinctive: ${target.demon.type} affaibli (force ${target.currentStrength})!`];
@@ -1829,6 +1836,7 @@ export function rojerYoung_melody(state: GameState): string[] {
 export function leeshaYoung_cataplasme(state: GameState): string[] {
   if (state.hero.id !== 'leesha_young') return ['Leesha jeune uniquement.'];
   if (state.heroWaveAbilityUsed) return ['Déjà utilisé cette vague.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
 
   // Heal the location at presence (or most damaged)
   const loc = getLocation(state, state.presenceLocation);
@@ -1836,6 +1844,7 @@ export function leeshaYoung_cataplasme(state: GameState): string[] {
 
   const healed = Math.min(2, loc.maxPopulation - loc.population);
   loc.population += healed;
+  state.hero.ap--;
   state.heroWaveAbilityUsed = true;
 
   addLog(state, `Cataplasme: +${healed} Pop à ${loc.name}.`);
@@ -1948,6 +1957,7 @@ export function rojer_symphony(state: GameState): string[] {
 
 export function rojer_minorCharm(state: GameState): string[] {
   if (state.hero.id !== 'rojer' || state.heroWaveAbilityUsed) return ['Déjà utilisé.'];
+  if (state.hero.ap <= 0) return ['Pas assez d\'AP.'];
 
   // Move 1 non-locked, non-boss demon from adjacent to Presence
   const adjacentIds = getAdjacentIds(state.presenceLocation);
@@ -1957,6 +1967,7 @@ export function rojer_minorCharm(state: GameState): string[] {
     if (idx >= 0) {
       const [demon] = demons.splice(idx, 1);
       state.demonsAtLocations[state.presenceLocation].push(demon);
+      state.hero.ap--;
       state.heroWaveAbilityUsed = true;
       const locName = getLocation(state, state.presenceLocation).name;
       return [`Minor Charm: ${demon.demon.type} attiré vers ${locName}.`];

@@ -1134,14 +1134,14 @@ describe('Warded Engine', () => {
       expect(totalPopLoss).toBeGreaterThan(0);
     });
 
-    it('hero gains +2 maxHp on level up', () => {
+    it('hero gains +1 maxHp on level up', () => {
       const s = quickState();
       s.phase = 'night';
       s.turnNumber = 1;
       const maxHpBefore = s.hero.maxHp;
       clearDemons(s);
       endNight(s);
-      expect(s.hero.maxHp).toBe(maxHpBefore + 2);
+      expect(s.hero.maxHp).toBe(maxHpBefore + 1);
     });
 
     it('hero wardPowerBonus increases (up to 4)', () => {
@@ -1210,8 +1210,8 @@ describe('Warded Engine', () => {
       s.hero.maxHp = 20;
       s.turnNumber = 1;
       processDawn(s);
-      // Dawn heals 2 base + 3 talent = 5
-      expect(s.hero.hp).toBe(6);
+      // Dawn heals 1 base + 3 talent = 4
+      expect(s.hero.hp).toBe(5);
     });
   });
 

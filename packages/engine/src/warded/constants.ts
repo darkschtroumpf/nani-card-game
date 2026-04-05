@@ -229,7 +229,7 @@ export const HEROES: {
 }[] = [
   {
     id: 'arlen_young', name: 'Arlen (jeune)', title: 'Le Garçon de Tibbet\'s Brook',
-    ap: 4, hp: 8,
+    ap: 4, hp: 6,
     passive: 'Témérité: Arlen est jeune et faible, mais courageux. Il peut attirer les démons pour protéger les autres.',
     signatureName: 'Leurre',
     signatureEffect: 'Attire 1 démon non-boss d\'un lieu adjacent vers la Présence. Peut être utilisé 1 fois par vague.',
@@ -238,7 +238,7 @@ export const HEROES: {
   },
   {
     id: 'arlen', name: 'Arlen Bales', title: 'The Warded Man',
-    ap: 6, hp: 10,
+    ap: 6, hp: 7,
     passive: 'Warded Flesh: Starts each night at Ward Charge 1. Gains +1 Charge per demon killed at Presence. Gains +1 Charge when taking overflow damage.',
     signatureName: 'Mist Walk',
     signatureEffect: 'At Ward Charge 5: teleport Presence to any location. Charge resets to 0.',
@@ -247,7 +247,7 @@ export const HEROES: {
   },
   {
     id: 'jardir_young', name: 'Jardir (nie\'Sharum)', title: 'Recrue du Maze',
-    ap: 5, hp: 9,
+    ap: 5, hp: 6,
     passive: 'Entraînement: Jardir est un jeune guerrier du Maze. Il sait se battre à la lance mais n\'a pas encore de troupes.',
     signatureName: 'Coup de Lance',
     signatureEffect: 'Inflige 2 dégâts à 1 démon à la Présence. Utilisable 1 fois par vague.',
@@ -256,7 +256,7 @@ export const HEROES: {
   },
   {
     id: 'jardir', name: 'Ahmann Jardir', title: 'Shar\'Dama Ka',
-    ap: 5, hp: 10,
+    ap: 5, hp: 7,
     passive: 'Sharum Commander: Deploy warrior tokens (str 2) at any location during Day (1 AP each). Warriors fight demons automatically during Night.',
     signatureName: 'Crown of Kaji',
     signatureEffect: 'All warriors gain +2 strength this night. Deployed warriors persist until destroyed.',
@@ -265,7 +265,7 @@ export const HEROES: {
   },
   {
     id: 'rojer_young', name: 'Rojer (apprenti)', title: 'Apprenti Jongleur',
-    ap: 3, hp: 7,
+    ap: 3, hp: 5,
     passive: 'Instinct musical: Rojer découvre que sa musique affecte les démons. Un pouvoir encore incontrôlé.',
     signatureName: 'Mélodie Instinctive',
     signatureEffect: 'Réduit la force d\'1 démon à la Présence de 2. Utilisable 1 fois par vague.',
@@ -274,7 +274,7 @@ export const HEROES: {
   },
   {
     id: 'rojer', name: 'Rojer Inn', title: 'The Fiddle Wizard',
-    ap: 5, hp: 10,
+    ap: 5, hp: 7,
     passive: 'Song Weaver: During Day, spend 1 AP to Rehearse (set all 3 wave songs at once). Songs play automatically during Night. 3 different songs = Harmony bonus (+1 ward activation in Wave 3).',
     signatureName: 'Symphony of the Damned',
     signatureEffect: 'All songs affect ALL locations this night (not just Presence + adjacent).',
@@ -283,7 +283,7 @@ export const HEROES: {
   },
   {
     id: 'leesha_young', name: 'Leesha (apprentie)', title: 'Apprentie Herboriste',
-    ap: 4, hp: 8,
+    ap: 4, hp: 6,
     passive: 'Apprentie de Bruna: Leesha apprend les bases des herbes et des wards. Elle peut soigner mais pas encore crafter de potions.',
     signatureName: 'Cataplasme',
     signatureEffect: 'Soigne 2 Population à un lieu. Utilisable 1 fois par vague.',
@@ -292,7 +292,7 @@ export const HEROES: {
   },
   {
     id: 'leesha', name: 'Leesha Paper', title: 'Herb Gatherer',
-    ap: 6, hp: 10,
+    ap: 6, hp: 7,
     passive: 'Hora Craft: When a demon is killed at any location, gain 1 Ink to any stockpile (once per wave). Triage: Use 1 consumable for free each wave during Night.',
     signatureName: 'Greater Ward Circle',
     signatureEffect: 'Place a temporary ward of any type at every location (1 night only). Does not use slots.',
