@@ -63,17 +63,29 @@ export const MESH_TIERS: { min: number; max: number; tier: MeshTier; label: stri
   { min: 5, max: 99, tier: 'fortified', label: 'Fortifié' },
 ];
 
-// --- Chapter Ward Progression ---
+// --- Chapter Ward Progression (25 chapters, 6 acts + final) ---
+// Act 1 (1-4): stone+wind | Act 2 (5-8): +fire | Act 3 (9-12): +light, fire kills
+// Act 4 (13-16): +bone, triples | Act 5-6 (17-24): all | Final (25): all
 export const CHAPTER_WARD_AVAILABILITY: Record<number, WardType[]> = {
-  1: ['stone', 'wind'],
-  2: ['stone', 'wind'],
-  3: ['stone', 'wind', 'fire'],
-  4: ['stone', 'wind', 'fire', 'light'],
-  5: ['stone', 'wind', 'fire', 'light'],
-  6: ['stone', 'wind', 'fire', 'light', 'bone'],
+  // Act 1
+  1: ['stone', 'wind'], 2: ['stone', 'wind'], 3: ['stone', 'wind'], 4: ['stone', 'wind'],
+  // Act 2
+  5: ['stone', 'wind', 'fire'], 6: ['stone', 'wind', 'fire'], 7: ['stone', 'wind', 'fire'], 8: ['stone', 'wind', 'fire'],
+  // Act 3
+  9: ['stone', 'wind', 'fire', 'light'], 10: ['stone', 'wind', 'fire', 'light'],
+  11: ['stone', 'wind', 'fire', 'light'], 12: ['stone', 'wind', 'fire', 'light'],
+  // Act 4+
+  13: ['stone', 'wind', 'fire', 'light', 'bone'], 14: ['stone', 'wind', 'fire', 'light', 'bone'],
+  15: ['stone', 'wind', 'fire', 'light', 'bone'], 16: ['stone', 'wind', 'fire', 'light', 'bone'],
+  // Act 5-6 + Final
+  17: ['stone', 'wind', 'fire', 'light', 'bone'], 18: ['stone', 'wind', 'fire', 'light', 'bone'],
+  19: ['stone', 'wind', 'fire', 'light', 'bone'], 20: ['stone', 'wind', 'fire', 'light', 'bone'],
+  21: ['stone', 'wind', 'fire', 'light', 'bone'], 22: ['stone', 'wind', 'fire', 'light', 'bone'],
+  23: ['stone', 'wind', 'fire', 'light', 'bone'], 24: ['stone', 'wind', 'fire', 'light', 'bone'],
+  25: ['stone', 'wind', 'fire', 'light', 'bone'],
 };
-export const CHAPTER_FIRE_CAN_KILL = 4;     // fire deals lethal damage from chapter 4+
-export const CHAPTER_TRIPLE_COMBOS = 8;     // triple combos unlock at chapter 8+
+export const CHAPTER_FIRE_CAN_KILL = 9;     // fire deals lethal damage from Act 3+
+export const CHAPTER_TRIPLE_COMBOS = 13;    // triple combos unlock at Act 4+
 
 // Ward individual effects
 export const WARD_PASSIVES: Record<WardType, string> = {

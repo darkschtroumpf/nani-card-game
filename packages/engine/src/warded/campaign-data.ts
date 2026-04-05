@@ -8,6 +8,7 @@ import type { WardType } from './types';
 
 export const CHAPTER_1: ChapterDefinition = {
   id: 1,
+  act: 1,
   title: "Le Garçon de Tibbet's Brook",
   subtitle: "La lâcheté d'un père. Le courage d'un fils.",
   heroId: 'arlen_young',
@@ -265,6 +266,7 @@ export const CHAPTER_1: ChapterDefinition = {
 
 export const CHAPTER_LEESHA: ChapterDefinition = {
   id: 2,
+  act: 1,
   title: "L'Herboriste de Cutter's Hollow",
   subtitle: "Leesha apprend que soigner est aussi un combat.",
   heroId: 'leesha_young',
@@ -437,6 +439,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
 
 export const CHAPTER_JARDIR: ChapterDefinition = {
   id: 3,
+  act: 1,
   title: 'Le Labyrinthe de Krasia',
   subtitle: "La première nuit de Jardir dans le Maze.",
   heroId: 'jardir_young',
@@ -608,6 +611,7 @@ export const CHAPTER_JARDIR: ChapterDefinition = {
 
 export const CHAPTER_ROJER: ChapterDefinition = {
   id: 4,
+  act: 1,
   title: 'Le Jongleur de Riverbridge',
   subtitle: "La nuit où Rojer a découvert le pouvoir de la musique.",
   heroId: 'rojer_young',
@@ -780,6 +784,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
 
 export const CHAPTER_ARLEN_2: ChapterDefinition = {
   id: 5,
+  act: 2,
   title: 'La Route vers Fort Miln',
   subtitle: "Cinq jours de marche. Cinq nuits sans murs.",
   heroId: 'arlen_young',
@@ -978,6 +983,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
 
 export const CHAPTER_LEESHA_2: ChapterDefinition = {
   id: 6,
+  act: 2,
   title: "L'Attaque de Cutter's Hollow",
   subtitle: "Sans Bruna, Leesha est la seule à pouvoir protéger le village.",
   heroId: 'leesha_young',
@@ -1142,6 +1148,7 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
 
 export const CHAPTER_JARDIR_2: ChapterDefinition = {
   id: 7,
+  act: 2,
   title: 'Le Sharum Ka',
   subtitle: "Le Maze ne forge pas des soldats. Il forge des rois.",
   heroId: 'jardir_young',
@@ -1297,6 +1304,7 @@ export const CHAPTER_JARDIR_2: ChapterDefinition = {
 
 export const CHAPTER_ROJER_2: ChapterDefinition = {
   id: 8,
+  act: 2,
   title: "La Mort d'Arrick",
   subtitle: "Quand la musique s'arrête, il ne reste que le silence et les démons.",
   heroId: 'rojer_young',
@@ -1455,6 +1463,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
 
 export const CHAPTER_ARLEN_3: ChapterDefinition = {
   id: 9,
+  act: 3,
   title: 'Le Messager',
   subtitle: "La route est la seule liberté. Les wards sont la seule loi.",
   heroId: 'arlen_young',
@@ -1639,6 +1648,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
 
 export const CHAPTER_LEESHA_3: ChapterDefinition = {
   id: 10,
+  act: 3,
   title: 'La Science des Wards',
   subtitle: "Les wards ne sont pas de la magie. Ce sont des mathématiques.",
   heroId: 'leesha_young',
@@ -1795,6 +1805,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
 
 export const CHAPTER_ARLEN_4: ChapterDefinition = {
   id: 11,
+  act: 5,
   title: 'Anoch Sun',
   subtitle: "La cité perdue. Les wards oubliés. Le pouvoir de se battre.",
   heroId: 'arlen_young',
@@ -1990,6 +2001,7 @@ export const CHAPTER_ARLEN_4: ChapterDefinition = {
 
 export const CHAPTER_FINAL: ChapterDefinition = {
   id: 12,
+  act: 0,
   title: "La Bataille de Cutter's Hollow",
   subtitle: "L'humanité ne se cache plus. L'humanité se bat.",
   heroId: 'arlen_young',

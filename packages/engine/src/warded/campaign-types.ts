@@ -53,6 +53,7 @@ export interface DayEvent {
 
 export interface ChapterDefinition {
   id: number;
+  act: number; // 1-6, which act this chapter belongs to (0 = final)
   title: string;
   subtitle: string;
   heroId: HeroId;

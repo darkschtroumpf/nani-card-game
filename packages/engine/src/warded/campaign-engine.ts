@@ -193,7 +193,7 @@ export function applyCampaignEffects(state: GameState, effects: CampaignEffect[]
   return messages;
 }
 
-const CURRENT_SAVE_VERSION = 2;
+const CURRENT_SAVE_VERSION = 3;
 
 /** Migrate old saves to current format */
 export function migrateSave(save: Partial<CampaignSaveState>): CampaignSaveState {
@@ -204,6 +204,22 @@ export function migrateSave(save: Partial<CampaignSaveState>): CampaignSaveState
     if (!migrated.chapterStars) migrated.chapterStars = {};
     if (!migrated.unlockedTalents) migrated.unlockedTalents = [];
     migrated.saveVersion = 2;
+  }
+
+  // v2 → v3: campaign restructure (12 → 25 chapters)
+  // Old chapter IDs 1-4 map to new 1-4 (Act 1 unchanged)
+  // Old 5-8 map to new 5-8 (Act 2 unchanged)
+  // Old 9-12 are invalidated (content restructured)
+  if (migrated.saveVersion < 3) {
+    const oldCompleted = migrated.completedChapters ?? [];
+    migrated.completedChapters = oldCompleted.filter(id => id <= 8); // keep Act 1-2
+    const oldStars = migrated.chapterStars ?? {};
+    const newStars: Record<number, 1 | 2 | 3> = {};
+    for (const [k, v] of Object.entries(oldStars)) {
+      if (parseInt(k) <= 8) newStars[parseInt(k)] = v;
+    }
+    migrated.chapterStars = newStars;
+    migrated.saveVersion = 3;
   }
 
   // Ensure all required fields exist
@@ -217,10 +233,20 @@ export function migrateSave(save: Partial<CampaignSaveState>): CampaignSaveState
   return migrated;
 }
 
+/** Check if a chapter is unlocked based on act-gating system.
+ *  Act 1: always unlocked. Act N: requires ALL chapters from Act N-1 completed. */
+export function isChapterUnlocked(chapter: ChapterDefinition, save: CampaignSaveState, allChapters: ChapterDefinition[]): boolean {
+  if (chapter.act === 1) return true;
+  // Final chapter (act 0): requires all act 6 chapters completed
+  const requiredAct = chapter.act === 0 ? 6 : chapter.act - 1;
+  const prevActChapters = allChapters.filter(c => c.act === requiredAct);
+  return prevActChapters.every(c => save.completedChapters.includes(c.id));
+}
+
 /** Create initial save state */
 export function createNewSave(): CampaignSaveState {
   return {
-    saveVersion: 2,
+    saveVersion: 3,
     currentChapter: 1,
     completedChapters: [],
     chapterStars: {},
