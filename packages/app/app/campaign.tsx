@@ -7,7 +7,7 @@ import { warded, wardedFonts } from '../theme-warded';
 import { useAudio } from '../hooks/useAudio';
 import DialogueOverlay from '../components/warded/DialogueOverlay';
 import { CHAPTERS } from '../../engine/src/warded/campaign-data';
-import { createNewSave, getTotalStars, getSpentStars, migrateSave } from '../../engine/src/warded/campaign-engine';
+import { createNewSave, getTotalStars, getSpentStars, migrateSave, isChapterUnlocked } from '../../engine/src/warded/campaign-engine';
 import { TALENTS } from '../../engine/src/warded/constants';
 import type { ChapterDefinition, CampaignSaveState } from '../../engine/src/warded/campaign-types';
 import type { HeroId, TalentDefinition } from '../../engine/src/warded/types';
@@ -32,7 +32,9 @@ const HERO_DISPLAY_PORTRAIT: Record<string, string> = {
 
 const CHARACTER_INFO: Record<string, { name: string; color: string }> = {
   arlen_young: { name: 'Arlen Bales', color: '#FFD740' },
+  arlen: { name: 'Arlen — Le Messager', color: '#FFD740' },
   leesha_young: { name: 'Leesha Paper', color: '#69F0AE' },
+  leesha: { name: 'Leesha — Herboriste', color: '#69F0AE' },
   jardir_young: { name: 'Ahmann Jardir', color: '#FF5252' },
   rojer_young: { name: 'Rojer Inn', color: '#7C4DFF' },
 };
@@ -116,8 +118,17 @@ export default function CampaignScreen() {
     );
   }
 
-  // Character selection — group chapters by hero
-  const heroIds = ['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'];
+  // Act-based layout with cross-hero unlock
+  const ACT_NAMES: Record<number, string> = {
+    1: 'Acte I — Origines',
+    2: 'Acte II — Croissance',
+    3: 'Acte III — Tournants',
+    4: 'Acte IV — La Quête',
+    5: 'Acte V — Transformation',
+    6: 'Acte VI — Convergence',
+    0: 'Final',
+  };
+  const acts = [1, 2, 3, 4, 5, 6, 0];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -126,42 +137,43 @@ export default function CampaignScreen() {
       </ImageBackground>
       <ScrollView contentContainerStyle={styles.selectContainer}>
         <Text style={styles.title}>CAMPAGNE</Text>
-        <Text style={styles.sub}>Choisis ton destin</Text>
+        <Text style={styles.sub}>25 chapitres — 4 destins entrelacés</Text>
 
-        {heroIds.map(heroKey => {
-          const info = CHARACTER_INFO[heroKey];
-          const chapterIds = CHARACTER_CHAPTERS[heroKey] ?? [];
-          const chapters = chapterIds.map(id => CHAPTERS.find(c => c.id === id)).filter(Boolean) as ChapterDefinition[];
-          if (!info || chapters.length === 0) return null;
+        {acts.map(actNum => {
+          const actChapters = CHAPTERS.filter(c => c.act === actNum);
+          if (actChapters.length === 0) return null;
+          const actCompleted = actChapters.every(c => save?.completedChapters.includes(c.id));
+          const actProgress = actChapters.filter(c => save?.completedChapters.includes(c.id)).length;
 
           return (
-            <View key={heroKey} style={[styles.card, { borderColor: info.color + '60' }]}>
+            <View key={`act-${actNum}`} style={[styles.card, actCompleted && { borderColor: warded.success + '60' }]}>
               <View style={styles.cardHeader}>
-                <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[heroKey] ?? heroKey]} style={[styles.cardAvatar, { borderColor: info.color }]} />
-                <Text style={[styles.cardName, { color: info.color }]}>{info.name}</Text>
+                <Text style={[styles.cardName, actCompleted && { color: warded.success }]}>
+                  {ACT_NAMES[actNum]} {actCompleted ? '✓' : `(${actProgress}/${actChapters.length})`}
+                </Text>
               </View>
-              {chapters.map((chapter, idx) => {
+              {actChapters.map(chapter => {
                 const isCompleted = save?.completedChapters.includes(chapter.id);
-                const prevCompleted = idx === 0 || save?.completedChapters.includes(chapters[idx - 1].id);
-                const isUnlocked = idx === 0 || prevCompleted;
+                const unlocked = save ? isChapterUnlocked(chapter, save, CHAPTERS) : chapter.act === 1;
+                const info = CHARACTER_INFO[chapter.heroId] ?? { name: chapter.heroId, color: warded.accent };
                 return (
                   <TouchableOpacity
                     key={chapter.id}
-                    style={[styles.chapterRow, !isUnlocked && { opacity: 0.4 }]}
-                    disabled={!isUnlocked}
+                    style={[styles.chapterRow, !unlocked && { opacity: 0.35 }]}
+                    disabled={!unlocked}
                     onPress={() => startChapter(chapter)}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.chapterNum}>Ch.{idx + 1}</Text>
+                    <Image source={HERO_IMAGES[HERO_DISPLAY_PORTRAIT[chapter.heroId] ?? chapter.heroId]} style={[styles.chapterAvatar, { borderColor: info.color }]} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.cardChapter}>{chapter.title}</Text>
+                      <Text style={[styles.cardChapter, { color: info.color }]}>{chapter.title}</Text>
                       <Text style={styles.cardSub}>{chapter.subtitle}</Text>
                     </View>
                     {isCompleted && (() => {
                       const s = save?.chapterStars?.[chapter.id] ?? 1;
                       return <Text style={styles.check}>{s >= 1 ? '★' : '☆'}{s >= 2 ? '★' : '☆'}{s >= 3 ? '★' : '☆'}</Text>;
                     })()}
-                    {!isUnlocked && <Text style={styles.check}>🔒</Text>}
+                    {!unlocked && <Text style={styles.check}>🔒</Text>}
                   </TouchableOpacity>
                 );
               })}
@@ -178,7 +190,7 @@ export default function CampaignScreen() {
             <View style={[styles.card, { borderColor: '#9b30ff60' }]}>
               <Text style={[styles.cardName, { color: '#9b30ff' }]}>Talents</Text>
               <Text style={styles.cardSub}>★ {available} étoiles disponibles ({totalStars} total)</Text>
-              {heroIds.map(heroKey => {
+              {['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'].map((heroKey: string) => {
                 const info = CHARACTER_INFO[heroKey];
                 const heroTalents = TALENTS.filter(t => t.heroId === heroKey);
                 if (heroTalents.length === 0) return null;
@@ -246,6 +258,7 @@ const styles = StyleSheet.create({
   cardSub: { color: warded.textDim, fontSize: wardedFonts.xs, marginTop: 1 },
   chapterRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: warded.border, marginTop: 6 },
   chapterNum: { color: warded.accent, fontSize: wardedFonts.xs, fontWeight: 'bold', width: 30 },
+  chapterAvatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, marginRight: 8 },
   cardChapter: { color: warded.text, fontSize: wardedFonts.sm, fontWeight: '600' },
   check: { color: warded.success, fontSize: 24 },
   backBtn: { marginTop: 16, paddingVertical: 10 },
