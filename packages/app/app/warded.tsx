@@ -1885,7 +1885,20 @@ export default function WardedGameScreen() {
       {randomEvent && (
         <View style={styles.transitionOverlay}>
           <Text style={[styles.transitionText, { fontSize: 18 }]}>{randomEvent.title}</Text>
-          <Text style={[styles.transitionSub, { marginBottom: 12 }]}>{randomEvent.description}</Text>
+          <Text style={[styles.transitionSub, { marginBottom: 8 }]}>{randomEvent.description}</Text>
+          {/* Resource summary for informed decisions */}
+          {(() => {
+            const alive = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
+            return (
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 12, paddingVertical: 6, paddingHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 8 }}>
+                <Text style={{ color: warded.wood, fontSize: wardedFonts.sm }}>🪵 {alive.reduce((s, l) => s + l.stockpile.wood, 0)}</Text>
+                <Text style={{ color: warded.ink, fontSize: wardedFonts.sm }}>🖋 {alive.reduce((s, l) => s + l.stockpile.ink, 0)}</Text>
+                <Text style={{ color: warded.food, fontSize: wardedFonts.sm }}>🍞 {alive.reduce((s, l) => s + l.stockpile.food, 0)}</Text>
+                <Text style={{ color: warded.textDim, fontSize: wardedFonts.sm }}>❤ {state.hero.hp}/{state.hero.maxHp}</Text>
+                <Text style={{ color: warded.textDim, fontSize: wardedFonts.sm }}>AP {state.hero.ap}</Text>
+              </View>
+            );
+          })()}
           {randomEvent.choices.map((choice, i) => (
             <TouchableOpacity key={i}
               style={[styles.phaseBtn, { borderColor: warded.accent, width: '80%', marginBottom: 8 }]}
@@ -1939,6 +1952,15 @@ export default function WardedGameScreen() {
         <DialogueOverlay
           nodes={campaignDayEvent.dialogueNodes}
           onChoice={handleCampaignChoice}
+          resourceSummary={(() => {
+            const alive = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
+            return {
+              wood: alive.reduce((s, l) => s + l.stockpile.wood, 0),
+              ink: alive.reduce((s, l) => s + l.stockpile.ink, 0),
+              food: alive.reduce((s, l) => s + l.stockpile.food, 0),
+              hp: state.hero.hp, maxHp: state.hero.maxHp, ap: state.hero.ap,
+            };
+          })()}
           onComplete={() => {
             setCampaignDayEvent(null);
             setCampaignDaysProcessed(prev => ({ ...prev, [campaignDayEvent.dayNumber]: true }));

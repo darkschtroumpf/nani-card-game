@@ -125,11 +125,12 @@ interface Props {
   nodes: DialogueNode[];
   onChoice: (choiceId: string) => void;
   onComplete: () => void;
+  resourceSummary?: { wood: number; ink: number; food: number; hp: number; maxHp: number; ap: number } | null;
 }
 
 const TYPEWRITER_SPEED = 22;
 
-export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) {
+export default function DialogueOverlay({ nodes, onChoice, onComplete, resourceSummary }: Props) {
   const [nodeIndex, setNodeIndex] = useState(0);
   const [lineIndex, setLineIndex] = useState(0);
   const [displayedChars, setDisplayedChars] = useState(0);
@@ -285,6 +286,17 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
           {/* Tap hint */}
           {!isTyping && !showChoices && (
             <Text style={styles.tapHint}>▶</Text>
+          )}
+
+          {/* Resource summary before choices */}
+          {showChoices && node.choices && resourceSummary && (
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 6, paddingVertical: 4, paddingHorizontal: 12, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 6 }}>
+              <Text style={{ color: '#8b6914', fontSize: 11 }}>🪵 {resourceSummary.wood}</Text>
+              <Text style={{ color: '#4a6fa5', fontSize: 11 }}>🖋 {resourceSummary.ink}</Text>
+              <Text style={{ color: '#6aaa3a', fontSize: 11 }}>🍞 {resourceSummary.food}</Text>
+              <Text style={{ color: '#aaa', fontSize: 11 }}>❤ {resourceSummary.hp}/{resourceSummary.maxHp}</Text>
+              <Text style={{ color: '#aaa', fontSize: 11 }}>AP {resourceSummary.ap}</Text>
+            </View>
           )}
 
           {/* Choices */}
