@@ -1466,7 +1466,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
   act: 3,
   title: 'Le Messager',
   subtitle: "La route est la seule liberté. Les wards sont la seule loi.",
-  heroId: 'arlen_young',
+  heroId: 'arlen',
   nightCount: 4,
   startingNightNumber: 4,
   startingPresence: 'miln',
@@ -1491,18 +1491,18 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
     {
       id: 'a3_intro_1', background: 'miln',
       lines: [
-        { speaker: 'narrator', text: "Fort Miln. La cité libre du Nord. Ici, Arlen a appris l'art des wards auprès des Wardeurs de la Guilde — les meilleurs de Thesa." },
-        { speaker: 'narrator', text: "Il connaît maintenant des wards que personne à Tibbet's Brook n'a jamais vus. Wards de lumière. Wards de feu offensifs. Des armes, pas juste des boucliers." },
-        { speaker: 'narrator', text: "Mais les murs de Miln l'étouffent. Arlen Bales n'est pas fait pour rester enfermé." },
+        { speaker: 'narrator', text: "Fort Miln. La cité libre du Nord. Arlen a grandi entre ces murs, formé par les Wardeurs de la Guilde — les meilleurs de Thesa." },
+        { speaker: 'narrator', text: "Il connaît maintenant des wards que personne à Tibbet's Brook n'a jamais vus. Wards de lumière. Wards de feu qui brûlent au lieu de repousser. Des armes, pas juste des boucliers." },
+        { speaker: 'narrator', text: "Mais les murs de Miln l'étouffent. Arlen Bales n'est pas fait pour rester enfermé derrière des pierres, aussi wardées soient-elles." },
       ],
       nextNodeId: 'a3_intro_2',
     },
     {
       id: 'a3_intro_2', background: 'messenger',
       lines: [
-        { speaker: 'arlen_young', text: "J'ai réussi l'examen de la Guilde. Je suis officiellement Messager.", emotion: 'determined' },
-        { speaker: 'ragen', text: "Le plus jeune Messager jamais inscrit. Ton premier contrat est un courrier pour Lakton.", emotion: 'neutral' },
-        { speaker: 'arlen_young', text: "Quatre nuits en plein air. Quatre nuits face aux corelings.", emotion: 'determined' },
+        { speaker: 'arlen', text: "J'ai réussi l'examen de la Guilde. Je suis officiellement Messager.", emotion: 'determined' },
+        { speaker: 'ragen', text: "Le plus jeune Messager jamais inscrit. Ton premier contrat solo : un courrier pour Lakton.", emotion: 'neutral' },
+        { speaker: 'arlen', text: "Je ne sais pas combien de nuits ça prendra. Mais j'y arriverai.", emotion: 'determined' },
         { speaker: 'ragen', text: "Avec tes wards, tu as de bonnes chances. Mais Arlen — la route ne pardonne pas les erreurs.", emotion: 'neutral' },
       ],
       nextNodeId: 'a3_intro_3',
@@ -1512,7 +1512,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
       lines: [
         { speaker: 'narrator', text: "Arlen selle son cheval et quitte Fort Miln au petit matin. Devant lui, les plaines immenses de Thesa." },
         { speaker: 'narrator', text: "Il emporte ses wards, son courage, et une question qui ne le quitte jamais : pourquoi l'humanité se cache-t-elle au lieu de se battre ?" },
-        { speaker: 'arlen_young', text: "Un jour, je trouverai la réponse.", emotion: 'determined' },
+        { speaker: 'arlen', text: "Un jour, je trouverai la réponse. Il doit bien exister un endroit où les anciens ont laissé leurs secrets.", emotion: 'determined' },
       ],
     },
   ],
@@ -1525,7 +1525,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Premier jour de route. Arlen croise un groupe de réfugiés — un village entier, fuyant vers Miln." },
           { speaker: 'refugee', text: "Les wards de notre village ont cédé. Nous n'avons plus rien. Plus de maisons, plus de réserves.", emotion: 'scared' },
-          { speaker: 'arlen_young', text: "Je peux vous aider à tracer des wards de protection pour la nuit. Ou je peux filer vers le relais et préparer un abri sûr pour votre arrivée.", emotion: 'determined' },
+          { speaker: 'arlen', text: "Je peux vous aider à tracer des wards de protection pour la nuit. Ou je peux filer vers le relais et préparer un abri sûr pour votre arrivée.", emotion: 'determined' },
         ],
         choices: [
           {
@@ -1553,23 +1553,26 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a3_day2', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "La deuxième nuit, Arlen a vu quelque chose d'impossible. Un coreling de flamme a reculé devant un ward de feu — non pas repoussé, mais blessé." },
-          { speaker: 'arlen_young', text: "Le feu peut les tuer. Les anciens wards ne faisaient pas que repousser — ils détruisaient.", emotion: 'hopeful' },
-          { speaker: 'narrator', text: "Les wards offensifs. Une connaissance perdue depuis des siècles. Arlen sent qu'il touche à quelque chose d'immense." },
+          { speaker: 'narrator', text: "La nuit précédente, quelque chose d'étrange s'est produit. Un démon de roche, plus grand que les autres, se dressait sur la colline au-dessus du campement." },
+          { speaker: 'narrator', text: "Il manquait un bras. Et il regardait Arlen. Pas comme une proie — comme un ennemi qu'on reconnaît." },
+          { speaker: 'arlen', text: "Ce coreling de roche... Il était déjà là la nuit d'avant, sur la route de Miln avec Ragen. Le même. J'en suis sûr.", emotion: 'determined' },
+          { speaker: 'narrator', text: "One Arm. Un démon ancien, marqué par un combat passé. Et il traque Arlen." },
         ],
         choices: [
           {
-            id: 'study_wards',
-            label: "Passer la journée à étudier les wards offensifs",
-            hint: "+1 Ward de Feu en réserve, -1 AP (étude intensive)",
+            id: 'study_one_arm',
+            label: "Étudier les traces de One Arm, préparer un piège de lumière et feu",
+            hint: "+1 Ward de Feu en réserve, +1 Ward de Lumière en réserve, -1 AP",
             effects: [
               { type: 'bonus_reserve_ward', wardType: 'fire' },
+              { type: 'bonus_reserve_ward', wardType: 'light' },
               { type: 'hero_ap_change', delta: -1 },
+              { type: 'set_flag', flag: 'prepared_one_arm_trap', value: true },
             ],
           },
           {
             id: 'press_on',
-            label: "Continuer la route vers Lakton",
+            label: "Continuer la route vers Lakton sans s'attarder",
             hint: "+1 Ward de Pierre à Lakton, +2 Encre à Lakton",
             effects: [
               { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
@@ -1584,14 +1587,16 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
       dialogueNodes: [{
         id: 'a3_day3', background: 'messenger',
         lines: [
-          { speaker: 'narrator', text: "Troisième nuit. Arlen approche de Lakton, mais un orage a détruit les wards du dernier relais." },
-          { speaker: 'arlen_young', text: "Il faut tout retracer avant la tombée de la nuit. C'est ça ou dormir en plein air sans protection.", emotion: 'determined' },
+          { speaker: 'narrator', text: "One Arm est revenu. Cette fois, il a chargé. Arlen l'a repoussé avec lumière et feu — et le démon a fui, brûlé, hurlant dans la nuit." },
+          { speaker: 'arlen', text: "Je l'ai blessé. Vraiment blessé. Les wards de lumière ont déchiré sa peau de roche. Il a eu peur.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Pour la première fois de sa vie, Arlen a vu la peur dans les yeux d'un démon." },
+          { speaker: 'arlen', text: "Il reviendra. Ils reviennent toujours. Mais la prochaine fois, je serai prêt.", emotion: 'determined' },
         ],
         choices: [
           {
             id: 'retrace_all',
-            label: "Retracer tous les wards du relais",
-            hint: "+1 Ward de Vent et +1 Ward de Pierre à l'Avant-Poste, -2 HP (contre la montre)",
+            label: "Renforcer tous les wards pour la dernière nuit",
+            hint: "+1 Ward de Vent et +1 Ward de Pierre à l'Avant-Poste, -2 HP",
             effects: [
               { type: 'bonus_ward', wardType: 'wind', locationId: 'desert_spear' },
               { type: 'bonus_ward', wardType: 'stone', locationId: 'desert_spear' },
@@ -1600,10 +1605,43 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
           },
           {
             id: 'minimal_wards',
-            label: "Tracer un cercle minimal et dormir avec une arme",
-            hint: "+4 Bois à l'Avant-Poste (récupération du relais détruit)",
+            label: "Se reposer et garder ses forces",
+            hint: "+4 Bois à l'Avant-Poste",
             effects: [
               { type: 'add_resources', locationId: 'desert_spear', resource: 'wood', amount: 4 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 4,
+      dialogueNodes: [{
+        id: 'a3_day4', background: 'ward_book',
+        lines: [
+          { speaker: 'narrator', text: "Dans la bibliothèque du dernier relais, Arlen trouve un vieux parchemin oublié entre les pierres du mur." },
+          { speaker: 'narrator', text: "Un fragment de carte. Des symboles qu'il ne reconnaît pas. Et un nom, à moitié effacé : Anoch Sun." },
+          { speaker: 'arlen', text: "Anoch Sun... Une cité perdue ? Il y a des wards dessinés ici que je n'ai jamais vus nulle part.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Arlen ne dort plus cette nuit-là. Il recopie chaque symbole, chaque fragment. Quelque chose l'appelle dans ces ruines oubliées." },
+        ],
+        choices: [
+          {
+            id: 'study_map',
+            label: "Passer la nuit à étudier le fragment de carte",
+            hint: "Force des démons -1 (wards anciens copiés sur le cercle), -2 HP (nuit blanche)",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'set_flag', flag: 'found_anoch_sun_clue', value: true },
+            ],
+          },
+          {
+            id: 'focus_defenses',
+            label: "Ranger le parchemin et se concentrer sur les défenses",
+            hint: "+1 Ward de Feu à Lakton, +2 Encre à Lakton",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+              { type: 'add_resources', locationId: 'lakton', resource: 'ink', amount: 2 },
             ],
           },
         ],
@@ -1615,17 +1653,18 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
     {
       id: 'a3_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "Fort Lakton. Arlen livre son courrier, épuisé mais vivant. Quatre nuits sur la route, et pas une seule fois il n'a eu peur." },
-        { speaker: 'narrator', text: "Les Laktoniens le regardent avec étonnement. Un Messager si jeune, qui voyage seul et arrive sans une égratignure." },
+        { speaker: 'narrator', text: "Fort Lakton. Arlen livre son courrier, épuisé mais vivant. Pas une seule fois il n'a eu peur." },
+        { speaker: 'narrator', text: "Les Laktoniens le regardent avec étonnement. Un Messager si jeune, qui voyage seul et arrive couvert de poussière et de cicatrices de combat." },
+        { speaker: 'arlen', text: "One Arm est toujours là, quelque part. Il me traquera encore. Mais la prochaine fois...", emotion: 'determined' },
       ],
       nextNodeId: 'a3_victory_2',
     },
     {
       id: 'a3_victory_2', background: 'ward_book',
       lines: [
-        { speaker: 'arlen_young', text: "Le feu peut les tuer. La lumière les affaiblit. Les anciens savaient se battre contre les démons.", emotion: 'determined' },
-        { speaker: 'arlen_young', text: "Il doit exister d'autres wards. Des wards de combat. Quelque part dans les ruines du monde d'avant.", emotion: 'hopeful' },
-        { speaker: 'narrator', text: "Arlen Bales, Messager. L'homme qui cherche les armes perdues de l'humanité." },
+        { speaker: 'arlen', text: "Le feu peut les tuer. La lumière les affaiblit. Les anciens savaient se battre.", emotion: 'determined' },
+        { speaker: 'arlen', text: "Et quelque part dans le désert, il y a une cité appelée Anoch Sun. Les réponses sont là-bas. Je le sens.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Arlen Bales, Messager. L'homme qui cherche les armes perdues de l'humanité — et qui ne dort plus la nuit." },
       ],
     },
   ],
@@ -1633,8 +1672,8 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
   defeatDialogue: [{
     id: 'a3_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les wards cèdent dans la nuit. Sans abri, sur la route ouverte, les corelings convergent." },
-      { speaker: 'arlen_young', text: "Non... Il y avait une erreur dans le tracé. UNE erreur...", emotion: 'angry' },
+      { speaker: 'narrator', text: "Les wards cèdent dans la nuit. Sans abri, sur la route ouverte, les corelings convergent. One Arm mène la charge." },
+      { speaker: 'arlen', text: "Non... Il y avait une erreur dans le tracé. UNE erreur...", emotion: 'angry' },
       { speaker: 'narrator', text: "La route ne pardonne pas. Le Messager Arlen Bales ne livrera jamais son courrier." },
       { speaker: 'narrator', text: "Chapitre 9 — Échec" },
     ],
@@ -1642,16 +1681,16 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
 };
 
 // ============================================================
-// Chapter 10: Leesha 3 — La Science des Wards
-// Leesha étudie les wards avec les livres de Bruna
+// Chapter 10: Leesha 3 — Le Voyage vers Angiers
+// Leesha quitte Cutter's Hollow, rencontre Rojer, découvre la lumière
 // ============================================================
 
 export const CHAPTER_LEESHA_3: ChapterDefinition = {
   id: 10,
   act: 3,
-  title: 'La Science des Wards',
-  subtitle: "Les wards ne sont pas de la magie. Ce sont des mathématiques.",
-  heroId: 'leesha_young',
+  title: 'Le Voyage vers Angiers',
+  subtitle: "Partir, c'est choisir de ne plus avoir peur du monde.",
+  heroId: 'leesha',
   nightCount: 3,
   startingNightNumber: 5,
   startingPresence: 'cutters_hollow',
@@ -1659,44 +1698,46 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
   availableWards: ['stone', 'wind', 'fire', 'light'] as WardType[],
   fireCanKill: true,
   locationOverrides: {
-    cutters_hollow: { name: "Cutter's Hollow", startPop: 10, terrain: 'forest' as any },
-    miln: { name: 'Atelier de Leesha', startPop: 4, terrain: 'forest' as any },
-    lakton: { name: 'Lisière de la Forêt', startPop: 5, terrain: 'forest' as any },
+    cutters_hollow: { name: 'Route de l\'Ouest', startPop: 6, terrain: 'plains' as any },
+    miln: { name: 'Campement des Réfugiés', startPop: 5, terrain: 'plains' as any },
+    lakton: { name: 'Portes d\'Angiers', startPop: 7, terrain: 'forest' as any },
     desert_spear: { name: '', startPop: 0 },
   },
   preplacedWards: [
     { locationId: 'cutters_hollow', ward: 'fire' },
     { locationId: 'cutters_hollow', ward: 'stone' },
-    { locationId: 'miln', ward: 'light' },
-    { locationId: 'lakton', ward: 'wind' },
+    { locationId: 'miln', ward: 'wind' },
+    { locationId: 'lakton', ward: 'stone' },
     { locationId: 'lakton', ward: 'fire' },
   ],
 
   introDialogue: [
     {
-      id: 'l3_intro_1', background: 'bruna_hut',
+      id: 'l3_intro_1', background: 'road',
       lines: [
-        { speaker: 'narrator', text: "Cutter's Hollow, deux ans plus tard. Leesha est l'herboriste du village. Les gens viennent de loin pour ses soins et ses wards." },
-        { speaker: 'narrator', text: "Mais Leesha veut plus que soigner. Dans les vieux livres de Bruna, elle a trouvé des notes sur les wards — des formules, des combinaisons oubliées." },
-        { speaker: 'narrator', text: "Les wards ne sont pas de la magie, réalise-t-elle. Ce sont des lois. Des lois qu'on peut étudier, comprendre, améliorer." },
+        { speaker: 'narrator', text: "Le sac est bouclé. Le journal de Bruna est calé sous la ceinture, contre la peau, là où personne ne peut le prendre." },
+        { speaker: 'narrator', text: "Leesha Paper quitte Cutter's Hollow à l'aube. Derrière elle, le village qu'elle a protégé. Devant elle, Angiers — la cité du Duc, où se trouvent les archives de l'Académie." },
+        { speaker: 'leesha', text: "Bruna disait que les réponses n'étaient pas dans ses livres. Que les vrais secrets étaient ailleurs.", emotion: 'determined' },
       ],
       nextNodeId: 'l3_intro_2',
     },
     {
-      id: 'l3_intro_2', background: 'ward_book',
+      id: 'l3_intro_2', background: 'refugees',
       lines: [
-        { speaker: 'leesha_young', text: "Bruna, vos notes... Ce ward de lumière, là — il ne repousse pas juste les démons. Il les affaiblit. Il déchire leur essence.", emotion: 'hopeful' },
-        { speaker: 'narrator', text: "Mais Bruna n'est plus là pour répondre. Et les corelings, eux, deviennent plus agressifs chaque nuit." },
-        { speaker: 'leesha_young', text: "Il y a une logique dans tout ça. Si je comprends comment les wards interagissent entre eux, je pourrai créer des défenses bien plus puissantes.", emotion: 'determined' },
+        { speaker: 'narrator', text: "La route vers Angiers est plus peuplée que prévu. Des familles entières marchent sous le soleil, des ballots sur le dos, les yeux vides." },
+        { speaker: 'refugee', text: "Notre village est tombé. Les wards n'ont pas tenu. On marche vers Angiers. Où irions-nous d'autre ?", emotion: 'scared' },
+        { speaker: 'leesha', text: "Montrez-moi vos blessés. Je suis herboriste.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Leesha soigne, panse, réconforte. Mais elle ne peut pas sauver tout le monde — et la nuit approche." },
       ],
       nextNodeId: 'l3_intro_3',
     },
     {
-      id: 'l3_intro_3', background: 'forest_village',
+      id: 'l3_intro_3', background: 'village_sunset',
       lines: [
-        { speaker: 'narrator', text: "Ce soir, les démons sont nerveux. Les bûcherons l'ont senti : les arbres craquent, le vent souffle du mauvais côté." },
-        { speaker: 'leesha_young', text: "Quelque chose les excite. Il y aura plus de corelings que d'habitude cette nuit.", emotion: 'scared' },
-        { speaker: 'narrator', text: "Leesha serre le journal de Bruna contre elle. Si ses théories sont justes, elle pourra sauver le village. Si elle se trompe..." },
+        { speaker: 'narrator', text: "Au crépuscule, un son étrange flotte dans l'air. Un violon. Quelqu'un joue près du campement des réfugiés." },
+        { speaker: 'narrator', text: "Un jeune homme aux cheveux roux, la main gauche mutilée, joue avec une grâce qui semble impossible vu ses blessures." },
+        { speaker: 'leesha', text: "Les réfugiés se calment quand il joue. Les enfants arrêtent de pleurer. Même le vent semble retenir son souffle.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "La nuit tombe. Les corelings montent. Mais le violon continue." },
       ],
     },
   ],
@@ -1705,30 +1746,32 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'l3_day1', background: 'ward_book',
+        id: 'l3_day1', background: 'road',
         lines: [
-          { speaker: 'narrator', text: "Première nuit passée. Les wards de lumière ont fonctionné — les corelings de vent se sont dispersés quand Leesha a activé le cercle." },
-          { speaker: 'leesha_young', text: "C'est confirmé. La lumière interfère avec leur capacité de vol. Si je combine lumière et feu...", emotion: 'hopeful' },
-          { speaker: 'narrator', text: "Leesha hésite. Tester ses théories signifie modifier les wards existants. Si elle se trompe, le village sera exposé." },
+          { speaker: 'narrator', text: "Première nuit sur la route. Leesha a tenu le campement, mais les wards tracés à la hâte ont failli céder au nord." },
+          { speaker: 'leesha', text: "Ce garçon au violon... Quand il jouait, j'ai vu les corelings de vent hésiter. S'arrêter. Comme s'ils écoutaient.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Rojer Halfgrip. Jongleur. Et oui, les démons écoutent. Ils n'aiment pas quand je m'arrête.", emotion: 'neutral' },
+          { speaker: 'leesha', text: "Ce n'est pas possible. La musique n'a aucun effet sur les corelings. Aucun texte de Bruna ne mentionne—", emotion: 'scared' },
+          { speaker: 'rojer', text: "Peut-être que votre Bruna n'avait pas toutes les réponses.", emotion: 'determined' },
         ],
         choices: [
           {
-            id: 'experiment_wards',
-            label: "Expérimenter une combinaison feu-lumière",
-            hint: "+1 Ward de Lumière et +1 Ward de Feu à l'Atelier, -1 AP",
+            id: 'study_rojer',
+            label: "Observer Rojer jouer ce soir et noter les réactions des démons",
+            hint: "Force démons -1 (la musique perturbe), -1 AP (nuit d'observation)",
             effects: [
-              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
-              { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
+              { type: 'demon_strength_bonus', bonus: -1 },
               { type: 'hero_ap_change', delta: -1 },
+              { type: 'set_flag', flag: 'studied_rojer_music', value: true },
             ],
           },
           {
-            id: 'safe_approach',
-            label: "Renforcer les wards classiques du village",
-            hint: "+1 Ward de Pierre à Cutter's Hollow, +3 Encre",
+            id: 'reinforce_camp',
+            label: "Renforcer les wards du campement des réfugiés",
+            hint: "+1 Ward de Feu au Campement, +2 Pop au Campement",
             effects: [
-              { type: 'bonus_ward', wardType: 'stone', locationId: 'cutters_hollow' },
-              { type: 'add_resources', locationId: 'cutters_hollow', resource: 'ink', amount: 3 },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'miln' },
+              { type: 'modify_population', locationId: 'miln', delta: 2 },
             ],
           },
         ],
@@ -1737,30 +1780,64 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'l3_day2', background: 'bruna_hut',
+        id: 'l3_day2', background: 'ward_book',
         lines: [
-          { speaker: 'narrator', text: "Leesha a passé la nuit à observer les démons depuis la fenêtre de son atelier, notant chaque réaction aux différents wards." },
-          { speaker: 'leesha_young', text: "J'ai trouvé quelque chose dans les dernières pages du journal de Bruna. Elle parlait d'un « ward net » — un réseau de wards interconnectés.", emotion: 'hopeful' },
-          { speaker: 'leesha_young', text: "Si les wards se renforcent mutuellement au lieu de fonctionner isolément, la protection serait exponentielle.", emotion: 'determined' },
+          { speaker: 'narrator', text: "Angiers est en vue. Leesha passe la matinée dans les archives de l'Académie, feuilletant des textes que personne n'a lus depuis des générations." },
+          { speaker: 'leesha', text: "Les wards de lumière... Ils ne sont pas dans les livres de Bruna. Ils sont ici, dans les archives d'Angiers. Quelqu'un les a cachés.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Les wards de lumière. Ils ne repoussent pas — ils éclairent ce que les autres wards ne voient pas. Ils révèlent la faiblesse des corelings." },
+          { speaker: 'leesha', text: "C'est la pièce manquante. Avec la lumière, le feu et la pierre ne sont plus des murs. Ce sont des armes.", emotion: 'determined' },
         ],
         choices: [
           {
-            id: 'build_ward_net',
-            label: "Construire un réseau de wards entre les positions",
-            hint: "+1 Ward de Vent à la Lisière, Force démons -1, mais -3 HP (nuit blanche)",
+            id: 'deep_study',
+            label: "Rester aux archives et maîtriser les wards de lumière",
+            hint: "+1 Ward de Lumière aux Portes d'Angiers, +1 Ward de Lumière en réserve, -2 HP (épuisement)",
             effects: [
-              { type: 'bonus_ward', wardType: 'wind', locationId: 'lakton' },
-              { type: 'demon_strength_bonus', bonus: -1 },
-              { type: 'hero_hp_change', delta: -3 },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'lakton' },
+              { type: 'bonus_reserve_ward', wardType: 'light' },
+              { type: 'hero_hp_change', delta: -2 },
             ],
           },
           {
-            id: 'rest_and_heal',
-            label: "Se reposer et soigner les blessés",
-            hint: "+3 HP héros, +2 Population à Cutter's Hollow",
+            id: 'practical_defense',
+            label: "Appliquer les bases et renforcer les défenses d'Angiers",
+            hint: "+1 Ward de Pierre aux Portes, +3 Encre aux Portes",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
+              { type: 'add_resources', locationId: 'lakton', resource: 'ink', amount: 3 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'l3_day3', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "Ce garçon avec son violon... les démons l'écoutent. C'est impossible. Et pourtant, Leesha l'a vu de ses propres yeux." },
+          { speaker: 'leesha', text: "Rojer, ta musique n'est pas de la magie. C'est de la physique des wards appliquée au son. Les vibrations interfèrent avec leur essence.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Appelez ça comme vous voulez. Moi, j'appelle ça survivre.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Si on combine ta musique avec mes wards de lumière cette nuit... On pourrait faire bien plus que survivre.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'combine_music_light',
+            label: "Combiner la musique de Rojer et les wards de lumière",
+            hint: "Force démons -1, +1 Ward de Lumière à la Route, mais -2 HP",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
+              { type: 'hero_hp_change', delta: -2 },
+            ],
+          },
+          {
+            id: 'safe_last_night',
+            label: "Chacun de son côté — défenses classiques",
+            hint: "+3 HP, +2 Bois aux Portes d'Angiers",
             effects: [
               { type: 'hero_hp_change', delta: 3 },
-              { type: 'modify_population', locationId: 'cutters_hollow', delta: 2 },
+              { type: 'add_resources', locationId: 'lakton', resource: 'wood', amount: 2 },
             ],
           },
         ],
@@ -1772,17 +1849,18 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
     {
       id: 'l3_victory_1', background: 'dawn_victory',
       lines: [
-        { speaker: 'narrator', text: "L'aube se lève. Le village est intact. Et Leesha Paper tient dans ses mains quelque chose d'inestimable : la compréhension." },
-        { speaker: 'leesha_young', text: "Les wards ne sont pas des symboles magiques. Ce sont des formules. Et les formules, on peut les améliorer.", emotion: 'determined' },
+        { speaker: 'narrator', text: "L'aube sur Angiers. Les murs de la cité se dressent, couverts de wards millénaires. Et derrière eux, les archives qui contiennent les secrets de l'ancien monde." },
+        { speaker: 'leesha', text: "Les wards de lumière changent tout. Ils ne protègent pas — ils révèlent. Et ce qu'ils révèlent, on peut le détruire.", emotion: 'determined' },
       ],
       nextNodeId: 'l3_victory_2',
     },
     {
-      id: 'l3_victory_2', background: 'ward_book',
+      id: 'l3_victory_2', background: 'road',
       lines: [
-        { speaker: 'narrator', text: "Dans son atelier, Leesha ouvre un cahier neuf. Elle commence à écrire — ses propres formules, ses propres découvertes." },
-        { speaker: 'narrator', text: "Bruna serait fière. L'élève a dépassé le maître." },
-        { speaker: 'leesha_young', text: "Ce n'est que le début. Si je peux comprendre comment les wards tuent, je peux armer chaque village de Thesa.", emotion: 'hopeful' },
+        { speaker: 'rojer', text: "Alors, herboriste. Où va-t-on maintenant ?", emotion: 'neutral' },
+        { speaker: 'leesha', text: "Je retourne à Cutter's Hollow. Mon village a besoin de ce que j'ai appris ici. Tu viens ?", emotion: 'determined' },
+        { speaker: 'rojer', text: "Pourquoi pas. La route est plus sûre à deux.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Leesha Paper et Rojer Halfgrip. L'herboriste et le jongleur. Deux chemins qui se croisent — et qui ne se sépareront plus." },
       ],
     },
   ],
@@ -1790,21 +1868,1204 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
   defeatDialogue: [{
     id: 'l3_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Les wards expérimentaux de Leesha s'effondrent. Le réseau qu'elle a construit crée une réaction en chaîne — chaque ward qui cède en entraîne un autre." },
-      { speaker: 'leesha_young', text: "Non... J'ai fait une erreur dans la séquence... Bruna, pardonnez-moi.", emotion: 'sad' },
-      { speaker: 'narrator', text: "Cutter's Hollow brûle. La science des wards n'est pas un jeu, et l'erreur se paie en vies." },
+      { speaker: 'narrator', text: "Les wards du campement cèdent sur la route d'Angiers. Les réfugiés hurlent dans la nuit." },
+      { speaker: 'leesha', text: "Non... J'aurais dû rester à Cutter's Hollow. J'aurais dû...", emotion: 'sad' },
+      { speaker: 'narrator', text: "La route vers Angiers est jonchée de promesses brisées. Et les wards de lumière resteront dans les archives, oubliés." },
       { speaker: 'narrator', text: "Chapitre 10 — Échec" },
     ],
   }],
 };
 
 // ============================================================
-// Chapter 11: Arlen 4 — Anoch Sun
-// Arlen découvre la cité perdue et les wards de combat
+// Chapter 11: Jardir 3 — La Lance de Kaji
+// Jardir découvre la Lance dans le Maze, premiers démons tués
+// ============================================================
+
+export const CHAPTER_JARDIR_3: ChapterDefinition = {
+  id: 11,
+  act: 3,
+  title: 'La Lance de Kaji',
+  subtitle: "Dans les ténèbres du Maze, une lumière attend celui qui ose descendre.",
+  heroId: 'jardir',
+  nightCount: 3,
+  startingNightNumber: 5,
+  startingPresence: 'desert_spear',
+  hiddenLocations: ['lakton'] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light'] as WardType[],
+  fireCanKill: true,
+  locationOverrides: {
+    desert_spear: { name: 'Cœur du Maze', startPop: 7, terrain: 'underground' as any },
+    cutters_hollow: { name: 'Brèche Ouest', startPop: 4, terrain: 'underground' as any },
+    miln: { name: 'Chambre Secrète', startPop: 3, terrain: 'underground' as any },
+    lakton: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'desert_spear', ward: 'fire' },
+    { locationId: 'desert_spear', ward: 'stone' },
+    { locationId: 'cutters_hollow', ward: 'wind' },
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'miln', ward: 'stone' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'j3_intro_1', background: 'maze',
+      lines: [
+        { speaker: 'narrator', text: "Le Maze gronde. Depuis des semaines, les corelings poussent plus profond, plus fort. Les Sharum reculent, couloir après couloir." },
+        { speaker: 'narrator', text: "Le Sharum Ka Jardir tient la ligne. Mais les pertes s'accumulent, et les guerriers murmurent que les démons préparent quelque chose." },
+        { speaker: 'jardir', text: "Quelque chose les attire vers la brèche ouest. Ils creusent. Ils cherchent quelque chose sous le Maze.", emotion: 'determined' },
+      ],
+      nextNodeId: 'j3_intro_2',
+    },
+    {
+      id: 'j3_intro_2', background: 'maze',
+      lines: [
+        { speaker: 'narrator', text: "Jardir descend seul dans les tunnels les plus profonds. Là où aucun Sharum n'est allé depuis des générations." },
+        { speaker: 'narrator', text: "Et dans l'obscurité, il trouve une chambre scellée. Sur les murs, des wards qui brillent encore après des siècles — des wards de lumière." },
+        { speaker: 'jardir', text: "Par Everam... Ce n'est pas un tunnel. C'est un tombeau. Le tombeau d'un guerrier de l'ancien temps.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Au centre de la chambre, posée sur un autel de pierre noire : une lance. Couverte de wards de lumière qui pulsent doucement dans le noir." },
+      ],
+      nextNodeId: 'j3_intro_3',
+    },
+    {
+      id: 'j3_intro_3', background: 'krasia',
+      lines: [
+        { speaker: 'jardir', text: "La Lance de Kaji. L'arme du premier Shar'Dama Ka. Elle existe vraiment.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Jardir saisit la lance. Les wards s'illuminent au contact de sa main. Et dans les tunnels au-dessus, les corelings hurlent de rage." },
+        { speaker: 'narrator', text: "Cette nuit, pour la première fois dans l'histoire vivante de Krasia, un démon mourra dans le Maze. Définitivement." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'j3_day1', background: 'maze',
+        lines: [
+          { speaker: 'narrator', text: "La lance a tué un coreling de flamme. Pas repoussé — tué. Son corps s'est dissous en fumée noire, et il n'est pas remonté du sol." },
+          { speaker: 'jardir', text: "Les guerriers ont vu. Pour la première fois, un démon est mort dans le Maze. Mort pour de vrai.", emotion: 'determined' },
+          { speaker: 'drillmaster', text: "Les hommes sont galvanisés. Mais la brèche ouest s'élargit. Il faut choisir où concentrer nos forces.", emotion: 'neutral' },
+        ],
+        choices: [
+          {
+            id: 'seal_breach',
+            label: "Sceller la brèche ouest avec des wards de lumière",
+            hint: "+1 Ward de Lumière à la Brèche, -1 AP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'rally_sharum',
+            label: "Rallier les Sharum avec la lance pour tenir le Cœur",
+            hint: "+3 Pop au Cœur du Maze, Force démons -1",
+            effects: [
+              { type: 'modify_population', locationId: 'desert_spear', delta: 3 },
+              { type: 'demon_strength_bonus', bonus: -1 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'j3_day2', background: 'krasia',
+        lines: [
+          { speaker: 'narrator', text: "Entre les combats, une silhouette voilée attend Jardir à l'entrée du Maze. Inevera, la dama'ting." },
+          { speaker: 'inevera', text: "Ahmann. Montre-moi tes mains.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Elle jette des osselets de démon sur un tissu noir. Les os roulent, s'arrêtent. Inevera les lit en silence." },
+          { speaker: 'inevera', text: "Tu es celui que j'attendais. Mais le prix sera terrible, Ahmann. Terrible.", emotion: 'sad' },
+          { speaker: 'jardir', text: "Quel prix ? Parle clairement, dama'ting.", emotion: 'angry' },
+          { speaker: 'inevera', text: "Shar'Dama Ka.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "Le Délivreur. Le titre que les prophéties annoncent depuis mille ans. Jardir ne comprend pas encore ce que cela implique." },
+        ],
+        choices: [
+          {
+            id: 'listen_inevera',
+            label: "Écouter les prophéties d'Inevera",
+            hint: "+1 Ward de Lumière en réserve (secret des dama'ting), -2 HP (rituel douloureux)",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'light' },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'set_flag', flag: 'listened_inevera', value: true },
+            ],
+          },
+          {
+            id: 'reject_prophecy',
+            label: "Rejeter les prophéties et retourner au combat",
+            hint: "+1 Ward de Feu au Cœur, +2 Encre au Cœur",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'desert_spear' },
+              { type: 'add_resources', locationId: 'desert_spear', resource: 'ink', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'j3_day3', background: 'maze',
+        lines: [
+          { speaker: 'narrator', text: "La chambre secrète contient plus que la lance. Il y a des inscriptions sur les murs — des tactiques de combat, des formations wardées." },
+          { speaker: 'jardir', text: "Les anciens ne se contentaient pas de repousser les démons. Ils les chassaient. Ils descendaient dans les profondeurs pour les tuer.", emotion: 'determined' },
+          { speaker: 'narrator', text: "La dernière nuit approche. La horde est massive. Jardir doit choisir : défendre ou attaquer." },
+        ],
+        choices: [
+          {
+            id: 'hunt_demons',
+            label: "Descendre chasser les démons avec la Lance de Kaji",
+            hint: "-3 HP (combat brutal), mais -1 démon par vague",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'extra_demons', count: -1 },
+            ],
+          },
+          {
+            id: 'fortify_maze',
+            label: "Fortifier le Maze avec les wards de la chambre secrète",
+            hint: "+1 Ward de Lumière à chaque lieu",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'desert_spear' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'j3_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "Le Maze tient. Et cette fois, les corelings ne se sont pas simplement retirés — certains sont morts. Définitivement." },
+        { speaker: 'jardir', text: "Les guerriers ont vu ce que la Lance peut faire. Ils n'ont plus peur. Ils ont faim.", emotion: 'determined' },
+        { speaker: 'drillmaster', text: "Sharum Ka... Les hommes parlent de toi comme du Délivreur.", emotion: 'hopeful' },
+      ],
+      nextNodeId: 'j3_victory_2',
+    },
+    {
+      id: 'j3_victory_2', background: 'krasia',
+      lines: [
+        { speaker: 'jardir', text: "Le Maze ne suffit plus. Nous ne pouvons pas rester ici à attendre que les démons viennent à nous.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Inevera observe depuis l'ombre. Elle sourit. Le destin qu'elle a lu dans les os se met en marche." },
+        { speaker: 'narrator', text: "Ahmann Jardir. Le guerrier qui tient la Lance de Kaji. Bientôt, il voudra plus que le Maze." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'j3_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Le Maze s'effondre sous l'assaut. La Lance de Kaji brille dans le noir, mais un homme seul ne peut pas tenir contre une armée." },
+      { speaker: 'jardir', text: "Everam... Pas maintenant. Pas comme ça.", emotion: 'angry' },
+      { speaker: 'narrator', text: "Les tunnels s'écroulent. La Lance est ensevelie. Et avec elle, le rêve de Kaji." },
+      { speaker: 'narrator', text: "Chapitre 11 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 12: Rojer 3 — Le Chant des Wards
+// Rojer perfectionne ses mélodies, rencontre Leesha
+// ============================================================
+
+export const CHAPTER_ROJER_3: ChapterDefinition = {
+  id: 12,
+  act: 3,
+  title: 'Le Chant des Wards',
+  subtitle: "Quand la musique touche l'invisible, le monde change.",
+  heroId: 'rojer',
+  nightCount: 3,
+  startingNightNumber: 5,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['desert_spear'] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light'] as WardType[],
+  fireCanKill: true,
+  locationOverrides: {
+    cutters_hollow: { name: 'Clairière du Camp', startPop: 5, terrain: 'forest' as any },
+    miln: { name: 'Route d\'Angiers', startPop: 4, terrain: 'plains' as any },
+    lakton: { name: 'Village de Boisrouge', startPop: 6, terrain: 'forest' as any },
+    desert_spear: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'miln', ward: 'wind' },
+    { locationId: 'lakton', ward: 'stone' },
+    { locationId: 'lakton', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'r3_intro_1', background: 'road',
+      lines: [
+        { speaker: 'narrator', text: "Rojer Halfgrip marche seul depuis des semaines. De village en village, il joue pour payer son repas et un abri wardé pour la nuit." },
+        { speaker: 'narrator', text: "Mais sa musique a changé. Ce n'est plus du divertissement. C'est devenu autre chose — quelque chose que même Rojer ne comprend pas entièrement." },
+        { speaker: 'rojer', text: "Chaque type de démon réagit à une mélodie différente. Les corelings de vent fuient les aigus. Ceux de flamme ralentissent avec les graves.", emotion: 'hopeful' },
+      ],
+      nextNodeId: 'r3_intro_2',
+    },
+    {
+      id: 'r3_intro_2', background: 'inn',
+      lines: [
+        { speaker: 'narrator', text: "À Boisrouge, un petit village forestier, les habitants supplient Rojer de rester. Leur wardeur est mort. Les wards s'effacent." },
+        { speaker: 'refugee', text: "Jouez pour nous, Jongleur. Votre musique les tient à distance. Restez, je vous en prie.", emotion: 'scared' },
+        { speaker: 'rojer', text: "Je ne peux pas rester éternellement. Mais je peux rester quelques nuits. Le temps de comprendre.", emotion: 'determined' },
+      ],
+      nextNodeId: 'r3_intro_3',
+    },
+    {
+      id: 'r3_intro_3', background: 'forest_village',
+      lines: [
+        { speaker: 'narrator', text: "Le soir, une femme arrive au village. Grande, brune, le regard intelligent. Elle porte un sac d'herboriste et un journal usé." },
+        { speaker: 'leesha', text: "Je suis Leesha Paper, herboriste de Cutter's Hollow. Avez-vous des blessés ?", emotion: 'determined' },
+        { speaker: 'rojer', text: "L'herboriste dont tout le monde parle ? Celle qui trace des wards comme personne ?", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Leurs chemins se croisent. La nuit tombe. Et les démons arrivent." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'r3_day1', background: 'inn',
+        lines: [
+          { speaker: 'narrator', text: "Première nuit. Rojer a joué jusqu'à l'aube. Ses doigts saignent — deux seulement sur la main gauche, mais ils ont tenu." },
+          { speaker: 'rojer', text: "J'ai trouvé une nouvelle mélodie cette nuit. Un rythme syncopé. Les corelings de pierre se figent quand je la joue.", emotion: 'hopeful' },
+          { speaker: 'leesha', text: "Les fréquences que tu produis interfèrent avec leur structure cristalline. C'est fascinant.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Tu peux traduire ça en langue humaine ?", emotion: 'neutral' },
+          { speaker: 'leesha', text: "Ta musique casse les démons de pierre. Continue.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'practice_stone_melody',
+            label: "Perfectionner la mélodie anti-pierre",
+            hint: "Force démons -1, -1 AP (entraînement intensif)",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'help_village_wards',
+            label: "Aider Leesha à retracer les wards du village",
+            hint: "+1 Ward de Feu à Boisrouge, +2 Encre à Boisrouge",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+              { type: 'add_resources', locationId: 'lakton', resource: 'ink', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'r3_day2', background: 'forest_village',
+        lines: [
+          { speaker: 'narrator', text: "Leesha observe Rojer depuis deux nuits. Elle prend des notes. Elle mesure. Elle réfléchit." },
+          { speaker: 'leesha', text: "Ta musique n'est pas de la magie, Rojer. C'est de la physique des wards appliquée au son. Les vibrations de tes cordes reproduisent les mêmes fréquences que les runes.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Donc je suis... un ward vivant ?", emotion: 'hopeful' },
+          { speaker: 'leesha', text: "En quelque sorte. Et si on combine ta musique avec mes wards de lumière...", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'experiment_music_wards',
+            label: "Tester la combinaison musique + wards de lumière",
+            hint: "+1 Ward de Lumière à la Clairière, +1 Ward de Lumière en réserve, -2 HP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
+              { type: 'bonus_reserve_ward', wardType: 'light' },
+              { type: 'hero_hp_change', delta: -2 },
+            ],
+          },
+          {
+            id: 'play_for_morale',
+            label: "Jouer pour le moral du village, laisser Leesha gérer les wards",
+            hint: "+2 Pop à Boisrouge, +1 Ward de Pierre à la Clairière",
+            effects: [
+              { type: 'modify_population', locationId: 'lakton', delta: 2 },
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'cutters_hollow' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'r3_day3', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "Dernière nuit à Boisrouge. Rojer et Leesha ont décidé de voyager ensemble vers Cutter's Hollow." },
+          { speaker: 'rojer', text: "J'ai une mélodie pour chaque type de démon maintenant. Flamme, vent, pierre. Chacun a sa faiblesse sonore.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Et moi, j'ai les wards de lumière pour révéler ceux qui se cachent. Ensemble, on couvre tout.", emotion: 'determined' },
+          { speaker: 'narrator', text: "La dernière nuit sera la plus dure. Les corelings semblent savoir que Rojer va partir. Ils sont furieux." },
+        ],
+        choices: [
+          {
+            id: 'full_symphony',
+            label: "Déployer toutes les mélodies en une symphonie coordonnée",
+            hint: "-1 démon par vague, -3 HP (effort surhumain sur les doigts)",
+            effects: [
+              { type: 'extra_demons', count: -1 },
+              { type: 'hero_hp_change', delta: -3 },
+            ],
+          },
+          {
+            id: 'defensive_duet',
+            label: "Défense classique : Rojer joue, Leesha warde",
+            hint: "+1 Ward de Lumière à la Route, +1 Ward de Feu à la Clairière",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'cutters_hollow' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'r3_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "L'aube. Boisrouge tient. Et les villageois applaudissent le Jongleur qui a sauvé leur village trois nuits de suite." },
+        { speaker: 'rojer', text: "Les démons ont leur musique. Et moi, j'ai la mienne. On verra qui joue le plus fort.", emotion: 'determined' },
+      ],
+      nextNodeId: 'r3_victory_2',
+    },
+    {
+      id: 'r3_victory_2', background: 'road',
+      lines: [
+        { speaker: 'leesha', text: "Tu viens à Cutter's Hollow, alors ?", emotion: 'neutral' },
+        { speaker: 'rojer', text: "Pourquoi pas. Un village qui a une herboriste géniale et un jongleur dément ? Les corelings n'ont aucune chance.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Rojer Halfgrip. Le Jongleur dont les mélodies font trembler les démons. Il a trouvé sa voie — et une alliée." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'r3_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Les cordes du violon se brisent une à une. Sans musique, les corelings déferlent sur Boisrouge." },
+      { speaker: 'rojer', text: "Non... Pas les cordes. Pas maintenant...", emotion: 'scared' },
+      { speaker: 'narrator', text: "Le silence revient. Et avec le silence, les démons." },
+      { speaker: 'narrator', text: "Chapitre 12 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 13: Arlen 4 — La Carte d'Anoch Sun
+// Arlen rassemble les indices, voyage dans le désert
 // ============================================================
 
 export const CHAPTER_ARLEN_4: ChapterDefinition = {
-  id: 11,
+  id: 13,
+  act: 4,
+  title: "La Carte d'Anoch Sun",
+  subtitle: "Le désert ne rend pas ses secrets aux lâches.",
+  heroId: 'arlen',
+  nightCount: 3,
+  startingNightNumber: 6,
+  startingPresence: 'miln',
+  hiddenLocations: [] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light', 'bone'] as WardType[],
+  fireCanKill: true,
+  maxComboSize: 3,
+  locationOverrides: {
+    miln: { name: 'Oasis du Guide', startPop: 3, terrain: 'desert' as any },
+    cutters_hollow: { name: 'Ruines Mineures', startPop: 2, terrain: 'desert' as any },
+    lakton: { name: 'Dunes du Sud', startPop: 3, terrain: 'desert' as any },
+    desert_spear: { name: 'Avant-Poste Krasien', startPop: 4, terrain: 'desert' as any },
+  },
+  preplacedWards: [
+    { locationId: 'miln', ward: 'fire' },
+    { locationId: 'miln', ward: 'stone' },
+    { locationId: 'cutters_hollow', ward: 'light' },
+    { locationId: 'lakton', ward: 'wind' },
+    { locationId: 'desert_spear', ward: 'fire' },
+    { locationId: 'desert_spear', ward: 'stone' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'a4_intro_1', background: 'road',
+      lines: [
+        { speaker: 'narrator', text: "Le désert de Krasie. Du sable, du soleil, et la mort qui attend dans chaque ombre." },
+        { speaker: 'narrator', text: "Arlen a rassemblé tous les indices : le fragment de Lakton, les notes de la bibliothèque de Miln, les témoignages de marchands krasiens." },
+        { speaker: 'narrator', text: "Quelque part dans ce désert, Anoch Sun attend. La cité perdue des anciens wardeurs." },
+      ],
+      nextNodeId: 'a4_intro_2',
+    },
+    {
+      id: 'a4_intro_2', background: 'ruins',
+      lines: [
+        { speaker: 'arlen', text: "Le guide dit que personne ne revient du désert profond. Que les corelings du sable sont les pires de tous.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Un vieux Krasien nommé Abban — marchand, pas guerrier — a accepté de guider Arlen. Pour un prix exorbitant, bien sûr." },
+        { speaker: 'arlen', text: "Abban, ces ruines sur la carte... Tu les as déjà vues ?", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Abban secoue la tête. Personne n'est assez fou pour venir ici. Sauf Arlen." },
+      ],
+      nextNodeId: 'a4_intro_3',
+    },
+    {
+      id: 'a4_intro_3', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Des colonnes brisées émergent du sable. Des fragments de murs couverts de symboles à moitié effacés. Ce ne sont pas les grandes ruines — juste les avant-postes." },
+        { speaker: 'arlen', text: "Il y a des wards ici. Des wards d'os. Je n'en avais vu que dans des livres. Ils drainent la force vitale des démons.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "La nuit tombe sur le désert. Et dans le sable, quelque chose remue. Quelque chose de grand, de vieux, avec un bras en moins." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'a4_day1', background: 'ruins',
+        lines: [
+          { speaker: 'narrator', text: "Première nuit. One Arm était là. Il a chargé le campement trois fois. Les wards de feu l'ont repoussé, mais il apprend. Il contourne." },
+          { speaker: 'arlen', text: "Ce démon me suit depuis la route de Miln. Des mois. Il me traque comme je traque Anoch Sun.", emotion: 'determined' },
+          { speaker: 'narrator', text: "Le guide dit que personne ne revient du désert profond. Arlen sait qu'il n'a pas le choix." },
+        ],
+        choices: [
+          {
+            id: 'study_bone_wards',
+            label: "Étudier les wards d'os des ruines mineures",
+            hint: "+1 Ward d'Os en réserve, +1 Ward d'Os aux Ruines, -1 AP",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'bone' },
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'cutters_hollow' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'fortify_oasis',
+            label: "Renforcer les défenses de l'oasis",
+            hint: "+1 Ward de Lumière à l'Oasis, +2 Encre",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+              { type: 'add_resources', locationId: 'miln', resource: 'ink', amount: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'a4_day2', background: 'road',
+        lines: [
+          { speaker: 'narrator', text: "Les ruines mineures contiennent des fragments de carte. Arlen les assemble, fébrilement, sous le soleil brûlant." },
+          { speaker: 'arlen', text: "Anoch Sun est à deux jours au sud. Sous les dunes. L'entrée est enterrée mais elle est là.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Mais le guide refuse d'aller plus loin. Il dit que le sable est maudit, que les démons ici sont plus anciens que le monde." },
+          { speaker: 'arlen', text: "Alors j'irai seul.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'convince_guide',
+            label: "Convaincre le guide de rester une nuit de plus",
+            hint: "+2 Pop à l'Avant-Poste Krasien (le guide rallie des porteurs), -1 AP",
+            effects: [
+              { type: 'modify_population', locationId: 'desert_spear', delta: 2 },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'go_alone',
+            label: "Partir seul vers le sud avec les fragments de carte",
+            hint: "+1 Ward de Feu en réserve, +1 Ward d'Os en réserve, -2 HP",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'fire' },
+              { type: 'bonus_reserve_ward', wardType: 'bone' },
+              { type: 'hero_hp_change', delta: -2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'a4_day3', background: 'ruins',
+        lines: [
+          { speaker: 'narrator', text: "La dernière nuit dans le désert. One Arm rôde. Arlen l'entend gratter le sable, tournant autour du campement comme un loup." },
+          { speaker: 'arlen', text: "Tu me veux, One Arm ? Viens me chercher. J'ai des wards d'os maintenant. Tu sais ce qu'ils font ?", emotion: 'angry' },
+          { speaker: 'narrator', text: "Le démon recule. Pour la première fois, c'est One Arm qui a peur." },
+          { speaker: 'arlen', text: "C'est ça. Recule. La prochaine fois qu'on se croise, ce sera à Anoch Sun. Et tu ne repartiras pas.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'confront_one_arm',
+            label: "Affronter One Arm avec les wards d'os",
+            hint: "-3 HP (combat féroce), Force démons -1, -1 démon par vague",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'extra_demons', count: -1 },
+              { type: 'set_flag', flag: 'fought_one_arm_desert', value: true },
+            ],
+          },
+          {
+            id: 'hold_camp',
+            label: "Tenir le campement et laisser One Arm tourner",
+            hint: "+1 Ward de Pierre aux Dunes, +1 Ward de Feu aux Dunes",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'a4_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "L'aube se lève sur le désert. Arlen a survécu. Et dans sa sacoche, la carte complète d'Anoch Sun." },
+        { speaker: 'arlen', text: "Je sais où elle est. Sous les dunes, à deux jours au sud. L'entrée est marquée par un obélisque brisé.", emotion: 'determined' },
+      ],
+      nextNodeId: 'a4_victory_2',
+    },
+    {
+      id: 'a4_victory_2', background: 'road',
+      lines: [
+        { speaker: 'narrator', text: "Les wards d'os changent tout. Ils ne repoussent pas — ils dévorent. Ils drainent la vie des démons comme une sangsue." },
+        { speaker: 'arlen', text: "Anoch Sun m'attend. Les secrets des anciens sont là-bas. Et quand je les aurai... plus personne n'aura à se cacher.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Arlen Bales. Le Messager qui marche vers les ruines du monde — et vers sa propre transformation." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'a4_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Le sable engloutit le campement. One Arm mène la charge des corelings du désert. Il n'y a nulle part où fuir." },
+      { speaker: 'arlen', text: "Le désert ne rend pas ses secrets... et il ne rend pas ses morts non plus.", emotion: 'angry' },
+      { speaker: 'narrator', text: "La carte d'Anoch Sun est perdue dans les dunes. Personne ne trouvera la cité." },
+      { speaker: 'narrator', text: "Chapitre 13 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 14: Leesha 4 — Le Réseau de Wards
+// Leesha déploie sa théorie à grande échelle, découvre les wards d'os
+// ============================================================
+
+export const CHAPTER_LEESHA_4: ChapterDefinition = {
+  id: 14,
+  act: 4,
+  title: 'Le Réseau de Wards',
+  subtitle: "Les wards ne sont pas des murs. Ce sont des veines.",
+  heroId: 'leesha',
+  nightCount: 3,
+  startingNightNumber: 6,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: [] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light', 'bone'] as WardType[],
+  fireCanKill: true,
+  maxComboSize: 3,
+  locationOverrides: {
+    cutters_hollow: { name: "Cutter's Hollow", startPop: 10, terrain: 'forest' as any },
+    miln: { name: 'Atelier de Leesha', startPop: 4, terrain: 'forest' as any },
+    lakton: { name: 'Scierie', startPop: 6, terrain: 'forest' as any },
+    desert_spear: { name: 'Lisière Sud', startPop: 5, terrain: 'forest' as any },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'miln', ward: 'light' },
+    { locationId: 'miln', ward: 'wind' },
+    { locationId: 'lakton', ward: 'fire' },
+    { locationId: 'desert_spear', ward: 'stone' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'l4_intro_1', background: 'forest_village',
+      lines: [
+        { speaker: 'narrator', text: "Cutter's Hollow. Leesha est revenue d'Angiers avec les wards de lumière et une théorie qui pourrait tout changer." },
+        { speaker: 'narrator', text: "Les wards ne sont pas des murs isolés. Ce sont les nœuds d'un réseau — et si on les connecte, l'énergie circule entre eux." },
+        { speaker: 'leesha', text: "Un village assiegé par les démons, et moi avec une théorie non testée. Parfait.", emotion: 'determined' },
+      ],
+      nextNodeId: 'l4_intro_2',
+    },
+    {
+      id: 'l4_intro_2', background: 'ward_book',
+      lines: [
+        { speaker: 'narrator', text: "Dans les notes les plus cryptiques de Bruna — celles qu'elle n'avait jamais osé montrer — Leesha trouve des références aux wards d'os." },
+        { speaker: 'leesha', text: "Des wards qui drainent la force vitale des démons... Bruna le savait. Mais elle avait trop peur pour les utiliser.", emotion: 'hopeful' },
+        { speaker: 'leesha', text: "Les wards ne sont pas des murs. Ce sont des veines. L'énergie circule.", emotion: 'determined' },
+        { speaker: 'narrator', text: "La nuit tombe sur Cutter's Hollow. Le plus grand test de sa vie commence." },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'l4_day1', background: 'forest_village',
+        lines: [
+          { speaker: 'narrator', text: "Première nuit avec le réseau. Les wards ont tenu — et plus que tenu. Quand un ward faiblissait, les autres le soutenaient." },
+          { speaker: 'leesha', text: "Ça fonctionne. L'énergie se redistribue. Un ward qui cède ne crée plus de brèche — les voisins compensent.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Mais les corelings s'adaptent. Ils attaquent maintenant en plusieurs points simultanément, testant le réseau." },
+        ],
+        choices: [
+          {
+            id: 'extend_network',
+            label: "Étendre le réseau à la Scierie et la Lisière",
+            hint: "+1 Ward de Lumière à la Scierie, +1 Ward de Lumière à la Lisière, -1 AP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'lakton' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'desert_spear' },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'reinforce_core',
+            label: "Renforcer le cœur du réseau à l'Atelier",
+            hint: "+1 Ward d'Os à l'Atelier, +3 Encre à l'Atelier",
+            effects: [
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'miln' },
+              { type: 'add_resources', locationId: 'miln', resource: 'ink', amount: 3 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'l4_day2', background: 'bruna_hut',
+        lines: [
+          { speaker: 'narrator', text: "Leesha passe la journée dans l'atelier, les mains tachées d'encre noire, traçant des wards d'os pour la première fois." },
+          { speaker: 'leesha', text: "Bruna avait raison d'avoir peur. Les wards d'os ne sont pas comme les autres. Ils sont... vivants. Ils aspirent l'énergie.", emotion: 'scared' },
+          { speaker: 'leesha', text: "Mais intégrés au réseau, ils pourraient transformer les défenses du village. Les corelings qui touchent le réseau seraient drainés.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'integrate_bone',
+            label: "Intégrer les wards d'os au réseau (risqué mais puissant)",
+            hint: "+1 Ward d'Os à Cutter's Hollow, Force démons -1, -3 HP (drain d'énergie)",
+            effects: [
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'cutters_hollow' },
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_hp_change', delta: -3 },
+            ],
+          },
+          {
+            id: 'safe_wards',
+            label: "Utiliser les wards classiques, ne pas risquer le réseau",
+            hint: "+1 Ward de Pierre à Cutter's Hollow, +1 Ward de Feu à la Scierie, +2 HP",
+            effects: [
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'cutters_hollow' },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+              { type: 'hero_hp_change', delta: 2 },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'l4_day3', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "Dernière nuit. Leesha se tient au centre du village, les yeux fermés. Elle sent le réseau pulser autour d'elle." },
+          { speaker: 'leesha', text: "Chaque ward est un nœud. Chaque connexion est un vaisseau. L'énergie circule comme le sang dans un corps.", emotion: 'hopeful' },
+          { speaker: 'leesha', text: "Si ce village peut tenir avec un réseau, alors tous les villages de Thesa peuvent tenir. Il suffit de leur apprendre.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'overcharge_network',
+            label: "Surcharger le réseau pour la dernière nuit",
+            hint: "Force démons -1, -1 démon par vague, -4 HP (le réseau draine aussi Leesha)",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'extra_demons', count: -1 },
+              { type: 'hero_hp_change', delta: -4 },
+            ],
+          },
+          {
+            id: 'balanced_defense',
+            label: "Défense équilibrée sur tous les points",
+            hint: "+1 Ward de Vent à chaque lieu",
+            effects: [
+              { type: 'bonus_ward', wardType: 'wind', locationId: 'cutters_hollow' },
+              { type: 'bonus_ward', wardType: 'wind', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'wind', locationId: 'lakton' },
+              { type: 'bonus_ward', wardType: 'wind', locationId: 'desert_spear' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'l4_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "L'aube. Le réseau a tenu. Cutter's Hollow est intact — et pour la première fois, les corelings ont été repoussés sans qu'un seul ward ne cède." },
+        { speaker: 'leesha', text: "Le réseau fonctionne. Les wards ne sont plus des barrières isolées. Ils sont un organisme vivant.", emotion: 'determined' },
+      ],
+      nextNodeId: 'l4_victory_2',
+    },
+    {
+      id: 'l4_victory_2', background: 'ward_book',
+      lines: [
+        { speaker: 'narrator', text: "Leesha dessine les plans du réseau dans son cahier. Pierre, vent, feu, lumière, os — cinq éléments, connectés en un tout." },
+        { speaker: 'leesha', text: "Bruna, je comprends maintenant pourquoi vous aviez peur des wards d'os. Mais la peur ne protège personne.", emotion: 'hopeful' },
+        { speaker: 'narrator', text: "Leesha Paper. L'herboriste qui a transformé les wards en science. Le village n'est plus une proie — c'est une forteresse." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'l4_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "Le réseau s'effondre. Chaque ward qui cède en entraîne un autre, comme des dominos. La cascade est implacable." },
+      { speaker: 'leesha', text: "Non... Le réseau amplifie la défaillance autant que la force. J'aurais dû le prévoir.", emotion: 'sad' },
+      { speaker: 'narrator', text: "Cutter's Hollow brûle. La science des wards est une arme à double tranchant." },
+      { speaker: 'narrator', text: "Chapitre 14 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 15: Jardir 4 — L'Unification de Krasia
+// Jardir unifie les tribus, déclare Sharak Ka
+// ============================================================
+
+export const CHAPTER_JARDIR_4: ChapterDefinition = {
+  id: 15,
+  act: 4,
+  title: "L'Unification de Krasia",
+  subtitle: "Le désert ne suffit plus. L'ennemi est partout.",
+  heroId: 'jardir',
+  nightCount: 4,
+  startingNightNumber: 6,
+  startingPresence: 'desert_spear',
+  hiddenLocations: [] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light', 'bone'] as WardType[],
+  fireCanKill: true,
+  maxComboSize: 3,
+  locationOverrides: {
+    desert_spear: { name: 'Trône de Krasia', startPop: 8, terrain: 'desert' as any },
+    cutters_hollow: { name: 'Camp de la Tribu Majah', startPop: 5, terrain: 'desert' as any },
+    miln: { name: 'Arène du Défi', startPop: 4, terrain: 'desert' as any },
+    lakton: { name: 'Portes du Désert', startPop: 6, terrain: 'desert' as any },
+  },
+  preplacedWards: [
+    { locationId: 'desert_spear', ward: 'fire' },
+    { locationId: 'desert_spear', ward: 'stone' },
+    { locationId: 'desert_spear', ward: 'light' },
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'cutters_hollow', ward: 'wind' },
+    { locationId: 'miln', ward: 'stone' },
+    { locationId: 'lakton', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'j4_intro_1', background: 'krasia',
+      lines: [
+        { speaker: 'narrator', text: "Fort Krasia. Les tribus se déchirent. Majah contre Kaji, Mehnding contre Sharach. Chaque nuit, le Maze perd des guerriers — pas face aux démons, mais face aux rivalités." },
+        { speaker: 'narrator', text: "Jardir a la Lance de Kaji. Il a la foi d'Inevera. Et il a une vision : unir toutes les tribus sous une seule bannière." },
+        { speaker: 'jardir', text: "Krasia se meurt. Pas à cause des démons — à cause de notre propre stupidité. Les tribus se battent entre elles pendant que les corelings rient dans le noir.", emotion: 'angry' },
+      ],
+      nextNodeId: 'j4_intro_2',
+    },
+    {
+      id: 'j4_intro_2', background: 'maze',
+      lines: [
+        { speaker: 'inevera', text: "Les os disent que tu dois défier chaque chef de tribu. La Lance légitimera ta victoire.", emotion: 'neutral' },
+        { speaker: 'jardir', text: "Et si je perds ?", emotion: 'determined' },
+        { speaker: 'inevera', text: "Tu ne perdras pas. Mais tu saigneras.", emotion: 'sad' },
+        { speaker: 'narrator', text: "Jardir regarde la Lance de Kaji. Les wards de lumière pulsent doucement, comme un cœur qui bat." },
+        { speaker: 'jardir', text: "Alors que le sang coule. Sharak Ka ne peut pas attendre.", emotion: 'determined' },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'j4_day1', background: 'krasia',
+        lines: [
+          { speaker: 'narrator', text: "Premier défi. Le chef de la tribu Majah refuse de reconnaître Jardir. Il faut le vaincre — ou le convaincre." },
+          { speaker: 'jardir', text: "Je ne te demande pas de t'agenouiller, Majah. Je te demande de te battre à mes côtés.", emotion: 'determined' },
+          { speaker: 'narrator', text: "Le chef Majah crache par terre. Il veut le sang, pas les mots." },
+        ],
+        choices: [
+          {
+            id: 'duel_majah',
+            label: "Accepter le duel rituel",
+            hint: "-3 HP (combat brutal), mais +3 Pop au Camp Majah (la tribu se rallie)",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'modify_population', locationId: 'cutters_hollow', delta: 3 },
+              { type: 'set_flag', flag: 'defeated_majah', value: true },
+            ],
+          },
+          {
+            id: 'diplomatic_approach',
+            label: "Proposer une alliance contre les démons cette nuit",
+            hint: "+1 Ward de Feu au Camp Majah, +1 Ward de Pierre au Camp Majah",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'cutters_hollow' },
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'cutters_hollow' },
+              { type: 'set_flag', flag: 'defeated_majah', value: false },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'j4_day2', background: 'maze',
+        lines: [
+          { speaker: 'narrator', text: "La nuit a été terrible. Les corelings ont attaqué en masse, comme s'ils sentaient la division des tribus." },
+          { speaker: 'jardir', text: "Vous voyez ? Divisés, nous mourrons un par un. Unis, nous tiendrons.", emotion: 'angry' },
+          { speaker: 'narrator', text: "Les guerriers Majah ont combattu aux côtés des Kaji cette nuit. Pour la première fois, deux tribus dans le même Maze." },
+          { speaker: 'jardir', text: "Le désert ne me suffit plus. Les démons ne sont pas seulement ici. Ils sont partout. Au nord, les gens se cachent derrière leurs murs.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'train_combined',
+            label: "Entraîner les tribus à combattre ensemble",
+            hint: "Force démons -1 (coordination), -1 AP",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_ap_change', delta: -1 },
+            ],
+          },
+          {
+            id: 'ward_arena',
+            label: "Warder l'Arène du Défi pour les prochains combats",
+            hint: "+1 Ward de Lumière à l'Arène, +1 Ward d'Os à l'Arène",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'miln' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'j4_day3', background: 'krasia',
+        lines: [
+          { speaker: 'narrator', text: "Les derniers chefs de tribu ont été vaincus ou ralliés. Jardir se tient devant le Trône de Krasia." },
+          { speaker: 'jardir', text: "Je déclare Sharak Ka. La Première Guerre. Nous ne défendrons plus le Maze. Nous marcherons vers le nord.", emotion: 'determined' },
+          { speaker: 'inevera', text: "Le chemin du nord mène à la victoire — ou à la ruine. Les os ne disent jamais lequel.", emotion: 'neutral' },
+          { speaker: 'jardir', text: "Alors nous verrons bien. Everam guidera nos lances.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'march_north',
+            label: "Préparer la marche vers le nord immédiatement",
+            hint: "+2 Pop aux Portes du Désert (l'armée se rassemble), -1 démon par vague",
+            effects: [
+              { type: 'modify_population', locationId: 'lakton', delta: 2 },
+              { type: 'extra_demons', count: -1 },
+            ],
+          },
+          {
+            id: 'fortify_first',
+            label: "Fortifier Krasia avant de partir",
+            hint: "+1 Ward d'Os au Trône, +1 Ward de Lumière aux Portes",
+            effects: [
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'desert_spear' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'lakton' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 4,
+      dialogueNodes: [{
+        id: 'j4_day4', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "Dernière nuit à Fort Krasia. Demain, l'armée krasienne marchera vers le nord. Vers l'inconnu." },
+          { speaker: 'jardir', text: "Nous marcherons vers le nord. Nous trouverons les peuples qui se cachent derrière leurs murs. Et nous les forcerons à se battre.", emotion: 'determined' },
+          { speaker: 'inevera', text: "Ou nous les libérerons. Selon comment ils le voient.", emotion: 'neutral' },
+          { speaker: 'narrator', text: "La horde de corelings attaque une dernière fois, comme pour empêcher Jardir de partir." },
+        ],
+        choices: [
+          {
+            id: 'lead_final_charge',
+            label: "Mener une dernière charge dans le Maze avec la Lance",
+            hint: "-3 HP, Force démons -1, -1 démon par vague",
+            effects: [
+              { type: 'hero_hp_change', delta: -3 },
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'extra_demons', count: -1 },
+            ],
+          },
+          {
+            id: 'defend_gates',
+            label: "Défendre les Portes du Désert pour protéger l'armée",
+            hint: "+1 Ward de Feu et +1 Ward d'Os aux Portes",
+            effects: [
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'lakton' },
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'lakton' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'j4_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "L'aube sur le désert. Krasia est unie. Pour la première fois depuis des siècles, toutes les tribus marchent ensemble." },
+        { speaker: 'jardir', text: "Le Maze est derrière nous. Devant nous, le nord. Devant nous, la guerre.", emotion: 'determined' },
+      ],
+      nextNodeId: 'j4_victory_2',
+    },
+    {
+      id: 'j4_victory_2', background: 'krasia',
+      lines: [
+        { speaker: 'narrator', text: "Des milliers de guerriers Sharum lèvent leurs lances vers le ciel. Le cri de guerre résonne dans le désert : Sharak Ka !" },
+        { speaker: 'narrator', text: "Ahmann Jardir. Shar'Dama Ka. Le Délivreur. L'homme qui a uni Krasia et qui marche maintenant vers un monde qui ne le connaît pas encore." },
+        { speaker: 'jardir', text: "Ces gens du nord sont faibles. Mais leur science des wards... Everam avait raison de m'envoyer vers eux.", emotion: 'determined' },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'j4_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "La dernière nuit à Krasia tourne au désastre. Les tribus se retournent les unes contre les autres dans la confusion." },
+      { speaker: 'jardir', text: "Non ! Nous sommes une seule armée ! UNE SEULE !", emotion: 'angry' },
+      { speaker: 'narrator', text: "Mais le chaos est plus fort que la foi. Sharak Ka meurt avant même d'avoir commencé." },
+      { speaker: 'narrator', text: "Chapitre 15 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 16: Rojer 4 — La Flûte d'Os
+// Rojer découvre l'instrument en os de démon, arrive à Cutter's Hollow
+// ============================================================
+
+export const CHAPTER_ROJER_4: ChapterDefinition = {
+  id: 16,
+  act: 4,
+  title: "La Flûte d'Os",
+  subtitle: "Il joue et les wards vibrent. Ce n'est plus de la musique. C'est une arme.",
+  heroId: 'rojer',
+  nightCount: 3,
+  startingNightNumber: 6,
+  startingPresence: 'cutters_hollow',
+  hiddenLocations: ['desert_spear'] as any,
+  availableWards: ['stone', 'wind', 'fire', 'light', 'bone'] as WardType[],
+  fireCanKill: true,
+  maxComboSize: 3,
+  locationOverrides: {
+    cutters_hollow: { name: 'Route de Cutter\'s Hollow', startPop: 5, terrain: 'forest' as any },
+    miln: { name: 'Atelier du Luthier', startPop: 3, terrain: 'forest' as any },
+    lakton: { name: 'Entrée du Village', startPop: 7, terrain: 'forest' as any },
+    desert_spear: { name: '', startPop: 0 },
+  },
+  preplacedWards: [
+    { locationId: 'cutters_hollow', ward: 'stone' },
+    { locationId: 'cutters_hollow', ward: 'fire' },
+    { locationId: 'miln', ward: 'wind' },
+    { locationId: 'miln', ward: 'light' },
+    { locationId: 'lakton', ward: 'stone' },
+    { locationId: 'lakton', ward: 'fire' },
+  ],
+
+  introDialogue: [
+    {
+      id: 'r4_intro_1', background: 'road',
+      lines: [
+        { speaker: 'narrator', text: "Sur la route de Cutter's Hollow, Rojer et Leesha croisent un luthier ambulant. Un vieil homme avec un chariot rempli d'instruments." },
+        { speaker: 'narrator', text: "Parmi les violons et les luths, un objet attire l'œil de Rojer. Une flûte. Blanche comme de l'ivoire, mais plus dure. Faite d'un matériau qu'il n'a jamais vu." },
+        { speaker: 'rojer', text: "Cette flûte... Elle est faite en quoi ?", emotion: 'hopeful' },
+      ],
+      nextNodeId: 'r4_intro_2',
+    },
+    {
+      id: 'r4_intro_2', background: 'inn',
+      lines: [
+        { speaker: 'narrator', text: "Le luthier hésite. Il baisse la voix." },
+        { speaker: 'narrator', text: "De l'os de coreling, murmure-t-il. Trouvé dans le désert. Personne n'en veut — les gens disent que c'est maudit." },
+        { speaker: 'rojer', text: "Maudit ? Ou wardé ?", emotion: 'determined' },
+        { speaker: 'narrator', text: "Rojer porte la flûte à ses lèvres. La première note qui en sort fait trembler l'air. Les wards du chariot vibrent en résonance." },
+        { speaker: 'leesha', text: "Rojer... Les wards réagissent à ta musique. L'os de démon amplifie les fréquences.", emotion: 'hopeful' },
+      ],
+      nextNodeId: 'r4_intro_3',
+    },
+    {
+      id: 'r4_intro_3', background: 'village_sunset',
+      lines: [
+        { speaker: 'narrator', text: "Rojer achète la flûte. Ce soir-là, il joue pour la première fois avec un instrument en os de démon." },
+        { speaker: 'narrator', text: "Le son est différent. Plus profond. Plus vrai. Comme si la musique touchait directement l'essence des corelings." },
+        { speaker: 'rojer', text: "Avec le violon, je les calmais. Avec la flûte, je les commande.", emotion: 'determined' },
+      ],
+    },
+  ],
+
+  dayEvents: [
+    {
+      dayNumber: 1,
+      dialogueNodes: [{
+        id: 'r4_day1', background: 'forest_village',
+        lines: [
+          { speaker: 'narrator', text: "Première nuit avec la flûte d'os. Les corelings n'ont pas simplement hésité — certains ont reculé. Reculé et fui." },
+          { speaker: 'rojer', text: "Le violon les calme. La flûte les terrifie. C'est l'os de démon — il résonne avec leur propre essence.", emotion: 'hopeful' },
+          { speaker: 'leesha', text: "Si tu combines violon et flûte, tu pourrais couvrir toute la gamme. Calmer certains, repousser d'autres.", emotion: 'determined' },
+          { speaker: 'rojer', text: "La triple technique. Violon de la main droite, flûte de la gauche, et la voix. Trois armes.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'practice_triple',
+            label: "S'entraîner à la triple technique (violon + flûte + voix)",
+            hint: "Force démons -1, -2 HP (effort surhumain sur les mains mutilées)",
+            effects: [
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_hp_change', delta: -2 },
+              { type: 'set_flag', flag: 'learned_triple', value: true },
+            ],
+          },
+          {
+            id: 'safe_practice',
+            label: "Pratiquer la flûte seule, perfectionner les bases",
+            hint: "+1 Ward de Lumière en réserve (la flûte active les wards de lumière), +1 Ward d'Os en réserve",
+            effects: [
+              { type: 'bonus_reserve_ward', wardType: 'light' },
+              { type: 'bonus_reserve_ward', wardType: 'bone' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 2,
+      dialogueNodes: [{
+        id: 'r4_day2', background: 'inn',
+        lines: [
+          { speaker: 'narrator', text: "Rojer joue et les wards vibrent. Le son de la flûte d'os résonne dans les runes tracées sur les murs du village." },
+          { speaker: 'narrator', text: "Ce n'est plus de la musique. C'est une arme." },
+          { speaker: 'leesha', text: "Tu actives les wards à distance, Rojer. Sans les toucher. Juste avec le son.", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Ses doigts saignent. Deux seulement sur la main gauche, mais ils suffisent.", emotion: 'sad' },
+        ],
+        choices: [
+          {
+            id: 'activate_ward_net',
+            label: "Jouer pour activer le réseau de wards de Leesha",
+            hint: "+1 Ward de Lumière à chaque lieu, -3 HP (les doigts en sang)",
+            effects: [
+              { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'miln' },
+              { type: 'bonus_ward', wardType: 'light', locationId: 'lakton' },
+              { type: 'hero_hp_change', delta: -3 },
+            ],
+          },
+          {
+            id: 'rest_hands',
+            label: "Reposer ses mains, renforcer les défenses classiques",
+            hint: "+3 HP, +1 Ward de Feu à la Route",
+            effects: [
+              { type: 'hero_hp_change', delta: 3 },
+              { type: 'bonus_ward', wardType: 'fire', locationId: 'cutters_hollow' },
+            ],
+          },
+        ],
+      }],
+    },
+    {
+      dayNumber: 3,
+      dialogueNodes: [{
+        id: 'r4_day3', background: 'village_sunset',
+        lines: [
+          { speaker: 'narrator', text: "Cutter's Hollow est en vue. Les lumières du village brillent à travers les arbres. Mais la dernière nuit sera la pire." },
+          { speaker: 'rojer', text: "On y est presque, Leesha. Une dernière nuit.", emotion: 'determined' },
+          { speaker: 'leesha', text: "Les corelings de cette forêt sont furieux. Ils sentent la flûte d'os. Elle les met en rage.", emotion: 'scared' },
+          { speaker: 'rojer', text: "Tant mieux. Les démons en rage font des erreurs.", emotion: 'determined' },
+        ],
+        choices: [
+          {
+            id: 'full_concert',
+            label: "Donner un concert de guerre : violon, flûte et voix toute la nuit",
+            hint: "-1 démon par vague, Force démons -1, -4 HP (au bord de l'évanouissement)",
+            effects: [
+              { type: 'extra_demons', count: -1 },
+              { type: 'demon_strength_bonus', bonus: -1 },
+              { type: 'hero_hp_change', delta: -4 },
+            ],
+          },
+          {
+            id: 'safe_approach',
+            label: "Jouer par intermittence, laisser les wards faire le travail",
+            hint: "+1 Ward d'Os à l'Entrée, +1 Ward de Pierre à l'Entrée",
+            effects: [
+              { type: 'bonus_ward', wardType: 'bone', locationId: 'lakton' },
+              { type: 'bonus_ward', wardType: 'stone', locationId: 'lakton' },
+            ],
+          },
+        ],
+      }],
+    },
+  ],
+
+  victoryDialogue: [
+    {
+      id: 'r4_victory_1', background: 'dawn_victory',
+      lines: [
+        { speaker: 'narrator', text: "L'aube. Cutter's Hollow. Rojer et Leesha franchissent les portes du village, épuisés mais vivants." },
+        { speaker: 'narrator', text: "Les villageois les accueillent. Leesha est leur herboriste revenue. Et Rojer... Rojer est quelque chose qu'ils n'ont jamais vu." },
+      ],
+      nextNodeId: 'r4_victory_2',
+    },
+    {
+      id: 'r4_victory_2', background: 'forest_village',
+      lines: [
+        { speaker: 'rojer', text: "Quand je joue, les wards vibrent. Ce n'est plus de la musique. C'est un pont entre les humains et la magie des anciens.", emotion: 'hopeful' },
+        { speaker: 'leesha', text: "Tu es le chaînon manquant, Rojer. Mes réseaux de wards ont besoin de quelqu'un pour les activer en harmonie. C'est toi.", emotion: 'determined' },
+        { speaker: 'narrator', text: "Rojer Halfgrip. Le Maestro. L'homme aux deux doigts qui fait chanter les wards et pleurer les démons." },
+      ],
+    },
+  ],
+
+  defeatDialogue: [{
+    id: 'r4_defeat', background: 'village_burning',
+    lines: [
+      { speaker: 'narrator', text: "La flûte d'os se brise dans la mêlée. Le son meurt. Et sans musique, les corelings n'ont plus peur de rien." },
+      { speaker: 'rojer', text: "La flûte... Non... C'était la seule...", emotion: 'scared' },
+      { speaker: 'narrator', text: "Les portes de Cutter's Hollow étaient si proches. Mais la nuit est implacable." },
+      { speaker: 'narrator', text: "Chapitre 16 — Échec" },
+    ],
+  }],
+};
+
+// ============================================================
+// Chapter 17: Arlen 5 — Anoch Sun
+// Arlen découvre la cité perdue et les wards de combat
+// ============================================================
+
+export const CHAPTER_ARLEN_5: ChapterDefinition = {
+  id: 17,
   act: 5,
   title: 'Anoch Sun',
   subtitle: "La cité perdue. Les wards oubliés. Le pouvoir de se battre.",
@@ -1989,18 +3250,18 @@ export const CHAPTER_ARLEN_4: ChapterDefinition = {
       { speaker: 'narrator', text: "Les wards d'Anoch Sun sont trop anciens, trop fragiles. Un par un, ils s'effondrent sous l'assaut des corelings du désert." },
       { speaker: 'arlen_young', text: "Non ! J'étais si près... Les wards de combat... Tout ce savoir, perdu à nouveau...", emotion: 'angry' },
       { speaker: 'narrator', text: "Le sable engloutit Anoch Sun. Et avec elle, le dernier espoir de l'humanité de se relever." },
-      { speaker: 'narrator', text: "Chapitre 11 — Échec" },
+      { speaker: 'narrator', text: "Chapitre 17 — Échec" },
     ],
   }],
 };
 
 // ============================================================
-// Chapter 12: FINAL — La Bataille de Cutter's Hollow
+// Chapter 25: FINAL — La Bataille de Cutter's Hollow
 // Les héros convergent pour la bataille finale
 // ============================================================
 
 export const CHAPTER_FINAL: ChapterDefinition = {
-  id: 12,
+  id: 25,
   act: 0,
   title: "La Bataille de Cutter's Hollow",
   subtitle: "L'humanité ne se cache plus. L'humanité se bat.",
@@ -2247,14 +3508,22 @@ export const CHAPTER_FINAL: ChapterDefinition = {
       { speaker: 'narrator', text: "Les wards cèdent. Cutter's Hollow s'embrase. Le démon ancien rugit de triomphe dans la nuit." },
       { speaker: 'arlen_young', text: "Non... C'est pas possible. Les wards... les wards devaient tenir !", emotion: 'angry' },
       { speaker: 'narrator', text: "L'espoir meurt avec le village. L'Homme Wardé a échoué. Et l'humanité reste prisonnière de sa peur, pour toujours." },
-      { speaker: 'narrator', text: "Chapitre 12 — Échec" },
+      { speaker: 'narrator', text: "Chapitre 25 — Échec" },
     ],
   }],
 };
 
 export const CHAPTERS: ChapterDefinition[] = [
+  // Act 1 — Origines (1-4)
   CHAPTER_1, CHAPTER_LEESHA, CHAPTER_JARDIR, CHAPTER_ROJER,
-  CHAPTER_ARLEN_2, CHAPTER_LEESHA_2,
-  CHAPTER_JARDIR_2, CHAPTER_ROJER_2, CHAPTER_ARLEN_3,
-  CHAPTER_LEESHA_3, CHAPTER_ARLEN_4, CHAPTER_FINAL,
+  // Act 2 — Croissance (5-8)
+  CHAPTER_ARLEN_2, CHAPTER_LEESHA_2, CHAPTER_JARDIR_2, CHAPTER_ROJER_2,
+  // Act 3 — Tournants (9-12)
+  CHAPTER_ARLEN_3, CHAPTER_LEESHA_3, CHAPTER_JARDIR_3, CHAPTER_ROJER_3,
+  // Act 4 — La Quête (13-16)
+  CHAPTER_ARLEN_4, CHAPTER_LEESHA_4, CHAPTER_JARDIR_4, CHAPTER_ROJER_4,
+  // Act 5 — Transformation (17) + placeholders for 18-20
+  CHAPTER_ARLEN_5,
+  // Final (25)
+  CHAPTER_FINAL,
 ];
