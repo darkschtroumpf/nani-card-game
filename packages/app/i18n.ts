@@ -22,7 +22,7 @@ const translations = {
     phase_wave: 'Vague',
 
     // Actions
-    action_craft: 'Crafter un Ward',
+    action_craft: 'Forger une Rune',
     action_gather: 'Récolte',
     action_fortify: 'Fortifier',
     action_repair: 'Réparer',
@@ -50,7 +50,7 @@ const translations = {
 
     // Stats
     stat_nights: 'Nuits survécues',
-    stat_wards: 'Wards fabriqués',
+    stat_wards: 'Runes forgées',
     stat_activations: 'Activations',
     stat_demons_killed: 'Démons tués',
 

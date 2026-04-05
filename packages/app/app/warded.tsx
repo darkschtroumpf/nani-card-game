@@ -27,8 +27,8 @@ const HERO_IMAGES: Record<string, any> = {
 const HERO_LORE: Record<string, { emoji: string; lore: string; gameplay: string; color: string }> = {
   arlen: {
     emoji: '⚔',
-    lore: 'Arlen Bales, le premier homme depuis des générations à oser affronter les démons la nuit. Son corps couvert de tatouages de wards lui confère une puissance surnaturelle.',
-    gameplay: 'Guerrier solitaire. Accumule des Charges en tuant des démons. Warded Fist frappe les démons, Mist Walk le téléporte à Charge 5. Peut poser des wards temporaires (Warded Flesh).',
+    lore: 'Arlen Bales, le premier homme depuis des générations à oser affronter les démons la nuit. Son corps couvert de tatouages de runes lui confère une puissance surnaturelle.',
+    gameplay: 'Guerrier solitaire. Accumule des Charges en tuant des démons. Poing Runé frappe les démons, Marche Brumeuse le téléporte à Charge 5. Peut poser des runes temporaires.',
     color: '#FFD740',
   },
   jardir: {
@@ -45,8 +45,8 @@ const HERO_LORE: Record<string, { emoji: string; lore: string; gameplay: string;
   },
   leesha: {
     emoji: '🧪',
-    lore: 'Leesha Paper, Herboriste de Cutter\'s Hollow. Son intelligence et ses connaissances des plantes et des wards en font une protectrice redoutable.',
-    gameplay: 'Support & crafting. Fabrique des consommables (Potions, Firespit, Forbiddance). Greater Ward Circle place un ward temporaire partout. Triage utilise un objet gratuitement chaque vague.',
+    lore: 'Leesha Paper, Herboriste de Cutter\'s Hollow. Son intelligence et ses connaissances des plantes et des runes en font une protectrice redoutable.',
+    gameplay: 'Support & fabrication. Fabrique des consommables (Potions, Firespit, Forbiddance). Grand Cercle de Runes place une rune temporaire partout. Triage utilise un objet gratuitement chaque vague.',
     color: '#69F0AE',
   },
 };
@@ -142,10 +142,10 @@ function getNightStepIndex(waveNumber: number, activationsRemaining: number, _to
 const TUTORIAL_STEPS: { text: string; buttonLabel: string }[] = [
   { text: "Les bordures colorées montrent les menaces de la nuit. ROUGE = danger ! Prépare tes défenses.", buttonLabel: "Compris" },
   { text: "Tape sur un lieu pour voir ses défenses et agir. Utilise la 🔍 pour inspecter un lieu.", buttonLabel: "Suivant" },
-  { text: "Fabrique un ward pour protéger tes cités. Chaque ward a un effet unique.", buttonLabel: "Suivant" },
-  { text: "Place ton ward sur un lieu. L'ordre des runes compte ! Deux runes adjacentes créent un COMBO si leurs liens sont assez forts.", buttonLabel: "Suivant" },
+  { text: "Fabrique une rune pour protéger tes cités. Chaque rune a un effet unique.", buttonLabel: "Suivant" },
+  { text: "Place ta rune sur un lieu. L'ordre compte ! Deux runes adjacentes créent un COMBO si leurs liens sont assez forts.", buttonLabel: "Suivant" },
   { text: "Prêt ? Lance la nuit pour affronter les démons !", buttonLabel: "Suivant" },
-  { text: "Les wards s'activent automatiquement. Utilise tes pouvoirs bonus si disponibles, puis résous les dégâts.", buttonLabel: "Suivant" },
+  { text: "Les runes s'activent automatiquement. Utilise tes pouvoirs bonus si disponibles, puis résous les dégâts.", buttonLabel: "Suivant" },
   { text: "Résous les dégâts pour voir ce qui a survécu. Bonne chance !", buttonLabel: "Suivant" },
 ];
 
@@ -637,7 +637,7 @@ export default function WardedGameScreen() {
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.wardsCrafted}</Text>
-              <Text style={styles.statsLabel}>Wards fabriqués</Text>
+              <Text style={styles.statsLabel}>Runes forgées</Text>
             </View>
             <View style={styles.statsItem}>
               <Text style={styles.statsValue}>{gameStats.current.activationsUsed}</Text>
@@ -776,7 +776,7 @@ export default function WardedGameScreen() {
       } else if (dmg > 0) {
         report.push(`🔥 ${l.name} : -${dmg} pop (${after} restante)`);
       } else if (demons > 0) {
-        report.push(`🛡 ${l.name} : wards tiennent ! (${after} pop)`);
+        report.push(`🛡 ${l.name} : runes tiennent ! (${after} pop)`);
       } else {
         report.push(`✅ ${l.name} : aucun démon (${after} pop)`);
       }
@@ -794,7 +794,7 @@ export default function WardedGameScreen() {
     const lowPopLocs = state.locations.filter(l => !l.fallen && l.population <= 2).length;
     const heroLow = state.hero.hp <= 3;
     if (fallenCount >= 1 && lowPopLocs >= 1) {
-      setTensionText("Les wards craquent de toutes parts. Encore une brèche et tout est perdu...");
+      setTensionText("Les runes craquent de toutes parts. Encore une brèche et tout est perdu...");
     } else if (heroLow && fallenCount >= 1) {
       setTensionText(`${state.hero.name} chancelle. Le sang coule de ses blessures. Combien de temps peut-il encore tenir ?`);
     } else if (lowPopLocs >= 2) {
@@ -1048,7 +1048,7 @@ export default function WardedGameScreen() {
             const currentStep = getNightStepIndex(state.waveNumber, state.activationsRemaining, totalAct);
             const hints = [
               'Tape un lieu pour positionner ton héro',
-              'Wards activés automatiquement — utilise tes pouvoirs bonus !',
+              'Runes activées automatiquement — utilise tes pouvoirs bonus !',
               'Appuie sur "Résoudre" pour voir les dégâts',
             ];
             return (
@@ -1117,7 +1117,7 @@ export default function WardedGameScreen() {
           <View style={styles.damageReportDivider} />
           <Text style={styles.damageReportSummary}>
             {damageReport.length === 1 && damageReport[0].includes('Aucun')
-              ? 'Tes wards tiennent bon !'
+              ? 'Tes runes tiennent bon !'
               : `${damageReport.length} evenement${damageReport.length > 1 ? 's' : ''} cette vague`}
           </Text>
           <TouchableOpacity onPress={() => setDamageReport(null)} style={styles.damageReportClose}>
@@ -1156,7 +1156,7 @@ export default function WardedGameScreen() {
               {state.hero.ap > 0 ? (
                 <>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Text style={styles.actionLabel}>Crafter un Ward (1 AP) — {(() => {
+                    <Text style={styles.actionLabel}>Forger une Rune (1 AP) — {(() => {
                       const alive = state.locations.filter(l => !l.fallen && l.maxPopulation > 0);
                       return `${alive.reduce((s, l) => s + l.stockpile.wood, 0)} Bois | ${alive.reduce((s, l) => s + l.stockpile.ink, 0)} Encre`;
                     })()}</Text>
@@ -1267,7 +1267,7 @@ export default function WardedGameScreen() {
                 ))}
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                <Text style={styles.reserveHint}>👆 Tape un lieu pour placer ta rune</Text>
+                <Text style={styles.reserveHint}>👆 Tape un lieu pour y placer ta rune</Text>
                 <TouchableOpacity
                   style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
                   onPress={() => setInspectMode(!inspectMode)}
@@ -1509,7 +1509,7 @@ export default function WardedGameScreen() {
               {/* Show what happened during auto-activation */}
               <View style={styles.waveRecap}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Défenses activées</Text>
+                  <Text style={styles.waveRecapTitle}>Vague {state.waveNumber} — Runes activées</Text>
                   <TouchableOpacity
                     style={{ borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: inspectMode ? warded.accent + '20' : 'transparent' }}
                     onPress={() => setInspectMode(!inspectMode)}
@@ -1797,7 +1797,7 @@ export default function WardedGameScreen() {
                   onPress={() => { if (bestLoc) { handleCraft(w, bestLoc.id); setWardDetail(null); } }}
                 >
                   <Text style={{ color: canAfford ? color : warded.textDark, fontSize: wardedFonts.md, fontWeight: 'bold' }}>
-                    {state.hero.ap <= 0 ? '⚠ Plus d\'AP' : canAfford ? `⚒ Acheter (1 AP)` : '⚠ Ressources insuffisantes'}
+                    {state.hero.ap <= 0 ? '⚠ Plus d\'AP' : canAfford ? `⚒ Forger (1 AP)` : '⚠ Ressources insuffisantes'}
                   </Text>
                 </TouchableOpacity>
               ) : (

@@ -77,7 +77,7 @@ export default function CodexScreen() {
             onPress={() => setTab(t)}
           >
             <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t === 'wards' ? 'Runes' : t === 'demons' ? 'Demons' : 'Combos'}
+              {t === 'wards' ? 'Runes' : t === 'demons' ? 'Démons' : 'Combos'}
             </Text>
           </TouchableOpacity>
         ))}
