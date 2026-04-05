@@ -156,7 +156,7 @@ describe('Warded Engine', () => {
       const s = quickState();
       // Each location gets 3 of its primary resource
       for (const loc of s.locations) {
-        expect(loc.stockpile[loc.primaryResource]).toBe(3);
+        expect(loc.stockpile[loc.primaryResource]).toBe(4);
       }
     });
 
@@ -727,13 +727,13 @@ describe('Warded Engine', () => {
       s.phase = 'night';
       const loc = s.locations.find(l => l.id === 'desert_spear')!;
       loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
-      placeWard(loc, 0, 'stone'); // +2 defense
+      placeWard(loc, 0, 'stone'); // +1 defense
       clearDemons(s);
       addDemon(s, 'desert_spear', 'flame', 3);
       const popBefore = loc.population;
       resolveDamage(s);
-      // 3 damage - 2 defense = 1 net damage
-      expect(loc.population).toBe(popBefore - 1);
+      // 3 damage - 1 defense = 2 net damage
+      expect(loc.population).toBe(popBefore - 2);
     });
 
     it('location falls when population <= 0', () => {
@@ -781,13 +781,13 @@ describe('Warded Engine', () => {
       s.phase = 'night';
       const loc = s.locations.find(l => l.id === 'desert_spear')!;
       loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
-      placeWard(loc, 0, 'stone'); // +2 defense, halved to 1
+      placeWard(loc, 0, 'stone'); // +1 defense, halved to 0
       clearDemons(s);
       addDemon(s, 'desert_spear', 'water', 3);
       const popBefore = loc.population;
       resolveDamage(s);
-      // defense 2 halved to 1, damage = 3 - 1 = 2
-      expect(loc.population).toBe(popBefore - 2);
+      // defense 1 halved to 0, damage = 3 - 0 = 3
+      expect(loc.population).toBe(popBefore - 3);
     });
 
     it('game over when too many locations fallen', () => {
@@ -824,7 +824,8 @@ describe('Warded Engine', () => {
       const loc = s.locations.find(l => l.id === 'desert_spear')!;
       loc.wards = loc.wards.map(() => ({ ward: null, isTemporary: false, durability: 0, xp: 0, enhanced: false }));
       placeWard(loc, 0, 'stone');
-      placeWard(loc, 1, 'stone'); // +4 defense total
+      placeWard(loc, 1, 'stone');
+      placeWard(loc, 2, 'stone'); // +3 defense total (3x stone)
       clearDemons(s);
       addDemon(s, 'desert_spear', 'flame', 3);
       const popBefore = loc.population;
@@ -1210,8 +1211,8 @@ describe('Warded Engine', () => {
       s.hero.maxHp = 20;
       s.turnNumber = 1;
       processDawn(s);
-      // Dawn heals 1 base + 3 talent = 4
-      expect(s.hero.hp).toBe(5);
+      // Dawn heals 2 base + 3 talent = 5
+      expect(s.hero.hp).toBe(6);
     });
   });
 

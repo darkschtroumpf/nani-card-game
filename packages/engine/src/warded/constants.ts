@@ -90,7 +90,7 @@ export const CHAPTER_TRIPLE_COMBOS = 13;    // triple combos unlock at Act 4+
 // Ward individual effects
 export const WARD_PASSIVES: Record<WardType, string> = {
   fire: 'Deal 1 damage to all demons at this location each wave',
-  stone: '+2 ward defense at this location',
+  stone: '+1 ward defense at this location',
   wind: 'Redirect 1 non-locked, non-Wind demon to adjacent location before combat',
   light: 'Reveal exact demon types targeting this location (Threat Forecast upgrade)',
   bone: 'Heal 1 Population at dawn (if below max)',
@@ -115,7 +115,7 @@ export const WARD_COMBOS: WardCombo[] = [
   { name: 'Inferno', wards: ['wind', 'fire'], minBondStrength: 2, unlockedAtChapter: 3,
     passiveEffect: 'Feu touche aussi le lieu adjacent', activeEffect: '2 dégâts à tous les démons ici + lieux adjacents', activeName: 'Tempête de Feu' },
   { name: 'Forteresse', wards: ['wind', 'stone'], minBondStrength: 2, unlockedAtChapter: 1,
-    passiveEffect: '+3 défense totale', activeEffect: '+5 défense cette vague + attire 1 démon de chaque lieu adjacent', activeName: 'Rempart' },
+    passiveEffect: '+4 défense totale', activeEffect: '+5 défense cette vague + attire 1 démon de chaque lieu adjacent', activeName: 'Rempart' },
   { name: 'Tempête', wards: ['wind', 'light'], minBondStrength: 2, unlockedAtChapter: 4,
     passiveEffect: 'Prévisualise les démons de la prochaine vague', activeEffect: 'Redistribue jusqu\'à 3 démons non-verrouillés entre lieux', activeName: 'Ouragan' },
   { name: 'Renouveau', wards: ['wind', 'bone'], minBondStrength: 1, unlockedAtChapter: 6,
@@ -238,7 +238,7 @@ export const HEROES: {
   },
   {
     id: 'arlen', name: 'Arlen Bales', title: 'The Warded Man',
-    ap: 6, hp: 7,
+    ap: 6, hp: 9,
     passive: 'Warded Flesh: Starts each night at Ward Charge 1. Gains +1 Charge per demon killed at Presence. Gains +1 Charge when taking overflow damage.',
     signatureName: 'Mist Walk',
     signatureEffect: 'At Ward Charge 5: teleport Presence to any location. Charge resets to 0.',
@@ -265,7 +265,7 @@ export const HEROES: {
   },
   {
     id: 'rojer_young', name: 'Rojer (apprenti)', title: 'Apprenti Jongleur',
-    ap: 3, hp: 5,
+    ap: 3, hp: 6,
     passive: 'Instinct musical: Rojer découvre que sa musique affecte les démons. Un pouvoir encore incontrôlé.',
     signatureName: 'Mélodie Instinctive',
     signatureEffect: 'Réduit la force d\'1 démon à la Présence de 2. Utilisable 1 fois par vague.',
@@ -274,7 +274,7 @@ export const HEROES: {
   },
   {
     id: 'rojer', name: 'Rojer Inn', title: 'The Fiddle Wizard',
-    ap: 5, hp: 7,
+    ap: 5, hp: 8,
     passive: 'Song Weaver: During Day, spend 1 AP to Rehearse (set all 3 wave songs at once). Songs play automatically during Night. 3 different songs = Harmony bonus (+1 ward activation in Wave 3).',
     signatureName: 'Symphony of the Damned',
     signatureEffect: 'All songs affect ALL locations this night (not just Presence + adjacent).',
@@ -283,7 +283,7 @@ export const HEROES: {
   },
   {
     id: 'leesha_young', name: 'Leesha (apprentie)', title: 'Apprentie Herboriste',
-    ap: 4, hp: 6,
+    ap: 4, hp: 7,
     passive: 'Apprentie de Bruna: Leesha apprend les bases des herbes et des wards. Elle peut soigner mais pas encore crafter de potions.',
     signatureName: 'Cataplasme',
     signatureEffect: 'Soigne 2 Population à un lieu. Utilisable 1 fois par vague.',
@@ -292,7 +292,7 @@ export const HEROES: {
   },
   {
     id: 'leesha', name: 'Leesha Paper', title: 'Herb Gatherer',
-    ap: 6, hp: 7,
+    ap: 6, hp: 9,
     passive: 'Hora Craft: When a demon is killed at any location, gain 1 Ink to any stockpile (once per wave). Triage: Use 1 consumable for free each wave during Night.',
     signatureName: 'Greater Ward Circle',
     signatureEffect: 'Place a temporary ward of any type at every location (1 night only). Does not use slots.',

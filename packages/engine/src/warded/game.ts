@@ -251,10 +251,10 @@ function distributeStartingResources(state: GameState) {
   // Each location gets 2 of its primary resource + 1 food for food producers
   for (const loc of state.locations) {
     const primary = loc.primaryResource;
-    loc.stockpile[primary] = 3;
+    loc.stockpile[primary] = 4;
   }
   // Lakton gets extra food
-  getLocation(state, 'lakton').stockpile.food = 3;
+  getLocation(state, 'lakton').stockpile.food = 4;
 }
 
 // ============================================================
@@ -317,7 +317,7 @@ export function processDawn(state: GameState): void {
   }
 
   // Hero dawn heal (base 2 + talent bonus)
-  const dawnHeal = 1 + (state.talentEffects?.healDawn ?? 0);
+  const dawnHeal = 2 + (state.talentEffects?.healDawn ?? 0);
   if (state.hero.hp < state.hero.maxHp) {
     state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + dawnHeal);
   }
@@ -624,7 +624,7 @@ function spawnDemons(state: GameState): void {
 function getWardDefense(loc: Location, state?: GameState): number {
   let def = 0;
   for (const ws of loc.wards) {
-    if (ws.ward === 'stone') def += 2;
+    if (ws.ward === 'stone') def += 1;
   }
   // Mesh tier bonus
   const mesh = analyzeMesh(loc);
@@ -634,7 +634,7 @@ function getWardDefense(loc: Location, state?: GameState): number {
   if (state) {
     const combos = getAllDirectionalCombos(loc, state);
     const names = new Set(combos.map(c => c.name));
-    if (names.has('Forteresse')) def += 3;
+    if (names.has('Forteresse')) def += 4;
     if (names.has('Rempart')) def += 3;
     if (names.has('Sentinelle')) def += 2;
     if (names.has('Révélation')) def += 2;
@@ -1544,11 +1544,11 @@ export function resolveDamage(state: GameState): string[] {
     // === WARD WEAR: demons erode wards even if defense holds ===
     if (!loc.fallen && demons.length > 0) {
       const mesh = analyzeMesh(loc);
-      // Fortified mesh: no ward wear (strong enough to resist erosion)
-      if (mesh.tier === 'fortified') continue;
       let wear = demons.length >= 5 ? 2 : 1;
+      // Fortified mesh: no wear from light pressure (1-2 demons), but heavy still causes wear
+      if (mesh.tier === 'fortified') wear = demons.length >= 3 ? 1 : 0;
       // Reinforced mesh: reduce wear by 1
-      if (mesh.tier === 'reinforced') wear = Math.max(0, wear - 1);
+      else if (mesh.tier === 'reinforced') wear = Math.max(0, wear - 1);
       if (wear === 0) continue;
       const wardSlots = loc.wards.filter(ws => ws.ward && !ws.isTemporary);
 

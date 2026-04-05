@@ -254,7 +254,7 @@ export function createNewSave(): CampaignSaveState {
     flags: {},
     choiceHistory: {},
     heroLevels: { arlen: 1, arlen_young: 1, jardir: 1, jardir_young: 1, rojer: 1, rojer_young: 1, leesha: 1, leesha_young: 1 },
-    heroMaxHp: { arlen: 7, arlen_young: 6, jardir: 7, jardir_young: 6, rojer: 7, rojer_young: 5, leesha: 7, leesha_young: 6 },
+    heroMaxHp: { arlen: 9, arlen_young: 7, jardir: 9, jardir_young: 7, rojer: 8, rojer_young: 6, leesha: 9, leesha_young: 7 },
     wardPowerBonus: 0,
   };
 }
