@@ -245,18 +245,7 @@ export default function DialogueOverlay({ nodes, onChoice, onComplete }: Props) 
                   opacity: spriteAnim,
                 },
               ]}>
-                <View style={{ overflow: 'hidden' }}>
-                  <Image source={sprite} style={styles.activeSprite} />
-                  {/* Emotion color overlay */}
-                  {emotionTint !== 'transparent' && (
-                    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: emotionTint }} />
-                  )}
-                  {/* Edge fades — blend sprite seamlessly into background */}
-                  <View style={styles.spriteFadeBottom} />
-                  <View style={styles.spriteFadeTop} />
-                  <View style={styles.spriteFadeLeft} />
-                  <View style={styles.spriteFadeRight} />
-                </View>
+                <Image source={sprite} style={styles.activeSprite} />
                 {/* Glow behind active speaker */}
                 <View style={[styles.spriteGlow, { backgroundColor: speakerColor + '15' }]} />
               </Animated.View>
