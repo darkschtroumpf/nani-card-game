@@ -329,6 +329,7 @@ export default function WardedGameScreen() {
   const [windRedirectDemon, setWindRedirectDemon] = useState<{ locId: LocationId; demonIndex: number } | null>(null);
   const [showComboPanel, setShowComboPanel] = useState(true);
   const [inspectMode, setInspectMode] = useState(false);
+  const [showActionBar, setShowActionBar] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
@@ -683,6 +684,7 @@ export default function WardedGameScreen() {
     // Inspect mode has HIGHEST priority — always open detail
     if (inspectMode) {
       setInspectMode(false);
+      setShowActionBar(false);
       setSelectedLocation(locId);
       return;
     }
@@ -708,6 +710,7 @@ export default function WardedGameScreen() {
         return;
       }
     }
+    setShowActionBar(false);
     setSelectedLocation(locId);
     if (tutorialStep === 1) setTutorialStep(2);
   };
@@ -1114,7 +1117,27 @@ export default function WardedGameScreen() {
 
       </View>
 
-      {/* Action bar — pinned to bottom */}
+      {/* Floating action button — toggle action bar (day only, when bar is hidden) */}
+      {isDay && !selectedLoc && !showActionBar && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 4 }}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: warded.bgCard, borderWidth: 1, borderColor: warded.accent, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 }}
+            onPress={() => setShowActionBar(true)}
+          >
+            <Text style={{ fontSize: 16 }}>⚒</Text>
+            <Text style={{ color: warded.accent, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>Actions (AP: {state.hero.ap})</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: 'center', backgroundColor: warded.bgCard, borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
+            onPress={() => setInspectMode(!inspectMode)}
+          >
+            <Text style={{ fontSize: 16 }}>🔍</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Action bar — day: shown on toggle; night: always shown; hidden when detail open */}
+      {(isNight || showActionBar) && !selectedLoc && (
       <ScrollView style={styles.actionBar} contentContainerStyle={styles.actionBarContent} showsVerticalScrollIndicator={true}>
           {/* Day ONLY: craft wards */}
           {isDay && (
@@ -1688,6 +1711,7 @@ export default function WardedGameScreen() {
             </View>
           )}
         </ScrollView>
+      )}
 
       {/* FIX 3: Event log — hidden by default, toggleable */}
       {events.length > 0 && (
