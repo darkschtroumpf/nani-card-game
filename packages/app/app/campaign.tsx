@@ -58,6 +58,7 @@ export default function CampaignScreen() {
   const [save, setSave] = useState<CampaignSaveState | null>(null);
   const [showTalents, setShowTalents] = useState(false);
   const [currentChapter, setCurrentChapter] = useState<ChapterDefinition | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<ChapterDefinition | null>(null);
   const audio = useAudio();
 
   // Start music immediately
@@ -122,7 +123,6 @@ export default function CampaignScreen() {
 
   // Find next chapter to play
   const nextChapter = CHAPTERS.find(c => save && !save.completedChapters.includes(c.id) && isChapterUnlocked(c, save, CHAPTERS));
-  const [selectedChapter, setSelectedChapter] = useState<ChapterDefinition | null>(null);
 
   const ACT_NAMES: Record<number, string> = {
     1: 'Acte I — Origines', 2: 'Acte II — Croissance', 3: 'Acte III — Tournants',
