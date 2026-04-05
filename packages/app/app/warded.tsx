@@ -516,6 +516,9 @@ export default function WardedGameScreen() {
           <View style={styles.bgOverlay} />
         </ImageBackground>
         <ScrollView contentContainerStyle={styles.heroSelectContainer}>
+          <TouchableOpacity onPress={() => router.replace('/')} style={{ alignSelf: 'flex-start', marginBottom: 8 }}>
+            <Text style={{ color: warded.textDim, fontSize: wardedFonts.md }}>← Retour</Text>
+          </TouchableOpacity>
           <Text style={styles.heroSelectTitle}>CHOISIS TON CHAMPION</Text>
           <Text style={styles.heroSelectSub}>{isEndlessMode ? 'Mode Survie — Combien de nuits ?' : 'Quick Mode — Survie'}</Text>
 
@@ -841,7 +844,10 @@ export default function WardedGameScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={styles.phaseText}>{isDay ? '☀ JOUR' : '🌙 NUIT'}</Text>
             <TouchableOpacity onPress={() => audio.toggleMute()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Text style={{ fontSize: 18 }}>{audio.muted ? '🔇' : '🔊'}</Text>
+              <Text style={{ fontSize: 16 }}>{audio.muted ? '🔇' : '🔊'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowPauseMenu(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={{ fontSize: 16 }}>⏸</Text>
             </TouchableOpacity>
           </View>
           {isDay && <Text style={[styles.apText, { fontSize: 18 }]}>AP: {state.hero.ap}</Text>}

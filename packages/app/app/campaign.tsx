@@ -55,6 +55,7 @@ export default function CampaignScreen() {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>('loading');
   const [save, setSave] = useState<CampaignSaveState | null>(null);
+  const [showTalents, setShowTalents] = useState(false);
   const [currentChapter, setCurrentChapter] = useState<ChapterDefinition | null>(null);
   const audio = useAudio();
 
@@ -181,16 +182,21 @@ export default function CampaignScreen() {
           );
         })}
 
-        {/* Talent Tree */}
+        {/* Talent Tree — collapsible section */}
         {save && (() => {
           const totalStars = getTotalStars(save);
           const spentStars = getSpentStars(save);
           const available = totalStars - spentStars;
+          if (totalStars === 0) return null; // Don't show talents until first chapter completed
           return (
             <View style={[styles.card, { borderColor: '#9b30ff60' }]}>
-              <Text style={[styles.cardName, { color: '#9b30ff' }]}>Talents</Text>
-              <Text style={styles.cardSub}>★ {available} étoiles disponibles ({totalStars} total)</Text>
-              {['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'].map((heroKey: string) => {
+              <TouchableOpacity onPress={() => setShowTalents(!showTalents)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={[styles.cardName, { color: '#9b30ff' }]}>🌟 Talents</Text>
+                <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm }}>★ {available} dispo — {showTalents ? '▼' : '▶'}</Text>
+              </TouchableOpacity>
+              {!showTalents && <Text style={styles.cardSub}>Tape pour dépenser tes {available} étoiles</Text>}
+              {showTalents && <Text style={styles.cardSub}>★ {available} étoiles disponibles ({totalStars} total)</Text>}
+              {showTalents && ['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'].map((heroKey: string) => {
                 const info = CHARACTER_INFO[heroKey];
                 const heroTalents = TALENTS.filter(t => t.heroId === heroKey);
                 if (heroTalents.length === 0) return null;
