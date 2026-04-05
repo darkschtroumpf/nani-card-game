@@ -922,7 +922,7 @@ export default function WardedGameScreen() {
       />
 
       {/* Inspect mode banner */}
-      {inspectMode && isDay && (
+      {inspectMode && (
         <View style={{ backgroundColor: warded.accent + '20', borderWidth: 1, borderColor: warded.accent, borderRadius: 8, paddingVertical: 4, paddingHorizontal: 12, marginHorizontal: 16, marginBottom: 2 }}>
           <Text style={{ color: warded.accent, fontSize: wardedFonts.sm, fontWeight: 'bold', textAlign: 'center' }}>
             🔍 Tape un lieu pour inspecter ses défenses
@@ -953,13 +953,13 @@ export default function WardedGameScreen() {
 
       {/* Location detail (if selected) */}
       {selectedLoc && (
-        <View style={styles.detailOverlay}>
+        <View style={styles.detailOverlayContainer}>
           <TouchableOpacity
             style={styles.detailBackdrop}
             activeOpacity={1}
             onPress={() => setSelectedLocation(null)}
           />
-          <ScrollView style={styles.detailScroll}>
+          <ScrollView style={styles.detailOverlay}>
             <LocationDetail
               key={selectedLoc.id}
               location={selectedLoc}
@@ -1169,8 +1169,42 @@ export default function WardedGameScreen() {
                 </>
               ) : (
                 <View style={styles.noApBanner}>
-                  <Text style={styles.noApText}>0 AP restant — Lance la nuit !</Text>
-                  <Text style={styles.noApHint}>Tu as utilisé tes 5 actions. Appuie sur "Tomber de la nuit" pour combattre.</Text>
+                  <Text style={styles.noApText}>0 AP restant</Text>
+                  <Text style={styles.noApHint}>Appuie sur "Tomber de la nuit" pour combattre, ou dépense des HP :</Text>
+                  {/* Emergency repair (day, 0 AP) */}
+                  {(() => {
+                    const allDamaged = state.locations
+                      .filter(l => !l.fallen && l.maxPopulation > 0)
+                      .flatMap(l => l.wards.map((ws, i) => ({ loc: l, ws, i }))
+                        .filter(({ ws }) => ws.ward && !ws.isTemporary && ws.durability < 4));
+                    if (allDamaged.length === 0) return null;
+                    return (
+                      <View style={{ marginTop: 4, gap: 4 }}>
+                        <Text style={{ color: warded.warning, fontSize: wardedFonts.xs, fontWeight: 'bold' }}>🔧 Réparation d'urgence</Text>
+                        <View style={{ flexDirection: 'row', gap: 4, flexWrap: 'wrap' }}>
+                          {allDamaged.slice(0, 6).map(({ loc, ws, i }) => {
+                            const cost = 4 - ws.durability;
+                            const canAfford = state.hero.hp > cost;
+                            return (
+                              <TouchableOpacity key={`${loc.id}-${i}`} disabled={!canAfford}
+                                style={{ borderWidth: 1, borderColor: canAfford ? warded.warning : warded.textDark, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, opacity: canAfford ? 1 : 0.4 }}
+                                onPress={() => { const err = ctrl.doEmergencyRepair(loc.id, i); if (!err) audio.playSfx('heal'); }}>
+                                <Text style={{ color: canAfford ? warded.warning : warded.textDark, fontSize: wardedFonts.xs }}>
+                                  {ws.ward} @{loc.name.split(' ')[0]} ({ws.durability}/4) −{cost}HP
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    );
+                  })()}
+                  {/* Emergency swap reserve (day, 0 AP) */}
+                  {state.wardReserves.length > 0 && (
+                    <View style={{ marginTop: 4 }}>
+                      <Text style={{ color: '#69F0AE', fontSize: wardedFonts.xs, fontWeight: 'bold' }}>🔄 Échange d'urgence (−1 HP) — tape 🔍 puis un lieu</Text>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
@@ -1453,8 +1487,8 @@ export default function WardedGameScreen() {
                   );
                 })}
               </View>
-              {/* Emergency night repair — costs 2 HP, only at presence */}
-              {state.hero.hp > 3 && (() => {
+              {/* Emergency repair — scaled HP cost, 1 per wave, presence only */}
+              {!(state as any)._nightRepairUsed && (() => {
                 const presLoc = state.locations.find(l => l.id === state.presenceLocation);
                 const damagedWards = presLoc?.wards
                   .map((ws, i) => ({ ws, i }))
@@ -1462,20 +1496,25 @@ export default function WardedGameScreen() {
                 if (damagedWards.length === 0) return null;
                 return (
                   <View style={styles.optionalAction}>
-                    <Text style={styles.optionalLabel}>🔧 RÉPARATION D'URGENCE (-2 HP)</Text>
+                    <Text style={styles.optionalLabel}>🔧 RÉPARATION D'URGENCE (1 par vague)</Text>
                     <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-                      {damagedWards.map(({ ws, i }) => (
-                        <TouchableOpacity key={i}
-                          style={[styles.phaseBtn, { borderColor: warded.warning, backgroundColor: warded.warning + '10', paddingHorizontal: 10 }]}
-                          onPress={() => {
-                            ctrl.doNightRepairWard(state.presenceLocation, i);
-                            audio.playSfx('heal');
-                          }}>
-                          <Text style={[styles.phaseBtnText, { color: warded.warning, fontSize: 11 }]}>
-                            🔧 {ws.ward} ({ws.durability}/4)
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
+                      {damagedWards.map(({ ws, i }) => {
+                        const cost = 4 - ws.durability;
+                        const canAfford = state.hero.hp > cost;
+                        return (
+                          <TouchableOpacity key={i}
+                            disabled={!canAfford}
+                            style={[styles.phaseBtn, { borderColor: canAfford ? warded.warning : warded.textDark, backgroundColor: canAfford ? warded.warning + '10' : 'transparent', paddingHorizontal: 10, opacity: canAfford ? 1 : 0.4 }]}
+                            onPress={() => {
+                              const err = ctrl.doEmergencyRepair(state.presenceLocation, i);
+                              if (!err) audio.playSfx('heal');
+                            }}>
+                            <Text style={[styles.phaseBtnText, { color: canAfford ? warded.warning : warded.textDark, fontSize: 11 }]}>
+                              🔧 {ws.ward} ({ws.durability}/4) — {cost} HP
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </View>
                   </View>
                 );
@@ -2103,14 +2142,23 @@ const styles = StyleSheet.create({
   },
 
   // Detail overlay
+  detailOverlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
+    justifyContent: 'flex-end',
+  },
   detailOverlay: {
-    maxHeight: '40%',
-    backgroundColor: warded.bg + 'f0',
-    borderTopWidth: 1,
-    borderTopColor: warded.accent + '40',
-    borderRadius: 12,
-    marginHorizontal: 6,
-    marginBottom: 4,
+    maxHeight: '55%',
+    backgroundColor: warded.bg + 'f5',
+    borderTopWidth: 2,
+    borderTopColor: warded.accent + '60',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingTop: 4,
   },
   detailBackdrop: {
     position: 'absolute',

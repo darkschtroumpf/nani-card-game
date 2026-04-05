@@ -448,6 +448,7 @@ export function startWave(state: GameState): void {
   state.activationsRemaining = wardedLocationCount(state) + (state.talentEffects?.extraActivations ?? 0);
   state.activationsUsedAt = [];
   state.heroWaveAbilityUsed = false;
+  delete (state as any)._nightRepairUsed;
 
   // Clear demons from living locations (previous wave's demons are resolved)
   for (const locId of Object.keys(state.demonsAtLocations) as LocationId[]) {
@@ -834,21 +835,56 @@ export function repairWard(state: GameState, locationId: LocationId, slotIndex: 
   return true;
 }
 
-/** Emergency night repair: costs 2 HP, restores 2 durability. Only at hero presence. */
-export function nightRepairWard(state: GameState, locationId: LocationId, slotIndex: number): boolean {
-  if (state.phase !== 'night') return false;
-  if (state.hero.hp <= 3) return false; // need at least 4 HP (leave 1 minimum after -2)
-  if (locationId !== state.presenceLocation) return false; // must be at presence
+/** Emergency repair: HP cost scales with damage. 1 per wave (night) or when 0 AP (day). */
+export function emergencyRepairWard(state: GameState, locationId: LocationId, slotIndex: number): string | null {
   const loc = getLocation(state, locationId);
-  if (loc.fallen) return false;
+  if (!loc || loc.fallen) return 'Lieu indisponible.';
   const ws = loc.wards[slotIndex];
-  if (!ws || !ws.ward || ws.isTemporary) return false;
-  if (ws.durability >= 4) return false;
+  if (!ws || !ws.ward || ws.isTemporary) return 'Pas de ward ici.';
+  if (ws.durability >= 4) return 'Ward déjà intact.';
 
-  ws.durability = Math.min(4, ws.durability + 2);
-  state.hero.hp -= 2;
-  addLog(state, `Réparation d'urgence! ${ws.ward} réparé à ${loc.name} (-2 HP, durabilité ${ws.durability}/4).`, true);
-  return true;
+  // Night: only at presence, 1 per wave
+  if (state.phase === 'night') {
+    if (locationId !== state.presenceLocation) return 'Trop loin — présence requise.';
+    if ((state as any)._nightRepairUsed) return 'Déjà réparé cette vague.';
+  }
+  // Day: only when 0 AP
+  if (state.phase === 'day' && state.hero.ap > 0) return 'Utilise tes AP d\'abord.';
+
+  // Cost scales: 1 HP per missing durability point
+  const missing = 4 - ws.durability;
+  const hpCost = missing; // 1 dur missing = 1 HP, 3 missing = 3 HP
+  if (state.hero.hp <= hpCost) return `Pas assez de HP (coût: ${hpCost}).`;
+
+  ws.durability = 4;
+  state.hero.hp -= hpCost;
+  if (state.phase === 'night') (state as any)._nightRepairUsed = true;
+  addLog(state, `Réparation d'urgence! ${ws.ward} réparé (-${hpCost} HP).`, true);
+  return null; // success
+}
+
+/** Swap a placed ward with one from reserves, costs 1 HP when no AP. */
+export function emergencySwapReserve(state: GameState, locationId: LocationId, slotIndex: number, reserveIndex: number): string | null {
+  if (state.hero.ap > 0) return 'Utilise tes AP d\'abord.';
+  const loc = getLocation(state, locationId);
+  if (!loc || loc.fallen) return 'Lieu indisponible.';
+  const ws = loc.wards[slotIndex];
+  if (!ws) return 'Slot invalide.';
+  if (reserveIndex < 0 || reserveIndex >= state.wardReserves.length) return 'Réserve invalide.';
+  if (state.hero.hp <= 1) return 'Pas assez de HP.';
+
+  // Swap: old ward goes to reserve, reserve ward goes to slot
+  const oldWard = ws.ward;
+  const newWard = state.wardReserves[reserveIndex];
+  ws.ward = newWard;
+  ws.durability = 4;
+  ws.xp = 0;
+  ws.enhanced = false;
+  state.wardReserves.splice(reserveIndex, 1);
+  if (oldWard) state.wardReserves.push(oldWard);
+  state.hero.hp -= 1;
+  addLog(state, `Échange d'urgence! ${newWard} placé à ${loc.name} (-1 HP).`);
+  return null;
 }
 
 // ============================================================

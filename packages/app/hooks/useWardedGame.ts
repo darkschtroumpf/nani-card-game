@@ -7,7 +7,7 @@ import { createCampaignGame, applyCampaignEffects } from '../../engine/src/warde
 import {
   createGame, processDawn, craftWard, fortifyLocation, gather,
   startNight, movePresence, startWave, activateWard, resolveDamage,
-  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, repairWard, nightRepairWard,
+  endNight, arlenWardedFist, arlenMistWalk, arlenWardedFlesh, arlenBloodWard, arlenYoung_leurre, repairWard, emergencyRepairWard, emergencySwapReserve,
   jardirYoung_spearStrike, rojerYoung_melody, leeshaYoung_cataplasme,
   removeWard, swapWards,
   getThreatForecast, resolveWardPassives,
@@ -32,7 +32,8 @@ export interface WardedGameController {
   doFortify: (wardType: WardType, targetLocationId: LocationId) => void;
   doGather: (locationId: LocationId) => void;
   doRepairWard: (locationId: LocationId, slotIndex: number) => void;
-  doNightRepairWard: (locationId: LocationId, slotIndex: number) => boolean;
+  doEmergencyRepair: (locationId: LocationId, slotIndex: number) => string | null;
+  doEmergencySwapReserve: (locationId: LocationId, slotIndex: number, reserveIndex: number) => string | null;
   doRemoveWard: (locationId: LocationId, slotIndex: number) => void;
   doSwapWards: (locationId: LocationId, slotA: number, slotB: number) => void;
   endDay: () => void;
@@ -156,12 +157,20 @@ export function useWardedGame(): WardedGameController {
     sync(s);
   }, [sync]);
 
-  const doNightRepairWard = useCallback((locationId: LocationId, slotIndex: number): boolean => {
+  const doEmergencyRepair = useCallback((locationId: LocationId, slotIndex: number): string | null => {
     const s = stateRef.current;
-    if (!s) return false;
-    const ok = nightRepairWard(s, locationId, slotIndex);
-    if (ok) sync(s);
-    return ok;
+    if (!s) return 'Pas de partie en cours.';
+    const err = emergencyRepairWard(s, locationId, slotIndex);
+    if (!err) sync(s);
+    return err;
+  }, [sync]);
+
+  const doEmergencySwapReserve = useCallback((locationId: LocationId, slotIndex: number, reserveIndex: number): string | null => {
+    const s = stateRef.current;
+    if (!s) return 'Pas de partie en cours.';
+    const err = emergencySwapReserve(s, locationId, slotIndex, reserveIndex);
+    if (!err) sync(s);
+    return err;
   }, [sync]);
 
   const doRemoveWard = useCallback((locationId: LocationId, slotIndex: number) => {
@@ -511,7 +520,7 @@ export function useWardedGame(): WardedGameController {
   return {
     state, events, forecast,
     startGame, startCampaignGame: startCampaignGameFn, applyCampaignEffects: applyCampaignEffectsFn, startNewDay,
-    doCraft, doFortify, doGather, doRepairWard, doNightRepairWard, doRemoveWard, doSwapWards, endDay,
+    doCraft, doFortify, doGather, doRepairWard, doEmergencyRepair, doEmergencySwapReserve, doRemoveWard, doSwapWards, endDay,
     // Arlen
     doWardedFlesh, doWardedFist, doMistWalk, doLeurre,
     // Young heroes
