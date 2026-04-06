@@ -1550,7 +1550,7 @@ export default function WardedGameScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Night: wave controls */}
+          {/* Night wave 0: positioning banner only (Lancer Vague button is in fixed bottom strip) */}
           {isNight && state.waveNumber === 0 && (
             <View style={styles.nightActions}>
               <View style={styles.positioningBanner}>
@@ -1572,13 +1572,10 @@ export default function WardedGameScreen() {
                 </View>
                 <Text style={styles.positioningHint}>
                   {state.presenceMoveUsed
-                    ? `Présence: ${state.locations.find(l => l.id === state.presenceLocation)?.name}. Lance la vague !`
-                    : `Tape un lieu pour déplacer ta Présence.\nPuis lance la vague pour affronter les démons.`}
+                    ? `Présence: ${state.locations.find(l => l.id === state.presenceLocation)?.name}`
+                    : `Tape un lieu pour déplacer ta Présence`}
                 </Text>
               </View>
-              <TouchableOpacity style={[styles.phaseBtn, { backgroundColor: warded.danger + '30', borderColor: warded.danger }]} onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWaveAndAutoActivate(); audio.playSfx('ward_activate'); }}>
-                <Text style={[styles.phaseBtnText, { color: warded.danger }]}>⚔ Lancer Vague 1</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -1797,45 +1794,56 @@ export default function WardedGameScreen() {
                 );
               })()}
 
-              {/* Required next step -- prominent (FIX 3: no auto-advance) */}
-              {!damageResolved ? (
-                <TouchableOpacity
-                  style={[styles.phaseBtn, { backgroundColor: warded.danger + '20', borderColor: warded.danger }]}
-                  onPress={() => {
-                    handleResolveDamage();
-                  }}
-                >
-                  <Text style={styles.phaseBtnText}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  style={[styles.phaseBtn, { backgroundColor: warded.wardLight + '20', borderColor: warded.wardLight }]}
-                  onPress={() => {
-                    setDamageResolved(false);
-                    setDamageReport(null);
-                    setSelectedLocation(null);
-                    setWindRedirectDemon(null);
-                    setMistWalkMode(false);
-                    if (state.waveNumber < 3) {
-                      ctrl.doStartWaveAndAutoActivate();
-                      audio.playSfx('ward_activate');
-                    } else {
-                      ctrl.doEndWave();
-                      // Show level up ONLY after React re-renders with fresh state
-                      // (doEndWave may set gameOver=true, but state here is stale)
-                      setPendingLevelUp(true);
-                    }
-                  }}
-                >
-                  <Text style={[styles.phaseBtnText, { color: warded.wardLight }]}>
-                    {state.waveNumber < 3 ? `Continuer — Vague ${state.waveNumber + 1}` : 'Fin de la nuit'}
-                  </Text>
-                </TouchableOpacity>
-              )}
+              {/* Resolve/Continue buttons moved to fixed bottom strip (not actions, just flow) */}
             </View>
           )}
         </ScrollView>
       </View>
+      )}
+
+      {/* Night flow buttons — always visible at bottom (not actions, just flow) */}
+      {isNight && !selectedLoc && (
+        <View style={{ paddingHorizontal: 12, paddingVertical: 6, gap: 4 }}>
+          {state.waveNumber === 0 && (
+            <TouchableOpacity
+              style={{ backgroundColor: warded.danger + '30', borderWidth: 2, borderColor: warded.danger, borderRadius: 12, paddingVertical: 12, alignItems: 'center' }}
+              onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWaveAndAutoActivate(); audio.playSfx('ward_activate'); }}
+            >
+              <Text style={{ color: warded.danger, fontSize: wardedFonts.lg, fontWeight: 'bold' }}>⚔ Lancer Vague 1</Text>
+            </TouchableOpacity>
+          )}
+          {state.waveNumber > 0 && state.activationsRemaining === 0 && !damageResolved && (
+            <TouchableOpacity
+              style={{ backgroundColor: warded.danger + '20', borderWidth: 2, borderColor: warded.danger, borderRadius: 12, paddingVertical: 12, alignItems: 'center' }}
+              onPress={() => handleResolveDamage()}
+            >
+              <Text style={{ color: warded.text, fontSize: wardedFonts.md, fontWeight: 'bold' }}>⚡ Résoudre les dégâts (Vague {state.waveNumber}/3)</Text>
+            </TouchableOpacity>
+          )}
+          {state.waveNumber > 0 && state.activationsRemaining === 0 && damageResolved && (
+            <TouchableOpacity
+              style={{ backgroundColor: warded.wardLight + '20', borderWidth: 2, borderColor: warded.wardLight, borderRadius: 12, paddingVertical: 12, alignItems: 'center' }}
+              onPress={() => {
+                setDamageResolved(false);
+                setDamageReport(null);
+                setSelectedLocation(null);
+                setWindRedirectDemon(null);
+                setMistWalkMode(false);
+                if (state.waveNumber < 3) {
+                  ctrl.doStartWaveAndAutoActivate();
+                  audio.playSfx('ward_activate');
+                } else {
+                  ctrl.doEndWave();
+                  setPendingLevelUp(true);
+                }
+              }}
+            >
+              <Text style={{ color: warded.wardLight, fontSize: wardedFonts.md, fontWeight: 'bold' }}>
+                {state.waveNumber < 3 ? `▶ Continuer — Vague ${state.waveNumber + 1}` : '🌅 Fin de la nuit'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
       )}
 
       {/* Combos overlay — list of all available + active combos */}
@@ -2279,7 +2287,7 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { maxHeight: '60%', paddingHorizontal: 14, marginTop: 4 },
+  actionBar: { flex: 1, paddingHorizontal: 14, marginTop: 4 },
   actionBarContent: { gap: 8, paddingBottom: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
