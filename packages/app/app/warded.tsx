@@ -1203,13 +1203,23 @@ export default function WardedGameScreen() {
       {/* Night floating action button (when bar hidden) */}
       {isNight && !showActionBar && !selectedLoc && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 4 }}>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: warded.bgCard, borderWidth: 1, borderColor: warded.danger, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 }}
-            onPress={() => setShowActionBar(true)}
-          >
-            <Text style={{ fontSize: 16 }}>⚔</Text>
-            <Text style={{ color: warded.danger, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>Combat (AP: {state.hero.ap})</Text>
-          </TouchableOpacity>
+          {state.waveNumber === 0 ? (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: warded.danger + '30', borderWidth: 2, borderColor: warded.danger, borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 }}
+              onPress={() => { audio.playSfx('demon_spawn'); ctrl.doStartWaveAndAutoActivate(); audio.playSfx('ward_activate'); }}
+            >
+              <Text style={{ fontSize: 18 }}>⚔</Text>
+              <Text style={{ color: warded.danger, fontSize: wardedFonts.md, fontWeight: 'bold' }}>Lancer Vague 1</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: warded.bgCard, borderWidth: 1, borderColor: warded.danger, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 }}
+              onPress={() => setShowActionBar(true)}
+            >
+              <Text style={{ fontSize: 16 }}>⚔</Text>
+              <Text style={{ color: warded.danger, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>Combat (AP: {state.hero.ap})</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={{ alignItems: 'center', backgroundColor: warded.bgCard, borderWidth: 1, borderColor: inspectMode ? warded.accent : warded.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
             onPress={() => setInspectMode(!inspectMode)}
@@ -2269,7 +2279,7 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { maxHeight: '35%', paddingHorizontal: 14, marginTop: 4 },
+  actionBar: { maxHeight: '60%', paddingHorizontal: 14, marginTop: 4 },
   actionBarContent: { gap: 8, paddingBottom: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
