@@ -380,6 +380,7 @@ export default function WardedGameScreen() {
   const [showActionBar, setShowActionBar] = useState(false);
   const [wardDetail, setWardDetail] = useState<{ ward: WardType; mode: 'craft' | 'reserve'; reserveIndex?: number } | null>(null);
   const [showCombosOverlay, setShowCombosOverlay] = useState(false);
+  const [nightTab, setNightTab] = useState<'repair' | 'hero' | 'powers'>('hero');
   const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
@@ -1608,8 +1609,27 @@ export default function WardedGameScreen() {
                   );
                 })}
               </View>
+
+              {/* Night action tabs */}
+              <View style={{ flexDirection: 'row', gap: 6, marginVertical: 6 }}>
+                {([
+                  { id: 'repair' as const, icon: '🔧', label: 'Réparer' },
+                  { id: 'hero' as const, icon: '⚔', label: 'Héros' },
+                  { id: 'powers' as const, icon: '✨', label: 'Pouvoirs' },
+                ]).map(tab => (
+                  <TouchableOpacity key={tab.id}
+                    style={{ flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 8, borderWidth: 1,
+                      borderColor: nightTab === tab.id ? warded.accent : warded.border,
+                      backgroundColor: nightTab === tab.id ? warded.accent + '15' : 'transparent' }}
+                    onPress={() => setNightTab(tab.id)}>
+                    <Text style={{ color: nightTab === tab.id ? warded.accent : warded.textDim, fontSize: 14 }}>{tab.icon}</Text>
+                    <Text style={{ color: nightTab === tab.id ? warded.accent : warded.textDim, fontSize: 9, marginTop: 1 }}>{tab.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
               {/* Emergency repair — scaled HP cost, 1 per wave, presence only */}
-              {!(state as any)._nightRepairUsed && (() => {
+              {nightTab === 'repair' && !(state as any)._nightRepairUsed && (() => {
                 const presLoc = state.locations.find(l => l.id === state.presenceLocation);
                 const damagedWards = presLoc?.wards
                   .map((ws, i) => ({ ws, i }))
@@ -1641,7 +1661,7 @@ export default function WardedGameScreen() {
               })()}
 
               {/* Optional hero wave abilities */}
-              {!state.heroWaveAbilityUsed && (
+              {nightTab === 'hero' && !state.heroWaveAbilityUsed && (
                 <View style={styles.optionalAction}>
                   <Text style={styles.optionalLabel}>ACTION BONUS (optionnel)</Text>
                   {state.hero.id === 'arlen' && (state.hero.arlenCharge ?? 0) > 0 && (
@@ -1704,8 +1724,8 @@ export default function WardedGameScreen() {
                   )}
                 </View>
               )}
-              {/* Wind redirect (interactive) */}
-              {!damageResolved && (() => {
+              {/* Wind redirect (interactive) — Powers tab */}
+              {nightTab === 'powers' && !damageResolved && (() => {
                 const hasWindWard = state.locations.some(l => !l.fallen && l.wards.some(ws => ws.ward === 'wind'));
                 const visibleLocIds = new Set(state.locations.filter(l => !l.fallen && l.maxPopulation > 0).map(l => l.id));
                 const redirectableDemons = Object.entries(state.demonsAtLocations)
