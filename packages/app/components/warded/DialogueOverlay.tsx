@@ -27,6 +27,12 @@ const SCENE_IMAGES: Record<string, any> = {
   anoch_sun: require('../../assets/images/scene_anoch_sun.png'),
   library: require('../../assets/images/scene_library.png'),
   village_siege: require('../../assets/images/scene_village_siege.png'),
+  krasia_camp: require('../../assets/images/scene_krasia_camp.png'),
+  labyrinth_corridor: require('../../assets/images/scene_labyrinth_corridor.png'),
+  sunrise_village: require('../../assets/images/scene_sunrise_village.png'),
+  inn_jongleur: require('../../assets/images/scene_inn_jongleur.png'),
+  fort_miln: require('../../assets/images/scene_fort_miln.png'),
+  herbalist_hut: require('../../assets/images/scene_herbalist_hut.png'),
 };
 
 // Character sprites (half-body, VN style)
