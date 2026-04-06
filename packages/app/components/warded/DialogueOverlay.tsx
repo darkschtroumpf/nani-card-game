@@ -22,6 +22,11 @@ const SCENE_IMAGES: Record<string, any> = {
   road: require('../../assets/images/scene_road.png'),
   miln: require('../../assets/images/scene_miln.png'),
   ruins: require('../../assets/images/scene_ruins.png'),
+  wards_breaking: require('../../assets/images/scene_wards_breaking.png'),
+  desert: require('../../assets/images/scene_desert.png'),
+  anoch_sun: require('../../assets/images/scene_anoch_sun.png'),
+  library: require('../../assets/images/scene_library.png'),
+  village_siege: require('../../assets/images/scene_village_siege.png'),
 };
 
 // Character sprites (half-body, VN style)

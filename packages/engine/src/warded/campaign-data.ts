@@ -244,7 +244,7 @@ export const CHAPTER_1: ChapterDefinition = {
   defeatDialogue: [
     {
       id: 'defeat_1',
-      background: 'village_burning',
+      background: 'wards_breaking',
       lines: [
         { speaker: 'narrator', text: "Les runes cèdent. Un par un, les symboles s'éteignent comme des bougies dans le vent." },
         { speaker: 'narrator', text: "Les chtoniens se précipitent dans les brèches. Des démons de flamme embrasent la grange. Un démon de pierre fracasse la clôture." },
@@ -1617,7 +1617,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
     {
       dayNumber: 4,
       dialogueNodes: [{
-        id: 'a3_day4', background: 'ward_book',
+        id: 'a3_day4', background: 'library',
         lines: [
           { speaker: 'narrator', text: "Dans la bibliothèque du dernier relais, Arlen trouve un vieux parchemin oublié entre les pierres du mur." },
           { speaker: 'narrator', text: "Un fragment de carte. Des symboles qu'il ne reconnaît pas. Et un nom, à moitié effacé : Soleil d'Anoch." },
@@ -3094,7 +3094,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'a4_intro_1', background: 'ruins',
+      id: 'a4_intro_1', background: 'desert',
       lines: [
         { speaker: 'narrator', text: "Le désert de Krasie. Personne ne vient ici. Les sables avalent tout — hommes, bêtes, et les cités d'un monde oublié." },
         { speaker: 'narrator', text: "Arlen a passé des mois à chercher. Des cartes anciennes, des fragments de textes, des indices dispersés dans les bibliothèques de Miln et Lakton." },
@@ -3103,7 +3103,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
       nextNodeId: 'a4_intro_2',
     },
     {
-      id: 'a4_intro_2', background: 'ruins',
+      id: 'a4_intro_2', background: 'anoch_sun',
       lines: [
         { speaker: 'arlen_young', text: "C'est réel. Soleil d'Anoch. La plus grande cité de l'ancien monde.", emotion: 'hopeful' },
         { speaker: 'narrator', text: "Les murs sont couverts de runes — mais pas les runes défensifs que connaît Arlen. Ce sont des runes de combat. Des runes qui tuent." },
