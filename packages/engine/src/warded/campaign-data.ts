@@ -83,8 +83,8 @@ export const CHAPTER_1: ChapterDefinition = {
           lines: [
             { speaker: 'ragen', text: "Tes runes ne sont pas mauvais pour un gamin, Arlen. Mais ils ne tiendront pas contre un chtonien de flamme.", emotion: 'neutral' },
             { speaker: 'arlen_young', text: "Qu'est-ce que je peux faire de mieux ?", emotion: 'determined' },
-            { speaker: 'ragen', text: "D'abord, récolte des ressources. Tape sur un lieu pour voir ce qu'il produit — Bois ou Encre. Ensuite, fabrique un rune avec ces ressources.", emotion: 'neutral' },
-            { speaker: 'ragen', text: "Ensuite, place ton rune sur un lieu. L'ordre compte ! Deux runes côte à côte peuvent former un combo plus puissant.", emotion: 'determined' },
+            { speaker: 'ragen', text: "D'abord, récolte des ressources. Tape sur un lieu pour voir ce qu'il produit — Bois ou Encre. Ensuite, fabrique une rune avec ces ressources.", emotion: 'neutral' },
+            { speaker: 'ragen', text: "Ensuite, place ta rune sur un lieu. L'ordre compte ! Deux runes côte à côte peuvent former un combo plus puissant.", emotion: 'determined' },
             { speaker: 'ragen', text: "La nuit, tu devras activer tes défenses en tapant sur les lieux runés. Chaque lieu ne s'active qu'une fois par vague.", emotion: 'neutral' },
             { speaker: 'ragen', text: "J'ai du matériel de rechange. Je peux t'aider à renforcer la place du village, ou tu gardes tes forces pour la ferme.", emotion: 'neutral' },
           ],
@@ -380,14 +380,14 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
           { speaker: 'narrator', text: "Bruna est épuisée. Elle tousse, mais refuse de se coucher." },
           { speaker: 'bruna', text: "Leesha... écoute-moi. Cette nuit sera la pire. Je le sens dans mes os.", emotion: 'sad' },
           { speaker: 'leesha_young', text: "Bruna, vous devez vous reposer—", emotion: 'scared' },
-          { speaker: 'bruna', text: "Tais-toi et écoute ! On a assez d'encre pour renforcer tous les runes du village. Mais je suis trop faible. C'est toi qui devras le faire seule.", emotion: 'determined' },
+          { speaker: 'bruna', text: "Tais-toi et écoute ! On a assez d'encre pour renforcer toutes les runes du village. Mais je suis trop faible. C'est toi qui devras le faire seule.", emotion: 'determined' },
           { speaker: 'leesha_young', text: "Moi ? Toute seule ? Je n'ai pas votre expérience...", emotion: 'scared' },
-          { speaker: 'bruna', text: "Tu sais tracer un rune, oui ou non ? Alors choisis : passer l'après-midi à renforcer les runes, ou rester ici à me soigner.", emotion: 'angry' },
+          { speaker: 'bruna', text: "Tu sais tracer une rune, oui ou non ? Alors choisis : passer l'après-midi à renforcer les runes, ou rester ici à me soigner.", emotion: 'angry' },
         ],
         choices: [
           {
             id: 'reinforce_all',
-            label: "Renforcer tous les runes du village",
+            label: "Renforcer toutes les runes du village",
             hint: "+1 Rune de Pierre à chaque lieu, mais Bruna sans soin (-2 HP héros de fatigue)",
             effects: [
               { type: 'bonus_ward', wardType: 'stone', locationId: 'miln' },
@@ -1405,7 +1405,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
         choices: [
           {
             id: 'practice_music',
-            label: "S'exercer près des limites du rune",
+            label: "S'exercer près des limites de la rune",
             hint: "Force des démons -1 cette nuit (musique apaisante), mais -2 HP",
             effects: [
               { type: 'demon_strength_bonus', bonus: -1 },
@@ -1595,7 +1595,7 @@ export const CHAPTER_ARLEN_3: ChapterDefinition = {
         choices: [
           {
             id: 'retrace_all',
-            label: "Renforcer tous les runes pour la dernière nuit",
+            label: "Renforcer toutes les runes pour la dernière nuit",
             hint: "+1 Rune de Vent et +1 Rune de Pierre à l'Avant-Poste, -2 HP",
             effects: [
               { type: 'bonus_ward', wardType: 'wind', locationId: 'desert_spear' },
@@ -2172,7 +2172,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
         lines: [
           { speaker: 'narrator', text: "Leesha observe Rojer depuis deux nuits. Elle prend des notes. Elle mesure. Elle réfléchit." },
           { speaker: 'leesha', text: "Ta musique n'est pas de la magie, Rojer. C'est de la physique des runes appliquée au son. Les vibrations de tes cordes reproduisent les mêmes fréquences que les runes.", emotion: 'hopeful' },
-          { speaker: 'rojer', text: "Donc je suis... un rune vivant ?", emotion: 'hopeful' },
+          { speaker: 'rojer', text: "Donc je suis... une rune vivante ?", emotion: 'hopeful' },
           { speaker: 'leesha', text: "En quelque sorte. Et si on combine ta musique avec mes runes de lumière...", emotion: 'determined' },
         ],
         choices: [
@@ -2517,8 +2517,8 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
       dialogueNodes: [{
         id: 'l4_day1', background: 'forest_village',
         lines: [
-          { speaker: 'narrator', text: "Première nuit avec le réseau. Les runes ont tenu — et plus que tenu. Quand un rune faiblissait, les autres le soutenaient." },
-          { speaker: 'leesha', text: "Ça fonctionne. L'énergie se redistribue. Un rune qui cède ne crée plus de brèche — les voisins compensent.", emotion: 'hopeful' },
+          { speaker: 'narrator', text: "Première nuit avec le réseau. Les runes ont tenu — et plus que tenu. Quand une rune faiblissait, les autres le soutenaient." },
+          { speaker: 'leesha', text: "Ça fonctionne. L'énergie se redistribue. Une rune qui cède ne crée plus de brèche — les voisins compensent.", emotion: 'hopeful' },
           { speaker: 'narrator', text: "Mais les chtoniens s'adaptent. Ils attaquent maintenant en plusieurs points simultanément, testant le réseau." },
         ],
         choices: [
@@ -3326,7 +3326,7 @@ export const CHAPTER_LEESHA_5: ChapterDefinition = {
         id: 'l5_day1', background: 'forest_village',
         lines: [
           { speaker: 'narrator', text: "La première nuit a révélé les failles. Les runes du périmètre est ont failli céder. Trois familles ont frôlé la mort." },
-          { speaker: 'leesha_young', text: "Le réseau doit être continu. Un seul rune brisé et toute la chaîne s'effondre.", emotion: 'determined' },
+          { speaker: 'leesha_young', text: "Le réseau doit être continu. Une seule rune brisée et toute la chaîne s'effondre.", emotion: 'determined' },
           { speaker: 'narrator', text: "Le forgeron Yon Gray propose son aide. Ses mains sont assez précises pour graver dans le métal." },
         ],
         choices: [
@@ -3443,7 +3443,7 @@ export const CHAPTER_LEESHA_5: ChapterDefinition = {
   defeatDialogue: [{
     id: 'l5_defeat', background: 'village_burning',
     lines: [
-      { speaker: 'narrator', text: "Le réseau se fissure. Un rune cède, puis un autre, puis toute la chaîne s'effondre comme un château de cartes." },
+      { speaker: 'narrator', text: "Le réseau se fissure. Une rune cède, puis une autre, puis toute la chaîne s'effondre comme un château de cartes." },
       { speaker: 'leesha_young', text: "Non... Le réseau... Tout était connecté. C'est ça le problème — quand un maillon cède, tout cède.", emotion: 'scared' },
       { speaker: 'narrator', text: "Le Creux du Coupeur brûle. Et avec lui, l'œuvre de Bruna, de Leesha, de générations d'herboristes." },
       { speaker: 'narrator', text: "Chapitre 18 — Échec" },
@@ -3765,7 +3765,7 @@ export const CHAPTER_ROJER_5: ChapterDefinition = {
         choices: [
           {
             id: 'war_symphony',
-            label: "Composer la Symphonie de Guerre — activer tous les runes simultanément",
+            label: "Composer la Symphonie de Guerre — activer toutes les runes simultanément",
             hint: "+1 Rune de Lumière et +1 Rune d'Os à chaque lieu, -4 HP",
             effects: [
               { type: 'bonus_ward', wardType: 'light', locationId: 'cutters_hollow' },
@@ -3911,7 +3911,7 @@ export const CHAPTER_ARLEN_6: ChapterDefinition = {
       id: 'a6_intro_3', background: 'village_sunset',
       lines: [
         { speaker: 'arlen_young', text: "Je ne suis pas venu pour qu'on me regarde. Je suis venu pour vous apprendre à vous battre.", emotion: 'determined' },
-        { speaker: 'narrator', text: "Il trace un rune de combat sur un poteau de bois. Le bois se met à luire. Les chtoniens qui rôdent à la lisière reculent." },
+        { speaker: 'narrator', text: "Il trace une rune de combat sur un poteau de bois. Le bois se met à luire. Les chtoniens qui rôdent à la lisière reculent." },
         { speaker: 'arlen_young', text: "Trois cents ans de peur. Ça se termine ici.", emotion: 'angry' },
       ],
     },
@@ -4887,7 +4887,7 @@ export const CHAPTER_FINAL: ChapterDefinition = {
           {
             id: 'empower_arlen',
             label: "Appliquer l'onguent sur Arlen — affronter le démon ancien",
-            hint: "Force démons -2 (aura), mais -3 HP (douleur des runes activés)",
+            hint: "Force démons -2 (aura), mais -3 HP (douleur des runes activées)",
             effects: [
               { type: 'demon_strength_bonus', bonus: -2 },
               { type: 'hero_hp_change', delta: -3 },
