@@ -379,6 +379,7 @@ export default function WardedGameScreen() {
   const [inspectMode, setInspectMode] = useState(false);
   const [showActionBar, setShowActionBar] = useState(false);
   const [wardDetail, setWardDetail] = useState<{ ward: WardType; mode: 'craft' | 'reserve'; reserveIndex?: number } | null>(null);
+  const [showCombosOverlay, setShowCombosOverlay] = useState(false);
   const [selectedDifficulty, setSelectedDifficulty] = useState<'new_moon' | 'waning' | 'midnight' | 'endless'>(isEndlessMode ? 'endless' : 'waning');
   const firstNightSeen = useRef(false);
 
@@ -1548,6 +1549,12 @@ export default function WardedGameScreen() {
                   >
                     <Text style={{ color: inspectMode ? warded.accent : warded.textDim, fontSize: wardedFonts.sm }}>🔍</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ borderWidth: 1, borderColor: warded.accent, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}
+                    onPress={() => setShowCombosOverlay(true)}
+                  >
+                    <Text style={{ color: warded.accent, fontSize: wardedFonts.sm }}>✨</Text>
+                  </TouchableOpacity>
                 </View>
                 <Text style={styles.positioningHint}>
                   {state.presenceMoveUsed
@@ -1797,6 +1804,70 @@ export default function WardedGameScreen() {
         </ScrollView>
       </View>
       )}
+
+      {/* Combos overlay — list of all available + active combos */}
+      {showCombosOverlay && (() => {
+        const advisor = getComboAdvisor(state.locations, state.wardReserves, state);
+        const allWards = new Set<WardType>();
+        state.locations.forEach(l => l.wards.forEach(ws => { if (ws.ward) allWards.add(ws.ward); }));
+        state.wardReserves.forEach(w => allWards.add(w));
+        const chapter = state.chapter ?? 1;
+        const possibleWithCurrentWards = WARD_COMBOS.filter(c =>
+          c.unlockedAtChapter <= chapter &&
+          c.wards.every(w => allWards.has(w))
+        );
+        return (
+          <View style={styles.detailOverlayContainer}>
+            <TouchableOpacity style={styles.detailBackdrop} activeOpacity={1} onPress={() => setShowCombosOverlay(false)} />
+            <ScrollView style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '70%', backgroundColor: warded.bg + 'f5', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTopWidth: 2, borderTopColor: warded.accent + '60', padding: 16 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <Text style={{ color: warded.accent, fontSize: wardedFonts.lg, fontWeight: 'bold' }}>✨ Combos disponibles</Text>
+                <TouchableOpacity onPress={() => setShowCombosOverlay(false)}>
+                  <Text style={{ color: warded.textDim, fontSize: 18 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              {advisor.active.length > 0 && (
+                <>
+                  <Text style={{ color: warded.success, fontSize: wardedFonts.xs, fontWeight: 'bold', marginBottom: 4 }}>🟢 ACTIFS ({advisor.active.length})</Text>
+                  {advisor.active.map((a, i) => (
+                    <View key={`act${i}`} style={{ paddingVertical: 4, marginBottom: 4, backgroundColor: warded.success + '10', borderRadius: 6, paddingHorizontal: 8 }}>
+                      <Text style={{ color: warded.success, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>{a.combo.name} @ {a.locName}</Text>
+                      <Text style={{ color: warded.text, fontSize: wardedFonts.xs }}>Passif: {a.combo.passiveEffect}</Text>
+                      <Text style={{ color: warded.accent, fontSize: wardedFonts.xs }}>Actif: {a.combo.activeEffect}</Text>
+                    </View>
+                  ))}
+                </>
+              )}
+
+              {possibleWithCurrentWards.length > 0 && (
+                <>
+                  <Text style={{ color: warded.accent, fontSize: wardedFonts.xs, fontWeight: 'bold', marginTop: 8, marginBottom: 4 }}>💡 RÉALISABLES AVEC TES RUNES ACTUELLES</Text>
+                  {possibleWithCurrentWards.map((c, i) => (
+                    <View key={`pos${i}`} style={{ paddingVertical: 4, marginBottom: 4, backgroundColor: warded.accent + '08', borderRadius: 6, paddingHorizontal: 8, borderLeftWidth: 2, borderLeftColor: warded.accent }}>
+                      <Text style={{ color: warded.accent, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>{c.name} ({c.wards.join(' + ')})</Text>
+                      <Text style={{ color: warded.text, fontSize: wardedFonts.xs }}>{c.passiveEffect}</Text>
+                      <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>Liens min: {c.minBondStrength}</Text>
+                    </View>
+                  ))}
+                </>
+              )}
+
+              <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: 'bold', marginTop: 8, marginBottom: 4 }}>📜 TOUS LES COMBOS DÉBLOQUÉS (Chapitre {chapter})</Text>
+              {WARD_COMBOS.filter(c => c.unlockedAtChapter <= chapter).map((c, i) => {
+                const haveAll = c.wards.every(w => allWards.has(w));
+                return (
+                  <View key={`all${i}`} style={{ paddingVertical: 3, marginBottom: 2, opacity: haveAll ? 1 : 0.5 }}>
+                    <Text style={{ color: haveAll ? warded.text : warded.textDim, fontSize: wardedFonts.xs }}>
+                      {haveAll ? '✓' : '○'} <Text style={{ fontWeight: 'bold' }}>{c.name}</Text> ({c.wards.join('+')}) — {c.passiveEffect}
+                    </Text>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        );
+      })()}
 
       {/* Ward detail overlay — shows before buying or placing */}
       {wardDetail && (() => {
