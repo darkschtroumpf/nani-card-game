@@ -2287,7 +2287,7 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { flex: 1, paddingHorizontal: 14, marginTop: 4 },
+  actionBar: { maxHeight: '70%', paddingHorizontal: 14, marginTop: 4 },
   actionBarContent: { gap: 8, paddingBottom: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
