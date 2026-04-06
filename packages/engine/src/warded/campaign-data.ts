@@ -45,7 +45,7 @@ export const CHAPTER_1: ChapterDefinition = {
     },
     {
       id: 'intro_2',
-      background: 'village_sunset',
+      background: 'demon_attack_house',
       lines: [
         { speaker: 'jeph', text: "Arlen ! Les runes de la clôture nord sont abîmés. Viens m'aider avant le crépuscule.", emotion: 'scared' },
         { speaker: 'arlen_young', text: "J'arrive. Mais père... pourquoi est-ce qu'on ne fait que se cacher ? Toujours se cacher ?", emotion: 'determined' },
@@ -1005,7 +1005,7 @@ export const CHAPTER_LEESHA_2: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'l2_bruna_death', background: 'bruna_hut',
+      id: 'l2_bruna_death', background: 'dying_bruna',
       lines: [
         { speaker: 'narrator', text: "La chandelle s'était éteinte dans la nuit. Quand Leesha entra dans la cabane à l'aube, elle sut tout de suite." },
         { speaker: 'leesha_young', text: "Bruna...?", emotion: 'scared' },
@@ -1348,7 +1348,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
       nextNodeId: 'r2_intro_3',
     },
     {
-      id: 'r2_intro_3', background: 'village_sunset',
+      id: 'r2_intro_3', background: 'rain_runes',
       lines: [
         { speaker: 'narrator', text: "On retrouve Arrick à l'aube. Vivant, mais brisé. Les griffes d'un démon de vent lui ont ouvert la gorge." },
         { speaker: 'narrator', text: "Il ne chantera plus jamais." },
@@ -1396,7 +1396,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'r2_day2', background: 'road',
+        id: 'r2_day2', background: 'rojer_violin',
         lines: [
           { speaker: 'narrator', text: "La nuit dernière, Rojer a découvert quelque chose d'étrange. Quand il joue certaines mélodies, les démons hésitent. Ils s'arrêtent." },
           { speaker: 'rojer_young', text: "C'est dans la musique. Il y a quelque chose dans les harmoniques... Les chtoniens les entendent différemment.", emotion: 'hopeful' },
@@ -1722,7 +1722,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
       nextNodeId: 'l3_intro_2',
     },
     {
-      id: 'l3_intro_2', background: 'refugees',
+      id: 'l3_intro_2', background: 'refugee_camp_night',
       lines: [
         { speaker: 'narrator', text: "La route vers Angiers est plus peuplée que prévu. Des familles entières marchent sous le soleil, des ballots sur le dos, les yeux vides." },
         { speaker: 'refugee', text: "Notre village est tombé. Les runes n'ont pas tenu. On marche vers Angiers. Où irions-nous d'autre ?", emotion: 'scared' },
@@ -1780,7 +1780,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'l3_day2', background: 'ward_book',
+        id: 'l3_day2', background: 'angiers_archives',
         lines: [
           { speaker: 'narrator', text: "Angiers est en vue. Leesha passe la matinée dans les archives de l'Académie, feuilletant des textes que personne n'a lus depuis des générations." },
           { speaker: 'leesha', text: "Les runes de lumière... Ils ne sont pas dans les livres de Bruna. Ils sont ici, dans les archives d'Angiers. Quelqu'un les a cachés.", emotion: 'hopeful' },
@@ -1918,7 +1918,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
       nextNodeId: 'j3_intro_2',
     },
     {
-      id: 'j3_intro_2', background: 'maze',
+      id: 'j3_intro_2', background: 'anoch_sun_chamber',
       lines: [
         { speaker: 'narrator', text: "Jardir descend seul dans les tunnels les plus profonds. Là où aucun Sharum n'est allé depuis des générations." },
         { speaker: 'narrator', text: "Et dans l'obscurité, il trouve une chambre scellée. Sur les murs, des runes qui brillent encore après des siècles — des runes de lumière." },
@@ -1972,7 +1972,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'j3_day2', background: 'krasia',
+        id: 'j3_day2', background: 'inevera_prophecy',
         lines: [
           { speaker: 'narrator', text: "Entre les combats, une silhouette voilée attend Jardir à l'entrée du Labyrinthe. Inevera, la dama'ting." },
           { speaker: 'inevera', text: "Ahmann. Montre-moi tes mains.", emotion: 'neutral' },
@@ -2008,7 +2008,7 @@ export const CHAPTER_JARDIR_3: ChapterDefinition = {
     {
       dayNumber: 3,
       dialogueNodes: [{
-        id: 'j3_day3', background: 'maze',
+        id: 'j3_day3', background: 'kaji_spear',
         lines: [
           { speaker: 'narrator', text: "La chambre secrète contient plus que la lance. Il y a des inscriptions sur les murs — des tactiques de combat, des formations runées." },
           { speaker: 'jardir', text: "Les anciens ne se contentaient pas de repousser les démons. Ils les chassaient. Ils descendaient dans les profondeurs pour les tuer.", emotion: 'determined' },
@@ -2168,7 +2168,7 @@ export const CHAPTER_ROJER_3: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'r3_day2', background: 'forest_village',
+        id: 'r3_day2', background: 'forest_burning',
         lines: [
           { speaker: 'narrator', text: "Leesha observe Rojer depuis deux nuits. Elle prend des notes. Elle mesure. Elle réfléchit." },
           { speaker: 'leesha', text: "Ta musique n'est pas de la magie, Rojer. C'est de la physique des runes appliquée au son. Les vibrations de tes cordes reproduisent les mêmes fréquences que les runes.", emotion: 'hopeful' },
@@ -2547,7 +2547,7 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'l4_day2', background: 'bruna_hut',
+        id: 'l4_day2', background: 'bone_runes',
         lines: [
           { speaker: 'narrator', text: "Leesha passe la journée dans l'atelier, les mains tachées d'encre noire, traçant des runes d'os pour la première fois." },
           { speaker: 'leesha', text: "Bruna avait raison d'avoir peur. Les runes d'os ne sont pas comme les autres. Ils sont... vivants. Ils aspirent l'énergie.", emotion: 'scared' },
@@ -3103,7 +3103,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
       nextNodeId: 'a4_intro_2',
     },
     {
-      id: 'a4_intro_2', background: 'anoch_sun',
+      id: 'a4_intro_2', background: 'anoch_sun_chamber',
       lines: [
         { speaker: 'arlen_young', text: "C'est réel. Soleil d'Anoch. La plus grande cité de l'ancien monde.", emotion: 'hopeful' },
         { speaker: 'narrator', text: "Les murs sont couverts de runes — mais pas les runes défensifs que connaît Arlen. Ce sont des runes de combat. Des runes qui tuent." },
@@ -4374,7 +4374,7 @@ export const CHAPTER_JARDIR_6: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'j6_day2', background: 'krasia',
+        id: 'j6_day2', background: 'sharak_ka_army',
         lines: [
           { speaker: 'narrator', text: "Inevera jette les os de démon. Les symboles qu'ils forment la font pâlir sous son voile." },
           { speaker: 'jardir_young', text: "Que vois-tu ?", emotion: 'neutral' },

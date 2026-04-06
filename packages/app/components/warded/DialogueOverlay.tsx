@@ -33,6 +33,18 @@ const SCENE_IMAGES: Record<string, any> = {
   inn_jongleur: require('../../assets/images/scene_inn_jongleur.png'),
   fort_miln: require('../../assets/images/scene_fort_miln.png'),
   herbalist_hut: require('../../assets/images/scene_herbalist_hut.png'),
+  rain_runes: require('../../assets/images/scene_rain_runes.png'),
+  demon_attack_house: require('../../assets/images/scene_demon_attack_house.png'),
+  dying_bruna: require('../../assets/images/scene_dying_bruna.png'),
+  inevera_prophecy: require('../../assets/images/scene_inevera_prophecy.png'),
+  forest_burning: require('../../assets/images/scene_forest_burning.png'),
+  rojer_violin: require('../../assets/images/scene_rojer_violin.png'),
+  sharak_ka_army: require('../../assets/images/scene_sharak_ka_army.png'),
+  anoch_sun_chamber: require('../../assets/images/scene_anoch_sun_chamber.png'),
+  angiers_archives: require('../../assets/images/scene_angiers_archives.png'),
+  bone_runes: require('../../assets/images/scene_bone_runes.png'),
+  refugee_camp_night: require('../../assets/images/scene_refugee_camp_night.png'),
+  kaji_spear: require('../../assets/images/scene_kaji_spear.png'),
 };
 
 // Character sprites (half-body, VN style)
