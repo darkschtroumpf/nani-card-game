@@ -51,7 +51,7 @@ const HERO_LORE: Record<string, { emoji: string; lore: string; gameplay: string;
   },
   leesha: {
     emoji: '🧪',
-    lore: 'Leesha Paper, Herboriste de Cutter\'s Hollow. Son intelligence et ses connaissances des plantes et des runes en font une protectrice redoutable.',
+    lore: 'Leesha Paper, Herboriste du Creux du Coupeur. Son intelligence et ses connaissances des plantes et des runes en font une protectrice redoutable.',
     gameplay: 'Support & fabrication. Fabrique des consommables (Potions, Firespit, Forbiddance). Grand Cercle de Runes place une rune temporaire partout. Triage utilise un objet gratuitement chaque vague.',
     color: '#69F0AE',
   },
@@ -85,11 +85,11 @@ import type { DayEvent, ChapterDefinition } from '../../engine/src/warded/campai
 
 // FIX 4: Short effect descriptions for ward craft cards (French)
 const WARD_EFFECTS: Record<string, string> = {
-  fire: '1 dmg a tous les demons',
-  stone: '+2 defense du lieu',
-  wind: 'redirige 1 demon',
-  light: 'revele les demons',
-  bone: '+1 pop a l\'aube',
+  fire: '1 dmg à tous les démons',
+  stone: '+2 défense du lieu',
+  wind: 'redirige 1 démon',
+  light: 'révèle les démons',
+  bone: '+1 pop à l\'aube',
   frost: '-1 force d\'1 démon',
   impact: 'repousse 1 démon',
   mind: 'bloque 1 attaque mentale',
@@ -1509,7 +1509,7 @@ export default function WardedGameScreen() {
               {state.hero.hp > 3 && ((state as any)._surgeOfWillUsed ?? 0) < 2 && (
                 <TouchableOpacity style={[styles.phaseBtn, { borderColor: '#F44336' }]}
                   onPress={() => { ctrl.doSurgeOfWill(); setActionFlash('#F44336'); setTimeout(() => setActionFlash(null), 400); }}>
-                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>💉 Surge of Will (-2 HP → +1 AP)</Text>
+                  <Text style={[styles.phaseBtnText, { color: '#F44336' }]}>💉 Sursaut de Volonté (-2 PV → +1 PA)</Text>
                 </TouchableOpacity>
               )}
               {state.hero.id === 'arlen' && state.hero.hp > 4 && state.locations.some(l => !l.fallen && l.wards.some(ws => !ws.ward)) && (
@@ -1738,7 +1738,7 @@ export default function WardedGameScreen() {
 
                 return (
                   <View style={styles.windRedirectSection}>
-                    <Text style={styles.windRedirectTitle}>🌀 REDIRECTION (Wind Wards)</Text>
+                    <Text style={styles.windRedirectTitle}>🌀 REDIRECTION (Runes de Vent)</Text>
                     {windRedirectDemon ? (
                       <>
                         <Text style={styles.windRedirectHint}>
