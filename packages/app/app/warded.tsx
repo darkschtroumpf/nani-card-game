@@ -1803,7 +1803,7 @@ export default function WardedGameScreen() {
 
       {/* Night flow buttons — always visible at bottom (not actions, just flow) */}
       {isNight && !selectedLoc && (
-        <View style={{ paddingHorizontal: 12, paddingVertical: 6, gap: 4 }}>
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 12, paddingVertical: 6, gap: 4, backgroundColor: warded.bg, zIndex: 20 }}>
           {state.waveNumber === 0 && (
             <TouchableOpacity
               style={{ backgroundColor: warded.danger + '30', borderWidth: 2, borderColor: warded.danger, borderRadius: 12, paddingVertical: 12, alignItems: 'center' }}
@@ -2287,7 +2287,7 @@ const styles = StyleSheet.create({
 
   detailScroll: { flex: 1, paddingHorizontal: 14 },
 
-  actionBar: { height: '60%', paddingHorizontal: 14, marginTop: 4 },
+  actionBar: { height: '55%', paddingHorizontal: 14, marginTop: 4, paddingBottom: 60 },
   actionBarContent: { gap: 8, paddingBottom: 12 },
   actionSection: { gap: 6 },
   actionLabel: { color: warded.textDim, fontSize: wardedFonts.xs, fontWeight: '600', textTransform: 'uppercase' },
