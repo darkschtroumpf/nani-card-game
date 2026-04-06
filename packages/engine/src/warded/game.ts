@@ -239,7 +239,7 @@ export function createGame(heroId: HeroId, mode: 'quick' | 'campaign', difficult
     maxComboSize: mode === 'quick' ? 3 : 2,
     fireCanKill: mode === 'quick',
     talentEffects: { extraActivations: 0, resourceBonus: 0, healDawn: 0 },
-    wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0 },
+    wardUsageStats: { fire: 0, stone: 0, wind: 0, light: 0, bone: 0, frost: 0, impact: 0, mind: 0, unsight: 0 },
     maxNights: difficulty === 'endless' ? 999 : 3,
     minStandingLocations: mode === 'quick' ? (difficulty === 'endless' ? 1 : 3) : 1,
     gameOver: false,
@@ -702,18 +702,27 @@ export function resolveWardPassives(state: GameState): string[] {
 
       switch (ws.ward) {
         case 'fire': {
-          let fireDmg = 1 + meshBonus;
-          if (comboNames.has('Magma')) fireDmg += 1;
-          if (comboNames.has('Forge')) fireDmg += 1;
-          if (comboNames.has('Soufflet')) fireDmg += 2;
-          fireDmg += presenceBonus;
-
-          if (demons.length > 0) {
-            for (let i = demons.length - 1; i >= 0; i--) {
-              applyFireDamage(demons[i], fireDmg, loc.id, loc.name);
-            }
+          if (!state.fireCanKill) {
+            // Pre-Anoch Sun: deterrent only — reduce 1 demon strength
             if (demons.length > 0) {
-              events.push(`🜂 ${loc.name}: Fire inflige ${fireDmg} à ${demons.length} démon(s).`);
+              const target = demons[0];
+              target.currentStrength = Math.max(1, target.currentStrength - 1);
+              events.push(`🔥 ${loc.name}: chaleur dissuasive — ${target.demon.type} affaibli.`);
+            }
+          } else {
+            // Post-Anoch Sun: actual fire damage
+            let fireDmg = 1 + meshBonus;
+            if (comboNames.has('Magma')) fireDmg += 1;
+            if (comboNames.has('Forge')) fireDmg += 1;
+            if (comboNames.has('Soufflet')) fireDmg += 2;
+            fireDmg += presenceBonus;
+            if (demons.length > 0) {
+              for (let i = demons.length - 1; i >= 0; i--) {
+                applyFireDamage(demons[i], fireDmg, loc.id, loc.name);
+              }
+              if (demons.length > 0) {
+                events.push(`🜂 ${loc.name}: Feu inflige ${fireDmg} à ${demons.length} démon(s).`);
+              }
             }
           }
           break;
@@ -769,6 +778,55 @@ export function resolveWardPassives(state: GameState): string[] {
           if (comboNames.has('Consécration') && isPresence) {
             state.hero.hp = Math.min(state.hero.maxHp, state.hero.hp + 1);
             events.push(`☽ ${loc.name}: Consécration soigne 1 HP héros.`);
+          }
+          break;
+        }
+
+        case 'frost': {
+          // Reduce 1 demon strength by 1
+          if (demons.length > 0) {
+            const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+            target.currentStrength = Math.max(1, target.currentStrength - 1);
+            events.push(`❄ ${loc.name}: Givre affaiblit ${target.demon.type} (-1 force).`);
+          }
+          break;
+        }
+
+        case 'impact': {
+          // Knockback 1 non-locked demon to adjacent
+          if (demons.length > 0) {
+            const kickable = demons.findIndex(d => !d.demon.isLocked && !d.demon.isBoss);
+            if (kickable >= 0) {
+              const adj = getAliveAdjacentIds(loc.id, state);
+              if (adj.length > 0) {
+                const target = adj[Math.floor(Math.random() * adj.length)];
+                const [demon] = demons.splice(kickable, 1);
+                state.demonsAtLocations[target].push(demon);
+                events.push(`💥 ${loc.name}: Impact repousse ${demon.demon.type} vers ${getLocation(state, target).name}.`);
+              }
+            }
+          }
+          break;
+        }
+
+        case 'mind': {
+          // Block 1 mind demon direct damage (tracked in state)
+          if (isPresence) {
+            (state as any)._mindProtection = ((state as any)._mindProtection ?? 0) + 1;
+          }
+          break;
+        }
+
+        case 'unsight': {
+          // 25% chance demons skip this location (redirect to random alive adjacent)
+          if (Math.random() < 0.25 && demons.length > 0) {
+            const adj = getAliveAdjacentIds(loc.id, state);
+            if (adj.length > 0) {
+              const target = adj[Math.floor(Math.random() * adj.length)];
+              const [demon] = demons.splice(0, 1);
+              state.demonsAtLocations[target].push(demon);
+              events.push(`👁 ${loc.name}: Dissimulation — ${demon.demon.type} perd la trace.`);
+            }
           }
           break;
         }
@@ -1014,17 +1072,25 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
 
   switch (ward) {
     case 'fire': {
-      // Blaze: 3 + level bonus + enhanced damage to 1 demon
-      if (demons.length > 0) {
-        const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
-        const dmg = 3 + presenceBonus + powerBonus + enhancedBonus;
-        strongest.currentStrength -= dmg;
-        if (!state.fireCanKill && strongest.currentStrength < 1) strongest.currentStrength = 1;
-        events.push(`Blaze inflige ${dmg} dégâts à ${strongest.demon.type} (str ${strongest.currentStrength}).`);
-        if (strongest.currentStrength <= 0) {
-          demons.splice(demons.indexOf(strongest), 1);
-          events.push(`${strongest.demon.type} détruit!`);
-          onDemonKilled(state, locId);
+      if (!state.fireCanKill) {
+        // Pre-Anoch Sun: deterrent — reduce strongest by 2
+        if (demons.length > 0) {
+          const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+          strongest.currentStrength = Math.max(1, strongest.currentStrength - 2);
+          events.push(`Brasier affaiblit ${strongest.demon.type} (-2 force).`);
+        }
+      } else {
+        // Post-Anoch Sun: lethal damage
+        if (demons.length > 0) {
+          const strongest = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+          const dmg = 3 + presenceBonus + powerBonus + enhancedBonus;
+          strongest.currentStrength -= dmg;
+          events.push(`Brasier inflige ${dmg} dégâts à ${strongest.demon.type}.`);
+          if (strongest.currentStrength <= 0) {
+            demons.splice(demons.indexOf(strongest), 1);
+            events.push(`${strongest.demon.type} détruit!`);
+            onDemonKilled(state, locId);
+          }
         }
       }
       break;
@@ -1067,10 +1133,60 @@ function applyWardActive(state: GameState, locId: LocationId, ward: WardType, pr
     }
     case 'bone': {
       // Mend: heal 2 Pop
-      const loc = getLocation(state, locId);
-      const healed = Math.min(2, loc.maxPopulation - loc.population);
-      loc.population += healed;
-      events.push(`Mend soigne ${healed} Pop à ${loc.name}.`);
+      const healLoc = getLocation(state, locId);
+      const healed = Math.min(2, healLoc.maxPopulation - healLoc.population);
+      healLoc.population += healed;
+      events.push(`Soin soigne ${healed} Pop à ${healLoc.name}.`);
+      break;
+    }
+    case 'frost': {
+      // Gel: freeze 1 demon (cannot attack this wave)
+      if (demons.length > 0) {
+        const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        (target as any)._frozen = true;
+        events.push(`❄ Gel: ${target.demon.type} gelé — ne peut pas attaquer.`);
+      }
+      break;
+    }
+    case 'impact': {
+      // Fracas: 2 damage + knockback
+      if (demons.length > 0) {
+        const target = demons.reduce((a, b) => a.currentStrength >= b.currentStrength ? a : b);
+        const dmg = 2 + presenceBonus + powerBonus;
+        target.currentStrength -= dmg;
+        events.push(`💥 Fracas: ${dmg} dégâts à ${target.demon.type}.`);
+        if (target.currentStrength <= 0) {
+          demons.splice(demons.indexOf(target), 1);
+          events.push(`${target.demon.type} détruit!`);
+          onDemonKilled(state, locId);
+        } else {
+          // Knockback
+          const adj = getAliveAdjacentIds(locId, state);
+          if (adj.length > 0) {
+            const dest = adj[Math.floor(Math.random() * adj.length)];
+            demons.splice(demons.indexOf(target), 1);
+            state.demonsAtLocations[dest].push(target);
+            events.push(`${target.demon.type} repoussé vers ${getLocation(state, dest).name}.`);
+          }
+        }
+      }
+      break;
+    }
+    case 'mind': {
+      // Volonté: stun 1 mind demon
+      const mindDemon = demons.find(d => d.demon.type === 'mind' || d.demon.isBoss);
+      if (mindDemon) {
+        (mindDemon as any)._frozen = true;
+        events.push(`🧠 Volonté: ${mindDemon.demon.type} étourdi — ne peut pas attaquer.`);
+      } else {
+        events.push('🧠 Volonté: aucun démon mental à cibler.');
+      }
+      break;
+    }
+    case 'unsight': {
+      // Invisibilité: location not targeted this wave
+      (loc as any)._unsight = true;
+      events.push(`👁 Invisibilité: ${loc.name} disparaît de la vue des chtoniens.`);
       break;
     }
   }
@@ -1451,14 +1567,20 @@ export function resolveDamage(state: GameState): string[] {
       if ((loc as any)._forbiddance <= 0) delete (loc as any)._forbiddance;
       continue;
     }
+    // Unsight: location invisible this wave
+    if ((loc as any)._unsight) {
+      events.push(`${loc.name}: Dissimulation — les chtoniens passent sans voir!`);
+      delete (loc as any)._unsight;
+      continue;
+    }
     if ((loc as any)._bulwarkActive) {
-      events.push(`${loc.name}: Bulwark — aucun dégât!`);
+      events.push(`${loc.name}: Rempart — aucun dégât!`);
       delete (loc as any)._bulwarkActive;
       delete (loc as any)._comboDefense;
       continue;
     }
-    // Filter out lullaby'd demons (Rojer)
-    const activeDemonsCount = demons.filter(d => !(d as any)._lullaby).length;
+    // Filter out lullaby'd and frozen demons
+    const activeDemonsCount = demons.filter(d => !(d as any)._lullaby && !(d as any)._frozen).length;
     if (activeDemonsCount === 0 && demons.length > 0) {
       events.push(`${loc.name}: Lullaby — démons endormis, aucun dégât!`);
       for (const d of demons) delete (d as any)._lullaby;
@@ -1478,9 +1600,9 @@ export function resolveDamage(state: GameState): string[] {
     if (hasRock && defense > 0) defense = Math.max(0, defense - 1);
 
     // Total demon strength (skip lullaby'd)
-    const totalStr = demons.filter(d => !(d as any)._lullaby).reduce((sum, d) => sum + Math.max(0, d.currentStrength), 0);
-    // Clean up lullaby markers
-    for (const d of demons) delete (d as any)._lullaby;
+    const totalStr = demons.filter(d => !(d as any)._lullaby && !(d as any)._frozen).reduce((sum, d) => sum + Math.max(0, d.currentStrength), 0);
+    // Clean up lullaby/frozen markers
+    for (const d of demons) { delete (d as any)._lullaby; delete (d as any)._frozen; }
     const damage = Math.max(0, totalStr - defense);
 
     if (damage > 0) {
@@ -1496,13 +1618,20 @@ export function resolveDamage(state: GameState): string[] {
         }
       }
 
-      // Mind demon direct hero damage
+      // Mind demon direct hero damage (reduced by mind ward protection)
       if (locId === state.presenceLocation) {
+        let mindProtection = (state as any)._mindProtection ?? 0;
         const mindDemons = demons.filter(d => d.demon.type === 'mind');
         for (const md of mindDemons) {
-          state.hero.hp -= 2;
-          events.push(`Mind Demon inflige 2 dégâts directs à ${state.hero.name}! (HP: ${state.hero.hp})`);
+          if (mindProtection > 0) {
+            mindProtection--;
+            events.push(`🧠 Rune d'Esprit bloque l'attaque mentale!`);
+          } else {
+            state.hero.hp -= 2;
+            events.push(`Démon d'Esprit inflige 2 dégâts directs à ${state.hero.name}! (HP: ${state.hero.hp})`);
+          }
         }
+        delete (state as any)._mindProtection;
 
         // Overflow to hero
         if (loc.population < 0) {

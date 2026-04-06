@@ -63,6 +63,10 @@ const WARD_IMAGES: Record<string, any> = {
   wind: require('../assets/images/ward_wind.png'),
   light: require('../assets/images/ward_light.png'),
   bone: require('../assets/images/ward_bone.png'),
+  frost: require('../assets/images/ward_wind.png'),   // placeholder
+  impact: require('../assets/images/ward_stone.png'),  // placeholder
+  mind: require('../assets/images/ward_light.png'),    // placeholder
+  unsight: require('../assets/images/ward_bone.png'),  // placeholder
 };
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -86,6 +90,10 @@ const WARD_EFFECTS: Record<string, string> = {
   wind: 'redirige 1 demon',
   light: 'revele les demons',
   bone: '+1 pop a l\'aube',
+  frost: '-1 force d\'1 démon',
+  impact: 'repousse 1 démon',
+  mind: 'bloque 1 attaque mentale',
+  unsight: '25% invisibilité',
 };
 
 // Combo advisor: uses directional combo detection from engine

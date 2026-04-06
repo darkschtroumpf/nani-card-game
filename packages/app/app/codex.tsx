@@ -14,6 +14,10 @@ const WARD_IMAGES: Record<string, any> = {
   wind: require('../assets/images/ward_wind.png'),
   light: require('../assets/images/ward_light.png'),
   bone: require('../assets/images/ward_bone.png'),
+  frost: require('../assets/images/ward_wind.png'),   // placeholder
+  impact: require('../assets/images/ward_stone.png'),  // placeholder
+  mind: require('../assets/images/ward_light.png'),    // placeholder
+  unsight: require('../assets/images/ward_bone.png'),  // placeholder
 };
 
 const DEMON_IMAGES: Record<string, any> = {
@@ -27,6 +31,7 @@ const DEMON_IMAGES: Record<string, any> = {
 
 const WARD_NAMES: Record<WardType, string> = {
   fire: 'Feu', stone: 'Pierre', wind: 'Vent', light: 'Lumière', bone: 'Os',
+  frost: 'Givre', impact: 'Impact', mind: 'Esprit', unsight: 'Dissimulation',
 };
 
 const DEMON_NAMES: Record<DemonType, string> = {
@@ -39,6 +44,10 @@ const WARD_PASSIVES_FR: Record<WardType, string> = {
   wind: 'Redirige 1 démon non-verrouillé vers un lieu adjacent avant le combat',
   light: 'Révèle les types exacts de démons ciblant ce lieu',
   bone: "Soigne 1 population à l'aube (si en dessous du max)",
+  frost: 'Réduit la force de 1 démon de -1 chaque vague',
+  impact: 'Repousse 1 démon non-verrouillé vers un lieu adjacent',
+  mind: 'Bloque 1 attaque directe de démon d\'esprit par vague',
+  unsight: '25% de chance que les démons ignorent ce lieu',
 };
 
 const WARD_ACTIVES_FR: Record<WardType, { name: string; effect: string }> = {
@@ -47,6 +56,10 @@ const WARD_ACTIVES_FR: Record<WardType, { name: string; effect: string }> = {
   wind: { name: 'Bourrasque', effect: "Redirige jusqu'à 3 démons non-verrouillés" },
   light: { name: 'Éclat', effect: '1 dégât à tous + réarrange 1 démon' },
   bone: { name: 'Soin', effect: 'Soigne 2 population (max)' },
+  frost: { name: 'Gel', effect: 'Gèle 1 démon (ne peut pas attaquer)' },
+  impact: { name: 'Fracas', effect: '2 dégâts à 1 démon + repousse' },
+  mind: { name: 'Volonté', effect: 'Étourdit 1 démon d\'esprit cette vague' },
+  unsight: { name: 'Invisibilité', effect: 'Ce lieu n\'est pas ciblé cette vague' },
 };
 
 type Tab = 'wards' | 'demons' | 'combos';

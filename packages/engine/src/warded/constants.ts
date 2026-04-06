@@ -26,7 +26,7 @@ export const ADJACENCY: Record<LocationId, LocationId[]> = {
 
 // --- Wards ---
 
-export const WARD_TYPES: WardType[] = ['fire', 'stone', 'wind', 'light', 'bone'];
+export const WARD_TYPES: WardType[] = ['fire', 'stone', 'wind', 'light', 'bone', 'frost', 'impact', 'mind', 'unsight'];
 
 export const WARD_COSTS: Record<WardType, { wood: number; ink: number; food: number }> = {
   fire: { wood: 1, ink: 0, food: 0 },
@@ -34,6 +34,10 @@ export const WARD_COSTS: Record<WardType, { wood: number; ink: number; food: num
   wind: { wood: 0, ink: 1, food: 0 },
   light: { wood: 0, ink: 1, food: 0 },
   bone: { wood: 1, ink: 1, food: 0 },
+  frost: { wood: 0, ink: 1, food: 0 },
+  impact: { wood: 1, ink: 0, food: 0 },
+  mind: { wood: 0, ink: 1, food: 1 },
+  unsight: { wood: 0, ink: 2, food: 0 },
 };
 
 // --- Ward Link Profiles (chain mechanic) ---
@@ -52,6 +56,10 @@ export const WARD_LINK_PROFILES: Record<WardType, WardLinkProfile> = {
   fire:  { leftLinks: 3, rightLinks: 1 },
   light: { leftLinks: 2, rightLinks: 2 },
   bone:  { leftLinks: 1, rightLinks: 1 },
+  frost: { leftLinks: 2, rightLinks: 2 },
+  impact: { leftLinks: 3, rightLinks: 1 },
+  mind:  { leftLinks: 1, rightLinks: 3 },
+  unsight: { leftLinks: 1, rightLinks: 1 },
 };
 
 // --- Mesh Tier Thresholds ---
@@ -71,29 +79,40 @@ export const CHAPTER_WARD_AVAILABILITY: Record<number, WardType[]> = {
   1: ['stone', 'wind'], 2: ['stone', 'wind'], 3: ['stone', 'wind'], 4: ['stone', 'wind'],
   // Act 2
   5: ['stone', 'wind', 'fire'], 6: ['stone', 'wind', 'fire'], 7: ['stone', 'wind', 'fire'], 8: ['stone', 'wind', 'fire'],
-  // Act 3
-  9: ['stone', 'wind', 'fire', 'light'], 10: ['stone', 'wind', 'fire', 'light'],
-  11: ['stone', 'wind', 'fire', 'light'], 12: ['stone', 'wind', 'fire', 'light'],
-  // Act 4+
-  13: ['stone', 'wind', 'fire', 'light', 'bone'], 14: ['stone', 'wind', 'fire', 'light', 'bone'],
-  15: ['stone', 'wind', 'fire', 'light', 'bone'], 16: ['stone', 'wind', 'fire', 'light', 'bone'],
-  // Act 5-6 + Final
-  17: ['stone', 'wind', 'fire', 'light', 'bone'], 18: ['stone', 'wind', 'fire', 'light', 'bone'],
-  19: ['stone', 'wind', 'fire', 'light', 'bone'], 20: ['stone', 'wind', 'fire', 'light', 'bone'],
-  21: ['stone', 'wind', 'fire', 'light', 'bone'], 22: ['stone', 'wind', 'fire', 'light', 'bone'],
-  23: ['stone', 'wind', 'fire', 'light', 'bone'], 24: ['stone', 'wind', 'fire', 'light', 'bone'],
-  25: ['stone', 'wind', 'fire', 'light', 'bone'],
+  // Act 3: + light, frost (all defensive)
+  9: ['stone', 'wind', 'fire', 'light', 'frost'], 10: ['stone', 'wind', 'fire', 'light', 'frost'],
+  11: ['stone', 'wind', 'fire', 'light', 'frost'], 12: ['stone', 'wind', 'fire', 'light', 'frost'],
+  // Act 4: + bone, impact (Anoch Sun — fire becomes lethal, combat wards unlocked)
+  13: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact'],
+  14: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact'],
+  15: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact'],
+  16: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact'],
+  // Act 5: + mind
+  17: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind'],
+  18: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind'],
+  19: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind'],
+  20: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind'],
+  // Act 6: + unsight (all 9)
+  21: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind', 'unsight'],
+  22: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind', 'unsight'],
+  23: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind', 'unsight'],
+  24: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind', 'unsight'],
+  25: ['stone', 'wind', 'fire', 'light', 'frost', 'bone', 'impact', 'mind', 'unsight'],
 };
-export const CHAPTER_FIRE_CAN_KILL = 9;     // fire deals lethal damage from Act 3+
+export const CHAPTER_FIRE_CAN_KILL = 13;    // fire deals lethal damage from Act 4 (Anoch Sun)
 export const CHAPTER_TRIPLE_COMBOS = 13;    // triple combos unlock at Act 4+
 
 // Ward individual effects
 export const WARD_PASSIVES: Record<WardType, string> = {
   fire: 'Deal 1 damage to all demons at this location each wave',
-  stone: '+1 ward defense at this location',
+  stone: '+1 defense at this location',
   wind: 'Redirect 1 non-locked, non-Wind demon to adjacent location before combat',
   light: 'Reveal exact demon types targeting this location (Threat Forecast upgrade)',
   bone: 'Heal 1 Population at dawn (if below max)',
+  frost: 'Reduce 1 demon strength by 1 each wave',
+  impact: 'Knockback 1 non-locked demon to adjacent each wave',
+  mind: 'Block 1 direct mind demon damage to hero per wave',
+  unsight: '25% chance demons skip this location',
 };
 
 export const WARD_ACTIVES: Record<WardType, { name: string; effect: string }> = {
@@ -102,6 +121,10 @@ export const WARD_ACTIVES: Record<WardType, { name: string; effect: string }> = 
   wind: { name: 'Gale', effect: 'Redirect up to 3 non-locked, non-boss, non-Wind demons' },
   light: { name: 'Flare', effect: 'Deal 1 damage to all demons here + rearrange 1 non-locked demon' },
   bone: { name: 'Mend', effect: 'Heal 2 Population at this location (up to max)' },
+  frost: { name: 'Gel', effect: 'Freeze 1 demon (cannot attack this wave)' },
+  impact: { name: 'Fracas', effect: '2 damage to 1 demon + knockback to adjacent' },
+  mind: { name: 'Volonté', effect: 'Stun 1 mind demon for this wave' },
+  unsight: { name: 'Invisibilité', effect: 'This location is not targeted this wave' },
 };
 
 // --- Ward Combos (directional — order matters!) ---
@@ -148,6 +171,26 @@ export const WARD_COMBOS: WardCombo[] = [
     passiveEffect: 'Feu +2 dégâts mais redirect Vent désactivé', activeEffect: '4 dégâts au plus fort (pas de redirect)', activeName: 'Brasier' },
   { name: 'Forge', wards: ['fire', 'stone'], minBondStrength: 1, unlockedAtChapter: 3,
     passiveEffect: 'Passif Feu amélioré (+1 dégât)', activeEffect: '3 dégâts + 2 défense cette vague', activeName: 'Forge' },
+
+  // Frost combos (Act 3+)
+  { name: 'Brume', wards: ['wind', 'frost'], minBondStrength: 2, unlockedAtChapter: 9,
+    passiveEffect: 'Réduit force de tous les démons de -1', activeEffect: 'Gèle 2 démons', activeName: 'Blizzard' },
+  { name: 'Permafrost', wards: ['stone', 'frost'], minBondStrength: 2, unlockedAtChapter: 9,
+    passiveEffect: '+2 défense + -1 force démons', activeEffect: '+3 défense + gèle le plus fort', activeName: 'Glacier' },
+  { name: 'Aurore', wards: ['light', 'frost'], minBondStrength: 2, unlockedAtChapter: 9,
+    passiveEffect: 'Révèle + ralentit 1 démon', activeEffect: 'Révèle tout + gèle tous str≤2', activeName: 'Aube Glaciale' },
+
+  // Impact combos (Act 4+)
+  { name: 'Séisme', wards: ['stone', 'impact'], minBondStrength: 2, unlockedAtChapter: 13,
+    passiveEffect: '+2 défense + repousse 1 démon', activeEffect: '3 dégâts à tous + repousse non-boss', activeName: 'Tremblement' },
+  { name: 'Éruption', wards: ['fire', 'impact'], minBondStrength: 1, unlockedAtChapter: 13,
+    passiveEffect: 'Feu +2 dégâts', activeEffect: '4 dégâts au plus fort + repousse', activeName: 'Éruption Volcanique' },
+
+  // Mind combos (Act 5+)
+  { name: 'Sérénité', wards: ['light', 'mind'], minBondStrength: 2, unlockedAtChapter: 17,
+    passiveEffect: 'Protège héros de 2 dégâts mind demon', activeEffect: 'Étourdit tous les mind demons', activeName: 'Paix Intérieure' },
+  { name: 'Résonance', wards: ['bone', 'mind'], minBondStrength: 1, unlockedAtChapter: 17,
+    passiveEffect: 'Soigne 1 HP héros par vague', activeEffect: 'Absorbe la force d\'1 mind demon (+2 HP)', activeName: 'Absorption' },
 ];
 
 // --- Triple Ward Combos (3 wards in specific order, chapter 8+) ---

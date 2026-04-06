@@ -44,7 +44,7 @@ export interface ResourceStockpile {
 
 // --- Wards ---
 
-export type WardType = 'fire' | 'stone' | 'wind' | 'light' | 'bone';
+export type WardType = 'fire' | 'stone' | 'wind' | 'light' | 'bone' | 'frost' | 'impact' | 'mind' | 'unsight';
 
 // --- Ward Links (chain mechanic) ---
 
