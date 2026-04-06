@@ -39,7 +39,7 @@ const DEMON_NAMES: Record<DemonType, string> = {
 };
 
 const WARD_PASSIVES_FR: Record<WardType, string> = {
-  fire: 'Inflige 1 dégât à tous les démons de ce lieu chaque vague',
+  fire: 'Inflige 1 dégât à tous les démons (uniquement après Soleil d\'Anoch — sinon affaiblit)',
   stone: '+2 défense à ce lieu',
   wind: 'Redirige 1 démon non-verrouillé vers un lieu adjacent avant le combat',
   light: 'Révèle les types exacts de démons ciblant ce lieu',

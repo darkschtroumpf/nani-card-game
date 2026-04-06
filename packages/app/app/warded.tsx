@@ -96,6 +96,40 @@ const WARD_EFFECTS: Record<string, string> = {
   unsight: '25% invisibilité',
 };
 
+// French ward descriptions for detail overlay
+function getWardPassiveFR(w: WardType, fireCanKill: boolean): string {
+  const map: Record<WardType, string> = {
+    fire: fireCanKill
+      ? 'Inflige 1 dégât à tous les démons de ce lieu chaque vague'
+      : 'Affaiblit 1 démon (-1 force) chaque vague — chaleur dissuasive',
+    stone: '+1 défense à ce lieu',
+    wind: 'Redirige 1 démon non-verrouillé vers un lieu adjacent',
+    light: 'Révèle les types exacts de démons à ce lieu',
+    bone: 'Soigne 1 population à l\'aube',
+    frost: 'Affaiblit 1 démon (-1 force) chaque vague',
+    impact: 'Repousse 1 démon non-verrouillé vers un lieu adjacent',
+    mind: 'Bloque 1 attaque directe de démon d\'esprit par vague',
+    unsight: '25% de chance que les démons ignorent ce lieu',
+  };
+  return map[w];
+}
+function getWardActiveFR(w: WardType, fireCanKill: boolean): { name: string; effect: string } {
+  const map: Record<WardType, { name: string; effect: string }> = {
+    fire: fireCanKill
+      ? { name: 'Brasier', effect: 'Inflige 3 dégâts à 1 démon' }
+      : { name: 'Brasier', effect: 'Affaiblit 1 démon (-2 force) — pas encore de runes de combat' },
+    stone: { name: 'Rempart', effect: '0 dégâts cette vague' },
+    wind: { name: 'Bourrasque', effect: 'Redirige jusqu\'à 3 démons' },
+    light: { name: 'Éclat', effect: '1 dégât à tous + réarrange 1 démon' },
+    bone: { name: 'Soin', effect: 'Soigne 2 population (max)' },
+    frost: { name: 'Gel', effect: 'Gèle 1 démon (ne peut pas attaquer)' },
+    impact: { name: 'Fracas', effect: '2 dégâts à 1 démon + repousse' },
+    mind: { name: 'Volonté', effect: 'Étourdit 1 démon d\'esprit' },
+    unsight: { name: 'Invisibilité', effect: 'Ce lieu n\'est pas ciblé cette vague' },
+  };
+  return map[w];
+}
+
 // Combo advisor: uses directional combo detection from engine
 function getComboAdvisor(locations: any[], reserves: WardType[], gameState: any) {
   const active: { locName: string; combo: typeof WARD_COMBOS[0] }[] = [];
@@ -1182,6 +1216,13 @@ export default function WardedGameScreen() {
 
       {/* Action bar — shown on toggle, hidden when detail open */}
       {showActionBar && !selectedLoc && (
+      <View style={{ position: 'relative' }}>
+        <TouchableOpacity
+          style={{ position: 'absolute', top: 4, right: 8, zIndex: 10, backgroundColor: warded.bgCard, borderWidth: 1, borderColor: warded.border, borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}
+          onPress={() => setShowActionBar(false)}
+        >
+          <Text style={{ color: warded.textDim, fontSize: 14 }}>✕</Text>
+        </TouchableOpacity>
       <ScrollView style={styles.actionBar} contentContainerStyle={styles.actionBarContent} showsVerticalScrollIndicator={true}>
           {/* Day ONLY: craft wards */}
           {isDay && (
@@ -1754,6 +1795,7 @@ export default function WardedGameScreen() {
             </View>
           )}
         </ScrollView>
+      </View>
       )}
 
       {/* Ward detail overlay — shows before buying or placing */}
@@ -1761,8 +1803,8 @@ export default function WardedGameScreen() {
         const w = wardDetail.ward;
         const cost = WARD_COSTS[w];
         const links = WARD_LINK_PROFILES[w];
-        const passive = WARD_PASSIVES[w];
-        const active = WARD_ACTIVES[w];
+        const passive = getWardPassiveFR(w, state.fireCanKill);
+        const active = getWardActiveFR(w, state.fireCanKill);
         const color = wardColor(w);
         const bestLoc = state.locations.find(l => !l.fallen && l.stockpile.wood >= cost.wood && l.stockpile.ink >= cost.ink);
         const canAfford = !!bestLoc;

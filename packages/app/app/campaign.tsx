@@ -249,60 +249,78 @@ export default function CampaignScreen() {
         );
       })()}
 
-        {/* Talent Tree — collapsible section */}
-        {save && (() => {
-          const totalStars = getTotalStars(save);
-          const spentStars = getSpentStars(save);
-          const available = totalStars - spentStars;
-          if (totalStars === 0) return null; // Don't show talents until first chapter completed
-          return (
-            <View style={[styles.card, { borderColor: '#9b30ff60' }]}>
-              <TouchableOpacity onPress={() => setShowTalents(!showTalents)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={[styles.cardName, { color: '#9b30ff' }]}>🌟 Talents</Text>
-                <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm }}>★ {available} dispo — {showTalents ? '▼' : '▶'}</Text>
-              </TouchableOpacity>
-              {!showTalents && <Text style={styles.cardSub}>Tape pour dépenser tes {available} étoiles</Text>}
-              {showTalents && <Text style={styles.cardSub}>★ {available} étoiles disponibles ({totalStars} total)</Text>}
-              {showTalents && ['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'].map((heroKey: string) => {
-                const info = CHARACTER_INFO[heroKey];
-                const heroTalents = TALENTS.filter(t => t.heroId === heroKey);
-                if (heroTalents.length === 0) return null;
-                return (
-                  <View key={`talent-${heroKey}`} style={{ marginTop: 8 }}>
-                    <Text style={{ color: info.color, fontSize: wardedFonts.sm, fontWeight: 'bold' }}>{info.name}</Text>
-                    {heroTalents.map(talent => {
-                      const isUnlocked = save.unlockedTalents?.includes(talent.id);
-                      const canAfford = available >= talent.cost;
-                      const prevTierUnlocked = talent.tier === 1 || heroTalents.some(t => t.tier === talent.tier - 1 && save.unlockedTalents?.includes(t.id));
-                      return (
-                        <TouchableOpacity
-                          key={talent.id}
-                          style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4, opacity: isUnlocked ? 1 : prevTierUnlocked && canAfford ? 0.9 : 0.4 }}
-                          disabled={isUnlocked || !canAfford || !prevTierUnlocked}
-                          onPress={async () => {
-                            const updated = { ...save, unlockedTalents: [...(save.unlockedTalents ?? []), talent.id] };
-                            setSave(updated);
-                            await AsyncStorage.setItem(SAVE_KEY, JSON.stringify(updated));
-                          }}
-                        >
-                          <Text style={{ color: isUnlocked ? '#4CAF50' : warded.textDim, fontSize: wardedFonts.xs, width: 16 }}>
-                            {isUnlocked ? '✓' : `T${talent.tier}`}
-                          </Text>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ color: isUnlocked ? warded.text : warded.textDim, fontSize: wardedFonts.sm, fontWeight: '600' }}>{talent.name}</Text>
-                            <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{talent.description}</Text>
-                          </View>
-                          {!isUnlocked && <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>★{talent.cost}</Text>}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                );
-              })}
-            </View>
-          );
-        })()}
+        {/* Talent button moved out of scroll — see floating button below */}
 
+      {/* Floating talent button (top-right, below header) */}
+      {save && getTotalStars(save) > 0 && !showTalents && (
+        <TouchableOpacity
+          style={{ position: 'absolute', top: 56, right: 12, backgroundColor: 'rgba(10,10,20,0.9)', borderWidth: 2, borderColor: '#9b30ff', borderRadius: 24, paddingHorizontal: 14, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          onPress={() => setShowTalents(true)}
+        >
+          <Text style={{ fontSize: 16 }}>🌟</Text>
+          <Text style={{ color: '#9b30ff', fontSize: wardedFonts.sm, fontWeight: 'bold' }}>★ {getTotalStars(save) - getSpentStars(save)}</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Talent overlay (full screen) */}
+      {showTalents && save && (() => {
+        const totalStars = getTotalStars(save);
+        const spentStars = getSpentStars(save);
+        const available = totalStars - spentStars;
+        return (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', zIndex: 100 }}>
+            <SafeAreaView style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#9b30ff60' }}>
+                <Text style={{ color: '#9b30ff', fontSize: wardedFonts.xl, fontWeight: 'bold', letterSpacing: 2 }}>🌟 TALENTS</Text>
+                <TouchableOpacity onPress={() => setShowTalents(false)}>
+                  <Text style={{ color: warded.text, fontSize: 22 }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={{ color: warded.textDim, fontSize: wardedFonts.sm, textAlign: 'center', paddingVertical: 8 }}>
+                ★ {available} étoiles disponibles ({totalStars} total)
+              </Text>
+              <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
+                {['arlen_young', 'leesha_young', 'jardir_young', 'rojer_young'].map((heroKey: string) => {
+                  const info = CHARACTER_INFO[heroKey];
+                  const heroTalents = TALENTS.filter(t => t.heroId === heroKey);
+                  if (heroTalents.length === 0) return null;
+                  return (
+                    <View key={`talent-${heroKey}`} style={{ marginTop: 12, padding: 10, backgroundColor: 'rgba(20,20,30,0.8)', borderRadius: 10, borderWidth: 1, borderColor: info.color + '40' }}>
+                      <Text style={{ color: info.color, fontSize: wardedFonts.md, fontWeight: 'bold', marginBottom: 6 }}>{info.name}</Text>
+                      {heroTalents.map(talent => {
+                        const isUnlocked = save.unlockedTalents?.includes(talent.id);
+                        const canAfford = available >= talent.cost;
+                        const prevTierUnlocked = talent.tier === 1 || heroTalents.some(t => t.tier === talent.tier - 1 && save.unlockedTalents?.includes(t.id));
+                        return (
+                          <TouchableOpacity
+                            key={talent.id}
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6, opacity: isUnlocked ? 1 : prevTierUnlocked && canAfford ? 1 : 0.4 }}
+                            disabled={isUnlocked || !canAfford || !prevTierUnlocked}
+                            onPress={async () => {
+                              const updated = { ...save, unlockedTalents: [...(save.unlockedTalents ?? []), talent.id] };
+                              setSave(updated);
+                              await AsyncStorage.setItem(SAVE_KEY, JSON.stringify(updated));
+                            }}
+                          >
+                            <Text style={{ color: isUnlocked ? '#4CAF50' : warded.textDim, fontSize: wardedFonts.xs, width: 24 }}>
+                              {isUnlocked ? '✓' : `T${talent.tier}`}
+                            </Text>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ color: isUnlocked ? warded.text : warded.textDim, fontSize: wardedFonts.sm, fontWeight: '600' }}>{talent.name}</Text>
+                              <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>{talent.description}</Text>
+                            </View>
+                            {!isUnlocked && <Text style={{ color: warded.textDim, fontSize: wardedFonts.xs }}>★{talent.cost}</Text>}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            </SafeAreaView>
+          </View>
+        );
+      })()}
     </SafeAreaView>
   );
 }
