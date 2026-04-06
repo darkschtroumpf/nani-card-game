@@ -17,16 +17,19 @@ const HERO_ROJER = require('../assets/images/hero_rojer.png');
 const HERO_LEESHA = require('../assets/images/hero_leesha.png');
 
 const HERO_ARLEN_YOUNG = require('../assets/images/hero_arlen_young.png');
+const HERO_JARDIR_YOUNG = require('../assets/images/hero_jardir_young.png');
+const HERO_LEESHA_YOUNG = require('../assets/images/hero_leesha_young.png');
+const HERO_ROJER_YOUNG = require('../assets/images/hero_rojer_young.png');
 
 const HERO_IMAGES: Record<string, any> = {
   arlen: HERO_ARLEN,
   arlen_young: HERO_ARLEN_YOUNG,
   jardir: HERO_JARDIR,
-  jardir_young: HERO_JARDIR,
+  jardir_young: HERO_JARDIR_YOUNG,
   rojer: HERO_ROJER,
-  rojer_young: HERO_ROJER,
+  rojer_young: HERO_ROJER_YOUNG,
   leesha: HERO_LEESHA,
-  leesha_young: HERO_LEESHA,
+  leesha_young: HERO_LEESHA_YOUNG,
 };
 
 // Hero selection lore & gameplay descriptions

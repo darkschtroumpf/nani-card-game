@@ -19,16 +19,20 @@ const HERO_IMAGES: Record<string, any> = {
   arlen: require('../assets/images/hero_arlen.png'),
   arlen_young: require('../assets/images/hero_arlen_young.png'),
   jardir: require('../assets/images/hero_jardir.png'),
+  jardir_young: require('../assets/images/hero_jardir_young.png'),
   rojer: require('../assets/images/hero_rojer.png'),
+  rojer_young: require('../assets/images/hero_rojer_young.png'),
   leesha: require('../assets/images/hero_leesha.png'),
+  leesha_young: require('../assets/images/hero_leesha_young.png'),
 };
 
-// Map young heroId to display portrait
+// Map heroId to display portrait based on chapter act
+// Young heroes use young portraits in early acts, adult portraits later
 const HERO_DISPLAY_PORTRAIT: Record<string, string> = {
   arlen_young: 'arlen_young',
-  leesha_young: 'leesha',
-  jardir_young: 'jardir',
-  rojer_young: 'rojer',
+  leesha_young: 'leesha_young',
+  jardir_young: 'jardir_young',
+  rojer_young: 'rojer_young',
 };
 
 const CHARACTER_INFO: Record<string, { name: string; color: string }> = {
