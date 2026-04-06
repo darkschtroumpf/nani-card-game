@@ -20,6 +20,10 @@ export const warded = {
   wardWind: '#5ec4d4',
   wardLight: '#ffd740',
   wardBone: '#d4c4a8',
+  wardFrost: '#88ccee',
+  wardImpact: '#cc8844',
+  wardMind: '#bb66ff',
+  wardUnsight: '#667788',
 
   // Demons
   demonFlame: '#ff4444',
@@ -89,6 +93,10 @@ export const WARD_SYMBOLS: Record<string, string> = {
   wind: '💨',
   light: '✨',
   bone: '💀',
+  frost: '❄',
+  impact: '💥',
+  mind: '🧠',
+  unsight: '👁‍🗨',
 };
 
 // Demon symbols
@@ -116,6 +124,10 @@ export function wardColor(wardType: string): string {
     wind: warded.wardWind,
     light: warded.wardLight,
     bone: warded.wardBone,
+    frost: warded.wardFrost,
+    impact: warded.wardImpact,
+    mind: warded.wardMind,
+    unsight: warded.wardUnsight,
   };
   return colors[wardType] ?? warded.textDim;
 }
