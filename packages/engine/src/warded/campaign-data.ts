@@ -157,7 +157,7 @@ export const CHAPTER_1: ChapterDefinition = {
       dialogueNodes: [
         {
           id: 'day3_1',
-          background: 'village_sunset',
+          background: 'jeph_paralyzed',
           lines: [
             { speaker: 'narrator', text: "L'aube du troisième jour. Silvy est allée chercher des herbes à l'orée du village. Le soleil est encore haut, mais les nuages s'amoncellent." },
             { speaker: 'arlen_young', text: "Mère n'est pas rentrée. Le soleil baisse.", emotion: 'scared' },
@@ -312,7 +312,7 @@ export const CHAPTER_LEESHA: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'l_day1', background: 'bruna_hut',
+        id: 'l_day1', background: 'bruna_teaching',
         lines: [
           { speaker: 'bruna', text: "Leesha, viens ici. Il est temps que tu apprennes à préparer l'encre de rune.", emotion: 'neutral' },
           { speaker: 'narrator', text: "Bruna sort des bocaux d'herbes séchées, un mortier, et une fiole d'encre noire épaisse." },
@@ -634,7 +634,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'intro_1', background: 'inn',
+      id: 'intro_1', background: 'father_juggler',
       lines: [
         { speaker: 'narrator', text: "Pont-de-Rivière. Un village de passage entre Fort Miln et les plaines du sud." },
         { speaker: 'narrator', text: "Rojer Inn a trois ans. Il ne comprend pas pourquoi sa mère pleure chaque soir quand le soleil se couche." },
@@ -643,7 +643,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
       nextNodeId: 'intro_2',
     },
     {
-      id: 'intro_2', background: 'inn',
+      id: 'intro_2', background: 'rain_storm_village',
       lines: [
         { speaker: 'narrator', text: "L'auberge est protégée par les seuls runes que connaissent les villageois : Pierre et Vent. Des défenses simples, juste assez pour repousser les chtoniens." },
         { speaker: 'narrator', text: "Mais cette nuit, les runes ont été endommagés par la pluie. Jessum joue plus fort que d'habitude, comme s'il sentait le danger." },
@@ -658,7 +658,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
     {
       dayNumber: 1,
       dialogueNodes: [{
-        id: 'r_day1', background: 'inn',
+        id: 'r_day1', background: 'rojer_orphan',
         lines: [
           { speaker: 'narrator', text: "Rojer a grandi. Il a quinze ans maintenant, apprenti jongleur, orphelin depuis cette nuit à Pont-de-Rivière." },
           { speaker: 'narrator', text: "Son maître Arrick lui a appris le violon, mais aussi l'art de survivre dans un monde de monstres." },
@@ -765,7 +765,7 @@ export const CHAPTER_ROJER: ChapterDefinition = {
   }],
 
   defeatDialogue: [{
-    id: 'r_defeat', background: 'village_burning',
+    id: 'r_defeat', background: 'destroyed_riverbridge',
 
     lines: [
       { speaker: 'narrator', text: "Le violon se brise. Les runes cèdent. Le charme est rompu." },
@@ -805,7 +805,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'a2_intro', background: 'road',
+      id: 'a2_intro', background: 'young_arlen_choice',
       lines: [
         { speaker: 'narrator', text: "Arlen a quitté Ruisseau de Tibbet. Devant lui, cinq jours de route à travers les plaines de Thesa. Cinq nuits en plein air." },
         { speaker: 'narrator', text: "Les seuls abris sont les relais de messagers — de petites cabanes runées, espacées d'une journée de marche. Si les runes tiennent." },
@@ -821,7 +821,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
       dayNumber: 1,
       condition: { flag: 'saved_silvy', value: true },
       dialogueNodes: [{
-        id: 'a2_day1_ragen', background: 'road',
+        id: 'a2_day1_ragen', background: 'stone_circle_camp',
         lines: [
           { speaker: 'ragen', text: "Premier relais. Les runes sont intacts. On a de la chance.", emotion: 'neutral' },
           { speaker: 'arlen_young', text: "Ragen, ces symboles sur les poteaux... ils sont différents de ceux de Ruisseau de Tibbet.", emotion: 'hopeful' },
@@ -856,7 +856,7 @@ export const CHAPTER_ARLEN_2: ChapterDefinition = {
       dayNumber: 1,
       condition: { flag: 'saved_silvy', value: false },
       dialogueNodes: [{
-        id: 'a2_day1_alone', background: 'road',
+        id: 'a2_day1_alone', background: 'arlen_running_night',
         lines: [
           { speaker: 'narrator', text: "Arlen est seul. Ragen est parti avant lui, sans savoir qu'un garçon le suivrait sur la route." },
           { speaker: 'narrator', text: "Le premier relais de messager est en mauvais état. Les runes sont fissurés, le toit percé." },
@@ -1328,7 +1328,7 @@ export const CHAPTER_ROJER_2: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'r2_intro_1', background: 'inn',
+      id: 'r2_intro_1', background: 'arrick_drunk',
       lines: [
         { speaker: 'narrator', text: "Pont-de-Rivière. Un bourg marchand au croisement des routes de Thesa. L'endroit idéal pour un jongleur — si on peut payer sa chambre." },
         { speaker: 'narrator', text: "Rojer et son maître Arrick parcourent les routes depuis des années. Mais Arrick boit plus qu'il ne joue, et les auberges se ferment une à une." },
@@ -1713,7 +1713,7 @@ export const CHAPTER_LEESHA_3: ChapterDefinition = {
 
   introDialogue: [
     {
-      id: 'l3_intro_1', background: 'road',
+      id: 'l3_intro_1', background: 'angiers_woods',
       lines: [
         { speaker: 'narrator', text: "Le sac est bouclé. Le journal de Bruna est calé sous la ceinture, contre la peau, là où personne ne peut le prendre." },
         { speaker: 'narrator', text: "Leesha Paper quitte Le Creux du Coupeur à l'aube. Derrière elle, le village qu'elle a protégé. Devant elle, Angiers — la cité du Duc, où se trouvent les archives de l'Académie." },
@@ -2501,7 +2501,7 @@ export const CHAPTER_LEESHA_4: ChapterDefinition = {
       nextNodeId: 'l4_intro_2',
     },
     {
-      id: 'l4_intro_2', background: 'ward_book',
+      id: 'l4_intro_2', background: 'leesha_studying',
       lines: [
         { speaker: 'narrator', text: "Dans les notes les plus cryptiques de Bruna — celles qu'elle n'avait jamais osé montrer — Leesha trouve des références aux runes d'os." },
         { speaker: 'leesha', text: "Des runes qui drainent la force vitale des démons... Bruna le savait. Mais elle avait trop peur pour les utiliser.", emotion: 'hopeful' },
@@ -3158,7 +3158,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
     {
       dayNumber: 2,
       dialogueNodes: [{
-        id: 'a4_day2', background: 'ruins',
+        id: 'a4_day2', background: 'arlen_tattoo',
         lines: [
           { speaker: 'narrator', text: "Arlen a découvert le Tombeau du Conquérant — un sarcophage couvert de runes d'os. Le guerrier enterré là combattait les démons corps à corps." },
           { speaker: 'arlen_young', text: "Ces runes... Ils ne sont pas gravés dans la pierre. Ils sont gravés dans la peau.", emotion: 'hopeful' },
@@ -3234,7 +3234,7 @@ export const CHAPTER_ARLEN_5: ChapterDefinition = {
       nextNodeId: 'a4_victory_2',
     },
     {
-      id: 'a4_victory_2', background: 'ruins',
+      id: 'a4_victory_2', background: 'arlen_warded_man',
       lines: [
         { speaker: 'narrator', text: "Arlen quitte Soleil d'Anoch avec un savoir que personne ne possède depuis trois cents ans. Le savoir de se battre." },
         { speaker: 'narrator', text: "Il n'est plus Arlen le Messager. Il n'est plus Arlen de Ruisseau de Tibbet." },

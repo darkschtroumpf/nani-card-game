@@ -45,6 +45,22 @@ const SCENE_IMAGES: Record<string, any> = {
   bone_runes: require('../../assets/images/scene_bone_runes.png'),
   refugee_camp_night: require('../../assets/images/scene_refugee_camp_night.png'),
   kaji_spear: require('../../assets/images/scene_kaji_spear.png'),
+  father_juggler: require('../../assets/images/scene_father_juggler.png'),
+  rain_storm_village: require('../../assets/images/scene_rain_storm_village.png'),
+  silvy_at_dusk: require('../../assets/images/scene_silvy_at_dusk.png'),
+  arlen_running_night: require('../../assets/images/scene_arlen_running_night.png'),
+  jeph_paralyzed: require('../../assets/images/scene_jeph_paralyzed.png'),
+  rojer_orphan: require('../../assets/images/scene_rojer_orphan.png'),
+  arrick_drunk: require('../../assets/images/scene_arrick_drunk.png'),
+  leesha_studying: require('../../assets/images/scene_leesha_studying.png'),
+  bruna_teaching: require('../../assets/images/scene_bruna_teaching.png'),
+  arlen_tattoo: require('../../assets/images/scene_arlen_tattoo.png'),
+  angiers_woods: require('../../assets/images/scene_angiers_woods.png'),
+  young_arlen_choice: require('../../assets/images/scene_young_arlen_choice.png'),
+  dama_ting_tent: require('../../assets/images/scene_dama_ting_tent.png'),
+  destroyed_riverbridge: require('../../assets/images/scene_destroyed_riverbridge.png'),
+  arlen_warded_man: require('../../assets/images/scene_arlen_warded_man.png'),
+  stone_circle_camp: require('../../assets/images/scene_stone_circle_camp.png'),
 };
 
 // Character sprites (half-body, VN style)
@@ -78,15 +94,15 @@ const SPRITES: Record<string, any> = {
   // Arrick emotion variants
   arrick_scared: require('../../assets/images/sprite_arrick_scared.png'),
   // Leesha young emotion variants
-  leesha_young: require('../../assets/images/hero_leesha.png'),
+  leesha_young: require('../../assets/images/sprite_leesha_young.png'),
   leesha_young_determined: require('../../assets/images/sprite_leesha_determined.png'),
   leesha_young_scared: require('../../assets/images/sprite_leesha_scared.png'),
   // Jardir young emotion variants
-  jardir_young: require('../../assets/images/hero_jardir.png'),
+  jardir_young: require('../../assets/images/sprite_jardir_young.png'),
   jardir_young_determined: require('../../assets/images/sprite_jardir_determined.png'),
   jardir_young_angry: require('../../assets/images/sprite_jardir_angry.png'),
   // Rojer young emotion variants
-  rojer_young: require('../../assets/images/hero_rojer.png'),
+  rojer_young: require('../../assets/images/sprite_rojer_young.png'),
   rojer_young_scared: require('../../assets/images/sprite_rojer_scared.png'),
   rojer_young_determined: require('../../assets/images/sprite_rojer_determined.png'),
   rojer_young_hopeful: require('../../assets/images/sprite_rojer_hopeful.png'),
